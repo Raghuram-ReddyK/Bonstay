@@ -29,7 +29,7 @@
     {
       "id": "2",
       "hotelName": "Hill Palace",
-      "city": "Hyderabad",
+      "city": "Goa",
       "description": "A cool place to relax at Lake side",
       "amenities": "Homely Food, Sea Food, Children's Park, Boating",
       "phoneNo": 9191919191,
@@ -65,9 +65,9 @@
   ],
   "bookings": [
     {
-      "id": "7f09",
+      "id": "a5a0",
       "startDate": "2024-11-13T00:00:00.000Z",
-      "endDate": "2024-11-28T00:00:00.000Z",
+      "endDate": "2024-11-23T00:00:00.000Z",
       "noOfPersons": 1,
       "noOfRooms": 1,
       "typeOfRoom": "double with A/c"

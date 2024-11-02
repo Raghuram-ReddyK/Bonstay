@@ -1,10 +1,19 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import {
+    Container,
+    Typography,
+    Button,
+    Paper,
+    List,
+    ListItem,
+    ListItemText,
+    Alert
+} from '@mui/material';
 
 const ViewReviews = () => {
     const [reviews, setReviews] = useState([]);
-    const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -22,30 +31,35 @@ const ViewReviews = () => {
     }, []);
 
     return (
-        <div>
-            <h3>All Reviews</h3>
-            {success && <div>{success}</div>}
-            {error && <div>{error}</div>}
+        <Container className='home' maxWidth="md" >
+            <Typography variant="h3" gutterBottom>
+                All Reviews
+            </Typography>
+            {error && <Alert severity="error">{error}</Alert>}
             {reviews.length > 0 ? (
                 reviews.map((review) => (
-                    <div className="reviews" key={review.id}>
-                        <h3>{review.hotelName}</h3>
+                    <Paper elevation={3} style={{ padding: '16px', marginBottom: '16px' }} key={review.id}>
+                        <Typography variant="h5">{review.hotelName}</Typography>
                         {review.reviews.length > 0 ? (
-                            <ul>
+                            <List>
                                 {review.reviews.map((reviewText, index) => (
-                                    <li key={index}>{reviewText}</li>
+                                    <ListItem key={index}>
+                                        <ListItemText primary={reviewText} />
+                                    </ListItem>
                                 ))}
-                            </ul>
+                            </List>
                         ) : (
-                            <p>No reviews for this hotel yet.</p>
+                            <Typography>No reviews for this hotel yet.</Typography>
                         )}
-                    </div>
+                    </Paper>
                 ))
             ) : (
-                <div>No reviews available</div>
+                <Typography>No reviews available</Typography>
             )}
-            <button onClick={() => navigate("/review")}>Add review</button>
-        </div>
+            <Button variant="contained" color="primary" onClick={() => navigate("/review")} style={{ marginTop: '16px' }}>
+                Add Review
+            </Button>
+        </Container>
     );
 };
 

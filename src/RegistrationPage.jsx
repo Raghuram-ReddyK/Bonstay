@@ -206,7 +206,7 @@ const RegistrationPage = () => {
                     </Typography>
                 )}
             </form>
-            <MuiLink href="/login" underline="none" sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+            <MuiLink href="/login" underline="true" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                 Already have an account? Login here.
             </MuiLink>
         </div>

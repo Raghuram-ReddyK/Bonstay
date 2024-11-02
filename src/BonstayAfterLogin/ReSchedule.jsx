@@ -79,7 +79,7 @@ const ReSchedule = () => {
     };
 
     return (
-        <div className='bookpage1'>
+        <div className='bookpage'>
             <form onSubmit={handleSubmit}>
                 {errorMessage && <p className="error-message">{errorMessage}</p>}
                 <h4>Re-Schedule Hotel</h4>

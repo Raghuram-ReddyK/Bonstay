@@ -88,7 +88,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3 }}>
                     Login
                 </Button>
-                <MuiLink href="/register" underline="none" sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <MuiLink href="/register" underline="true" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     Don't have an account? Sign Up
                 </MuiLink>
             </form>

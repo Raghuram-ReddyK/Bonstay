@@ -24,16 +24,16 @@
   font-size: 13px;
 } */
 
-/* h5 {
-  background-color: brown;
+h5 {
+  background-color: rgb(42, 165, 165);
   color: white;
   font-family: monospace
-} */
+}
 
 .view {
   background-size: cover;
   text-align: center;
-  /* background-image: url("/public/Register.jpg"); */
+  background-image: url("/public/View.jpg");
   width: auto;
   height: 530px;
 }
@@ -41,34 +41,35 @@
 .dashboard {
   background-size: cover;
   text-align: center;
-  /* background-image: url("/public/Register.jpg"); */
-  width: auto;
+  background-image: url("/public/Hotel1.jpg");
+  width: 1500px;
   height: 1000px;
+  color: rgb(17, 0, 255);
 }
 
 .container {
-  background-image: url("/public/Register1.avif");
+  background-image: url("/public/hotel2.avif");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* color: rgb(234, 230, 245); */
+  color: rgb(203, 16, 178);
   background-size: cover;
   text-align: center;
-  /* width: 1500px;
-  height: 600px; */
+  width: 1500px;
+  height: 600px;
 }
 
 .img {
   color: black;
   text-align: center;
-  /* background-image: url("/public/Register.jpg"); */
+  background-image: url("/public/Hotel.jpg");
   background-size: cover;
   width: auto;
   height: 560px;
 }
 
 .home {
-  background-image: url("/public/Home.jpg");
+  background-image: url("/public/Hotel.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -79,11 +80,11 @@
 
 .bookpage {
   text-align: center;
-  /* background-image: url("../hotesl.jpg"); */
+  background-image: url("/public/hotel2.avif");
   width: auto;
-  height: 600px;
+  height: 700px;
   background-size: cover;
-  color: #41e120;
+  color: #0b1908;
   background-position: 0ch;
 }
 

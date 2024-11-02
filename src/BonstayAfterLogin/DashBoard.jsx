@@ -51,7 +51,7 @@ const DashBoard = () => {
                     </Typography>
                 )
             )}
-            <Typography className='home'>
+            <Typography >
                 Bonstay always provides you an amazing and pleasant stay<br />
                 with your friends and family at reasonable prices.<br />
                 We provide well-designed space with modern amenties.<br />
