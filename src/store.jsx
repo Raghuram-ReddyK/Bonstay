@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { registerUser } from "./Slices/registerSlice";
+import registerUser from "./Slices/registerSlice";
+import themeSlice from "./Slices/themeSlice"
 
 
 const store = configureStore({
     reducer: {
-        user: registerUser
+        user: registerUser,
+        theme: themeSlice
     },
 })
 

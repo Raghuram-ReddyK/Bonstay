@@ -1,15 +1,76 @@
 {
   "users": [
     {
-      "id": "f3ac"
-    },
-    {
       "id": "3649",
       "name": "pokuri srivani",
       "address": "1/29, Kadapayapalli, Lingampalli Post",
       "phoneNo": "8142898810",
       "email": "prakhar.garg@exlservice.com",
       "password": "Wjdnduem@3"
+    },
+    {
+      "id": "4fd3",
+      "name": "Raghu",
+      "address": "Hyderabad",
+      "phoneNo": "0009090808",
+      "email": "indhi@outlook.com",
+      "password": "@Raghu57"
+    },
+    {
+      "id": "e702",
+      "name": "VENKATA SWETHA",
+      "address": "DNo.1/29,",
+      "phoneNo": "0814289890",
+      "email": "sruthijodu2000@gmail.com",
+      "password": "Sruthi@1"
+    }
+  ],
+  "hotels": [
+    {
+      "id": "2",
+      "hotelName": "Hill Palace",
+      "city": "Hyderabad",
+      "description": "A cool place to relax at Lake side",
+      "amenities": "Homely Food, Sea Food, Children's Park, Boating",
+      "phoneNo": 9191919191,
+      "address": "90/1A, Kochi, Kerala",
+      "imageUrl": "3.jpg",
+      "reviews": [
+        "Must visit place. The cuisine available here is so amazing.",
+        "My favorite place to relax on my vacations"
+      ]
+    },
+    {
+      "id": "3",
+      "hotelName": "Monsoon Stay",
+      "city": "Chennai",
+      "description": "A luxurious but affordable stay as in your home",
+      "amenities": "24 hr Homely Food, Security, Children's Park",
+      "phoneNo": 9292929292,
+      "address": "100/1A, Chennai, Tamil Nadu",
+      "imageUrl": "4.jpg",
+      "reviews": []
+    },
+    {
+      "id": "4",
+      "hotelName": "Galaxy Paradise",
+      "city": "Mumbai",
+      "description": "An affordable family stay spot at the 'City' heart",
+      "amenities": "24 hr Homely Food, Swimming Pool, Security",
+      "phoneNo": 9393939393,
+      "address": "190/1B, Mumbai, Maharastra",
+      "imageUrl": "5.jpg",
+      "reviews": []
+    }
+  ],
+  "bookings": [
+    {
+      "id": "7f09",
+      "startDate": "2024-11-13T00:00:00.000Z",
+      "endDate": "2024-11-28T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "double with A/c"
     }
   ]
 }
