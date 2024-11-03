@@ -32,10 +32,10 @@ const BookARoom = () => {
 
         if (!startDate) {
             isValid = false;
-            setErrorMessage('Start date is required.');
+            setErrorMessage('Check-In date is required.');
         } else if (startDate < new Date()) {
             isValid = false;
-            setErrorMessage('Start date must be in the future.');
+            setErrorMessage('Check-In date must be in the future.');
         }
 
         if (!endDate) {
@@ -43,10 +43,10 @@ const BookARoom = () => {
             setErrorMessage('End date is required.');
         } else if (endDate < startDate) {
             isValid = false;
-            setErrorMessage('End date must be after the start date.');
+            setErrorMessage('Check-Out date must be after the Check-In date.');
         } else if (endDate < new Date()) {
             isValid = false;
-            setErrorMessage('End date must be in the future.');
+            setErrorMessage('Check-Out date must be in the future.');
         }
 
         if (!noOfPersons || noOfPersons <= 0 || noOfPersons > 5) {
@@ -111,7 +111,7 @@ const BookARoom = () => {
                 {error && <Alert severity="error">{error}</Alert>}
 
                 <TextField
-                    label="Start Date"
+                    label="Check-In Date"
                     type="date"
                     value={startDate.toISOString().substring(0, 10)}
                     onChange={(e) => setStartDate(new Date(e.target.value))}
@@ -120,7 +120,7 @@ const BookARoom = () => {
                     margin="normal"
                 />
                 <TextField
-                    label="End Date"
+                    label="Check-Out Date"
                     type="date"
                     value={endDate.toISOString().substring(0, 10)}
                     onChange={(e) => setEndDate(new Date(e.target.value))}

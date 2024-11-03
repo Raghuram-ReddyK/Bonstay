@@ -37,7 +37,7 @@ const AccountMenu = ({ handleLogout }) => {
     const [dialogSize, setDialogSize] = React.useState({ width: 400, height: 'auto' });
     const [email, setEmail] = React.useState('');
     const [address, setAddress] = React.useState('');
-    const [phoneNumber, setPhoneNumber] = React.useState('');
+    const [phoneNo, setPhoneNumber] = React.useState('');
     const [selectedOption, setSelectedOption] = React.useState('userDetails');
     const open = Boolean(anchorEl);
 
@@ -108,7 +108,7 @@ const AccountMenu = ({ handleLogout }) => {
     };
 
     const validatePhoneNumber = (phone) => {
-        const re = /^[0-9]{10,15}$/;
+        const re = /^[0-9]{10}$/;
         return re.test(phone);
     };
 
@@ -121,8 +121,8 @@ const AccountMenu = ({ handleLogout }) => {
             alert('Address cannot be empty.');
             return;
         }
-        if (!validatePhoneNumber(phoneNumber)) {
-            alert('Please enter a valid phone number (10-15 digits).');
+        if (!validatePhoneNumber(phoneNo)) {
+            alert('Please enter a valid phone number (10 digits).');
             return;
         }
 
@@ -132,7 +132,7 @@ const AccountMenu = ({ handleLogout }) => {
                 id: userInfo.id,
                 name: userInfo.name,
                 address,
-                phoneNumber,
+                phoneNo,
                 email,
                 password: userInfo.password
             });
@@ -170,7 +170,7 @@ const AccountMenu = ({ handleLogout }) => {
                             label="Phone Number"
                             variant="outlined"
                             fullWidth
-                            value={phoneNumber}
+                            value={phoneNo}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             sx={{ mt: 1 }}
                         />

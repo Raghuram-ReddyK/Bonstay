@@ -34,18 +34,18 @@ const ReSchedule = () => {
 
         if (!startDate) {
             isValid = false;
-            setErrorMessage('Start date is required');
+            setErrorMessage('Check-in date is required');
         } else if (startDate < new Date()) {
             isValid = false;
-            setErrorMessage('Start date must be in the future');
+            setErrorMessage('Check-In date must be in the future');
         }
 
         if (!endDate) {
             isValid = false;
-            setErrorMessage('End date is required');
+            setErrorMessage('Check-Out date is required');
         } else if (endDate < startDate) {
             isValid = false;
-            setErrorMessage('End date must be after the start date');
+            setErrorMessage('Check-Out date must be after the Check-In date');
         }
 
         return isValid;
@@ -89,7 +89,7 @@ const ReSchedule = () => {
                     Re-Schedule Hotel
                 </Typography>
                 <TextField
-                    label="Start Date"
+                    label="Check-in Date"
                     type="date"
                     value={startDate.toISOString().substring(0, 10)}
                     onChange={(e) => setStartDate(new Date(e.target.value))}
@@ -100,7 +100,7 @@ const ReSchedule = () => {
                     }}
                 />
                 <TextField
-                    label="End Date"
+                    label="Check-out Date"
                     type="date"
                     value={endDate.toISOString().substring(0, 10)}
                     onChange={(e) => setEndDate(new Date(e.target.value))}

@@ -15,6 +15,30 @@
       "phoneNo": "8688842126",
       "email": "jodi@outlook.com",
       "password": "sdfdrgsf@44fS"
+    },
+    {
+      "id": "4fa8",
+      "name": "Mallikharjun",
+      "address": "Pandilla Palli",
+      "phoneNo": "8098977977",
+      "email": "malli@gmail.com",
+      "password": "Malli@1"
+    },
+    {
+      "id": "05fb",
+      "name": "Raghurami Reddy k",
+      "address": "Pandilla Palli, Chirala",
+      "phoneNo": "7893859305",
+      "email": "raghu@gmail.com",
+      "password": "Raghu@0"
+    },
+    {
+      "id": "2b33",
+      "name": "Gowthami T",
+      "address": "Srinivasapura, Shimogga",
+      "phoneNo": "9964738263",
+      "email": "gowthami@gmail.com",
+      "password": "Gow@123"
     }
   ],
   "hotels": [
@@ -55,5 +79,14 @@
       "reviews": []
     }
   ],
-  "bookings": []
+  "bookings": [
+    {
+      "id": "c676",
+      "startDate": "2024-11-04T00:00:00.000Z",
+      "endDate": "2024-11-05T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "double with A/c"
+    }
+  ]
 }
