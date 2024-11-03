@@ -19,6 +19,9 @@ import Button from '@mui/material/Button';
 import Draggable from 'react-draggable';
 import { Paper, TextField, Typography } from '@mui/material';
 import ContactUs from './ContactUs'; // Import the ContactUs component
+import TermsAndConditions from './TermsAndConditions';
+import FAQs from './FAQs';
+import PrivacyPolicy from './PrivacyPolicy';
 
 const DraggableDialog = (props) => {
     const { onClose, ...other } = props;
@@ -57,7 +60,7 @@ const AccountMenu = ({ handleLogout }) => {
             setUserInfo(response.data);
             setEmail(response.data.email);
             setAddress(response.data.address);
-            setPhoneNumber(response.data.phoneNumber);
+            setPhoneNumber(response.data.phoneNo);
         } catch (error) {
             console.error('Error fetching user info:', error);
         }
@@ -177,16 +180,14 @@ const AccountMenu = ({ handleLogout }) => {
                         />
                     </>
                 );
-            case 'appearance':
-                return <Typography variant="body1">Appearance settings can go here.</Typography>;
             case 'contactUs':
-                return <ContactUs userEmail={email} />; // Pass user email to ContactUs
+                return userInfo && <ContactUs userInfo={userInfo} />; // Pass user email to ContactUs
             case 'faqs':
-                return <Typography variant="body1">Frequently Asked Questions content can go here.</Typography>;
+                return <FAQs/>
             case 'terms':
-                return <Typography variant="body1">Terms & Conditions content can go here.</Typography>;
+                return <TermsAndConditions/>
             case 'privacy':
-                return <Typography variant="body1">Privacy Policy content can go here.</Typography>;
+                return <PrivacyPolicy/>
             default:
                 return null;
         }
@@ -316,11 +317,6 @@ const AccountMenu = ({ handleLogout }) => {
                             <li>
                                 <Button variant="outlined" onClick={() => setSelectedOption('userDetails')}>
                                     User Details Edit
-                                </Button>
-                            </li>
-                            <li>
-                                <Button variant="outlined" onClick={() => setSelectedOption('appearance')}>
-                                    Appearance
                                 </Button>
                             </li>
                             <li>
