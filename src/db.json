@@ -20,7 +20,7 @@
       "id": "4fa8",
       "name": "Mallikharjun",
       "address": "Pandilla Palli",
-      "phoneNo": "8098977977",
+      "phoneNumber": "0000000000",
       "email": "malli@gmail.com",
       "password": "Malli@1"
     },
@@ -39,6 +39,14 @@
       "phoneNo": "9964738263",
       "email": "gowthami@gmail.com",
       "password": "Gow@123"
+    },
+    {
+      "id": "a734",
+      "name": "Syamakuri Rajasekhar Reddy",
+      "address": "Pandilla Palli, Bestavari Peta, Prakasam. 523334",
+      "phoneNo": "7013175757",
+      "email": "syamakurirajasekharreddy@gmail.com",
+      "password": "Rajasekhar@1"
     }
   ],
   "hotels": [

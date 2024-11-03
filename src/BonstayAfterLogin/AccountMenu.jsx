@@ -18,6 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Draggable from 'react-draggable';
 import { Paper, TextField, Typography } from '@mui/material';
+import ContactUs from './ContactUs'; // Import the ContactUs component
 
 const DraggableDialog = (props) => {
     const { onClose, ...other } = props;
@@ -179,7 +180,7 @@ const AccountMenu = ({ handleLogout }) => {
             case 'appearance':
                 return <Typography variant="body1">Appearance settings can go here.</Typography>;
             case 'contactUs':
-                return <Typography variant="body1">Contact Us information can go here.</Typography>;
+                return <ContactUs userEmail={email} />; // Pass user email to ContactUs
             case 'faqs':
                 return <Typography variant="body1">Frequently Asked Questions content can go here.</Typography>;
             case 'terms':

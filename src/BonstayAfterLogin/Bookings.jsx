@@ -60,10 +60,10 @@ const Bookings = () => {
                                         <b>Booking Id:</b> {booking.id}
                                     </p>
                                     <p>
-                                        <b>Start Date:</b> {booking.startDate}
+                                        <b>Check-In Date:</b> {booking.startDate}
                                     </p>
                                     <p>
-                                        <b>End Date:</b> {booking.endDate}
+                                        <b>Check-Out Date:</b> {booking.endDate}
                                     </p>
                                     <p>
                                         <b>Number of Persons:</b> {booking.noOfPersons}
