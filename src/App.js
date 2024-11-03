@@ -98,6 +98,7 @@ const App = () => {
               <Route path="/bookings/:id" element={<Bookings />} />
               {/* <Route path="/getallusers" element={<GetAllUsers />} /> */}
               <Route path="/viewReview/" element={<ViewReviews />} />
+              <Route path="/viewReview/:id" element={<ViewReviews />} />
             </>
           )}
           <Route path="*" element={<PageNotFound />} />

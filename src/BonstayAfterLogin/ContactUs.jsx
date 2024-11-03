@@ -7,16 +7,29 @@ const ContactUs = ({ userInfo }) => {
 
     const handleContactUs = () => {
         const senderEmail = userInfo.email; // Sender email is the logged-in user's email
-        const receiverEmail = 'rrrkarnati2000@example.com'; // Fixed receiver email
+        const receiverEmail = 'rrrinfo@bonstay.com'; // Fixed receiver email
         const subject = encodeURIComponent('Contact Us');
+        const mob = userInfo.phoneNo;
         const body = encodeURIComponent(`
             Hello, I would like to contact you regarding...
 
             Sender Email: ${senderEmail}
 
+
+
+
+
+
+
+
+
+
+            
+
+
             Thanks & Regards,
             ${userInfo.name || 'User'}
-            Mobile Number: ${userInfo.phoneNo}
+            Mobile Number: ${mob}
         `);
 
         // Open Gmail compose window

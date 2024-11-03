@@ -12,7 +12,7 @@ const Hotels = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:4000/hotels')
+        axios.get(`http://localhost:4000/hotels/`)
             .then((result) => {
                 // console.log(result);
                 setHotels(result.data);
@@ -29,7 +29,7 @@ const Hotels = () => {
     return (
         <>
             <div className="text-center">
-                {/* <h3>All Hotels</h3> */}
+                <h3>Hotels Bookings</h3>
                 {delSuccess && <div className="alert alert-success">{delSuccess}</div>}
                 {delError && <div className="alert alert-danger">{delError}</div>}
                 {hotels.length > 0 ? (
@@ -43,6 +43,8 @@ const Hotels = () => {
                                             <p>City: {hotel.city}</p>
                                             <p>Description: {hotel.description}...</p>
                                             <p>Amenities: {hotel.amenities}</p>
+                                            <p>Phone No: {hotel.phoneNo}</p>
+                                            <p>Address: {hotel.address}</p>
                                         </span>
                                     </div>
                                     <div className="card-footer">
@@ -63,7 +65,7 @@ const Hotels = () => {
                                         </button>
 
                                         <button className='btn btn-danger float-right'
-                                            onClick={() => handleReview(hotel.id)}
+                                            onClick={() => navigate(`/viewReview/${hotel.id}`)}
                                         >
                                             View Review
                                         </button>

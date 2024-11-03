@@ -181,7 +181,7 @@ const AccountMenu = ({ handleLogout }) => {
                     </>
                 );
             case 'contactUs':
-                return userInfo && <ContactUs userInfo={userInfo} />; // Pass user email to ContactUs
+                return userInfo && <ContactUs userInfo={userInfo} />;
             case 'faqs':
                 return <FAQs/>
             case 'terms':

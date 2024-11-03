@@ -16,7 +16,7 @@ const Bookings = () => {
             try {
                 const bookingsResponse = await axios.get('http://localhost:4000/bookings/');
                 const hotelsResponse = await axios.get('http://localhost:4000/hotels/');
-                console.log(hotelsResponse.data[0])
+                console.log('Hotels:', hotelsResponse.data);
 
                 setBookings(bookingsResponse.data);
                 setHotels(hotelsResponse.data);
@@ -30,8 +30,8 @@ const Bookings = () => {
 
     const handleCancelBooking = async (bookingId) => {
         try {
-            await axios.delete(`http://localhost:4000/bookings/${bookingId}`);
-            setBookings(bookings.filter((booking) => booking.id !== bookingId)); // Update bookings state
+            await axios.delete(`http://localhost:4000/bookings/${bookingId}`); // Use template literal correctly
+            setBookings(bookings.filter((booking) => booking.id !== bookingId));
             setCancelSuccess('Booking cancelled successfully!');
         } catch (error) {
             setCancelError('Error canceling booking. Please try again later.');
@@ -55,31 +55,21 @@ const Bookings = () => {
                         <div key={booking.id} className="col">
                             <div className="card h-100 shadow-sm">
                                 <div className="card-body">
-                                    <h5 className="card-title">{hotelMap[booking.hotelName] || 'Unknown Hotel'}</h5>
-                                    <p>
-                                        <b>Booking Id:</b> {booking.id}
-                                    </p>
-                                    <p>
-                                        <b>Check-In Date:</b> {booking.startDate}
-                                    </p>
-                                    <p>
-                                        <b>Check-Out Date:</b> {booking.endDate}
-                                    </p>
-                                    <p>
-                                        <b>Number of Persons:</b> {booking.noOfPersons}
-                                    </p>
-                                    <p>
-                                        <b>Number of Rooms:</b> {booking.noOfRooms}
-                                    </p>
-                                    <p>
-                                        <b>Type of Room:</b> {booking.typeOfRoom}
-                                    </p>
+                                    <h5 className="card-title">
+                                        {hotelMap[booking.id] || 'Unknown Hotel'} {/* Correctly referencing hotelId */}
+                                    </h5>
+                                    <p><b>Booking Id:</b> {booking.id}</p>
+                                    <p><b>Check-In Date:</b> {booking.startDate}</p>
+                                    <p><b>Check-Out Date:</b> {booking.endDate}</p>
+                                    <p><b>Number of Persons:</b> {booking.noOfPersons}</p>
+                                    <p><b>Number of Rooms:</b> {booking.noOfRooms}</p>
+                                    <p><b>Type of Room:</b> {booking.typeOfRoom}</p>
                                 </div>
                                 <div className="card-footer">
                                     <Button
                                         variant="contained"
                                         color="primary"
-                                        onClick={() => navigate(`/reschedule/${booking.id}`)}
+                                        onClick={() => navigate(`/reschedule/${booking.id}`)} // Use template literal correctly
                                     >
                                         Reschedule Booking
                                     </Button>

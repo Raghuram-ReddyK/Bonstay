@@ -53,7 +53,7 @@
     {
       "id": "2",
       "hotelName": "Hill Palace",
-      "city": "Goa",
+      "city": "Kerala",
       "description": "A cool place to relax at Lake side",
       "amenities": "Homely Food, Sea Food, Children's Park, Boating",
       "phoneNo": 9191919191,
@@ -85,6 +85,17 @@
       "address": "190/1B, Mumbai, Maharastra",
       "imageUrl": "5.jpg",
       "reviews": []
+    },
+    {
+      "id": "5",
+      "hotelName": "Sunset Tower",
+      "city": "Vizag",
+      "description": "A luxurious but affordable stay as in your home & cool place to relax at Lake Side",
+      "amenities": "24 hr Homely Food, Security, Children's Park, swimming Pool",
+      "phoneNo": 9292929294,
+      "address": "109/1AF, Vizag, Andhra Pradesh",
+      "imageUrl": "6.jpg",
+      "reviews": []
     }
   ],
   "bookings": [
@@ -95,6 +106,14 @@
       "noOfPersons": 1,
       "noOfRooms": 1,
       "typeOfRoom": "double with A/c"
+    },
+    {
+      "id": "a4f9",
+      "startDate": "2024-11-04T00:00:00.000Z",
+      "endDate": "2024-11-07T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "suite with A/c"
     }
   ]
 }
