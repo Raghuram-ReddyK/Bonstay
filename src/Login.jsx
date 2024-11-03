@@ -1,5 +1,6 @@
+// Login.js
 import React, { useState } from 'react';
-import axios from 'axios'; // Assuming you're using axios for API calls
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
     TextField,
@@ -20,24 +21,21 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const [rememberMe, setRememberMe] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false); // Added for loading state
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setIsLoading(true); // Set loading state to true
+        setIsLoading(true);
         try {
-            const response = await axios.get(`http://localhost:4000/users/${id}`); // Assuming endpoint returns user by ID
-            await new Promise((resolve) => setTimeout(resolve, 2000))
+            const response = await axios.get(`http://localhost:4000/users/${id}`);
             const userData = response.data;
-            console.log("Details", userData);
 
-
-            if (userData.password === password) {
+            if (userData && userData.password === password) {
                 sessionStorage.setItem('id', userData.id);
                 setIsLoggedIn(true);
-                // setUserId(userData)
+                setUserId(userData.id); // Set the userId in the state immediately
                 setSuccess('Login successful!');
-                navigate(`/dashboard/:id=${userData.id}`); // Navigate to dashboard on successful login
+                navigate(`/dashboard/${userData.id}`); // Correct navigation
             } else {
                 setError('Invalid Username/Password');
             }
@@ -45,12 +43,12 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
             console.error(error);
             setError('Error while logging in.');
         } finally {
-            setIsLoading(false); // Set loading state to false after request completes
+            setIsLoading(false);
         }
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 5, display: 'flex', justifyContent: 'center' }} className='container'>
+        <Container maxWidth="md" sx={{ mt: 5, display: 'flex', justifyContent: 'center' }} className='login'>
             <form onSubmit={handleSubmit} noValidate autoComplete="off">
                 <Typography variant="h4" gutterBottom>
                     Login Form
@@ -66,8 +64,8 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     name="id"
                     value={id}
                     onChange={(e) => setId(e.target.value)}
-                    error={Boolean(error)} // Set error prop if error exists
-                    helperText={error === 'Invalid Username/Password' ? 'UserID or password is incorrect.' : ''} // Set helper text for invalid credentials
+                    error={Boolean(error)}
+                    helperText={error === 'Invalid Username/Password' ? 'UserID or password is incorrect.' : ''}
                 />
                 <TextField
                     label="Password"
@@ -78,8 +76,8 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    error={Boolean(error)} // Set error prop if error exists
-                    helperText={error === 'Invalid Username/Password' ? 'UserID or password is incorrect.' : ''} // Set helper text for invalid credentials
+                    error={Boolean(error)}
+                    helperText={error === 'Invalid Username/Password' ? 'UserID or password is incorrect.' : ''}
                 />
                 <FormControlLabel
                     control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />}

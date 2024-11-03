@@ -10,17 +10,187 @@ import Tooltip from '@mui/material/Tooltip';
 import PersonAdd from '@mui/icons-material/PersonAdd';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
+import axios from 'axios';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Draggable from 'react-draggable';
+import { Paper, TextField, Typography } from '@mui/material';
+
+const DraggableDialog = (props) => {
+    const { onClose, ...other } = props;
+
+    return (
+        <Draggable handle="#draggable-dialog-title">
+            <Paper {...other} />
+        </Draggable>
+    );
+};
 
 const AccountMenu = ({ handleLogout }) => {
-
     const [anchorEl, setAnchorEl] = React.useState(null);
+    const [userInfo, setUserInfo] = React.useState(null);
+    const [dialogOpen, setDialogOpen] = React.useState(false);
+    const [settingsOpen, setSettingsOpen] = React.useState(false);
+    const [dialogSize, setDialogSize] = React.useState({ width: 400, height: 'auto' });
+    const [email, setEmail] = React.useState('');
+    const [address, setAddress] = React.useState('');
+    const [phoneNumber, setPhoneNumber] = React.useState('');
+    const [selectedOption, setSelectedOption] = React.useState('userDetails');
     const open = Boolean(anchorEl);
+
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
-    const handleClose = () => {
+
+    const handleCloseMenu = () => {
         setAnchorEl(null);
     };
+
+    const fetchUserInfo = async () => {
+        try {
+            const userId = sessionStorage.getItem('id');
+            const response = await axios.get(`http://localhost:4000/users/${userId}`);
+            setUserInfo(response.data);
+            setEmail(response.data.email);
+            setAddress(response.data.address);
+            setPhoneNumber(response.data.phoneNumber);
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+        }
+    };
+
+    const handleOpenDialog = () => {
+        fetchUserInfo();
+        setDialogOpen(true);
+        handleCloseMenu();
+    };
+
+    const handleOpenSettings = () => {
+        fetchUserInfo();
+        setSettingsOpen(true);
+        setSelectedOption('userDetails');
+        handleCloseMenu();
+    };
+
+    const handleCloseDialog = () => {
+        setDialogOpen(false);
+    };
+
+    const handleCloseSettings = () => {
+        setSettingsOpen(false);
+    };
+
+    const handleMouseDown = (e) => {
+        e.preventDefault();
+        document.addEventListener('mousemove', handleResize);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleResize);
+        document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleResize = (e) => {
+        const newWidth = e.clientX - e.target.getBoundingClientRect().left;
+        setDialogSize((prevSize) => ({
+            ...prevSize,
+            width: Math.max(newWidth, 200),
+        }));
+    };
+
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    };
+
+    const validatePhoneNumber = (phone) => {
+        const re = /^[0-9]{10,15}$/;
+        return re.test(phone);
+    };
+
+    const handleSaveSettings = async () => {
+        if (!validateEmail(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+        if (!address) {
+            alert('Address cannot be empty.');
+            return;
+        }
+        if (!validatePhoneNumber(phoneNumber)) {
+            alert('Please enter a valid phone number (10-15 digits).');
+            return;
+        }
+
+        try {
+            const userId = sessionStorage.getItem('id');
+            await axios.put(`http://localhost:4000/users/${userId}`, {
+                id: userInfo.id,
+                name: userInfo.name,
+                address,
+                phoneNumber,
+                email,
+                password: userInfo.password
+            });
+            alert('User information updated successfully!');
+            handleCloseSettings();
+            fetchUserInfo();
+        } catch (error) {
+            console.error('Error updating user info:', error);
+            alert('Failed to update user information.');
+        }
+    };
+
+    const renderSettingsContent = () => {
+        switch (selectedOption) {
+            case 'userDetails':
+                return (
+                    <>
+                        <TextField
+                            label="Email"
+                            variant="outlined"
+                            fullWidth
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            sx={{ mt: 1 }}
+                        />
+                        <TextField
+                            label="Address"
+                            variant="outlined"
+                            fullWidth
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            sx={{ mt: 1 }}
+                        />
+                        <TextField
+                            label="Phone Number"
+                            variant="outlined"
+                            fullWidth
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            sx={{ mt: 1 }}
+                        />
+                    </>
+                );
+            case 'appearance':
+                return <Typography variant="body1">Appearance settings can go here.</Typography>;
+            case 'contactUs':
+                return <Typography variant="body1">Contact Us information can go here.</Typography>;
+            case 'faqs':
+                return <Typography variant="body1">Frequently Asked Questions content can go here.</Typography>;
+            case 'terms':
+                return <Typography variant="body1">Terms & Conditions content can go here.</Typography>;
+            case 'privacy':
+                return <Typography variant="body1">Privacy Policy content can go here.</Typography>;
+            default:
+                return null;
+        }
+    };
+
     return (
         <React.Fragment>
             <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
@@ -41,65 +211,148 @@ const AccountMenu = ({ handleLogout }) => {
                 anchorEl={anchorEl}
                 id="account-menu"
                 open={open}
-                onClose={handleClose}
-                onClick={handleClose}
-                slotProps={{
-                    paper: {
-                        elevation: 0,
-                        sx: {
-                            overflow: 'visible',
-                            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                            mt: 1.5,
-                            '& .MuiAvatar-root': {
-                                width: 32,
-                                height: 32,
-                                ml: -0.5,
-                                mr: 1,
-                            },
-                            '&::before': {
-                                content: '""',
-                                display: 'block',
-                                position: 'absolute',
-                                top: 0,
-                                right: 14,
-                                width: 10,
-                                height: 10,
-                                bgcolor: 'background.paper',
-                                transform: 'translateY(-50%) rotate(45deg)',
-                                zIndex: 0,
-                            },
-                        },
-                    },
-                }}
-                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                onClose={handleCloseMenu}
             >
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={handleOpenDialog}>
                     <Avatar /> My account
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={handleClose}>
-                    <ListItemIcon>
-                        <PersonAdd fontSize="small" />
-                    </ListItemIcon>
-                    Add another account
-                </MenuItem>
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={handleOpenSettings}>
                     <ListItemIcon>
                         <Settings fontSize="small" />
                     </ListItemIcon>
                     Settings
                 </MenuItem>
-                <MenuItem onClick={handleLogout} >
+                <MenuItem onClick={handleCloseMenu}>
+                    <ListItemIcon>
+                        <PersonAdd fontSize="small" />
+                    </ListItemIcon>
+                    Add another account
+                </MenuItem>
+                <MenuItem onClick={handleLogout}>
                     <ListItemIcon>
                         <Logout fontSize="small" />
                     </ListItemIcon>
                     Logout
                 </MenuItem>
             </Menu>
-        </React.Fragment>
 
+            {/* User Account Information Dialog */}
+            <Dialog
+                open={dialogOpen}
+                onClose={handleCloseDialog}
+                PaperComponent={DraggableDialog}
+                sx={{
+                    '& .MuiDialog-paper': {
+                        width: dialogSize.width,
+                        height: dialogSize.height,
+                    },
+                }}
+            >
+                <DialogTitle id="draggable-dialog-title" sx={{ cursor: 'move', position: 'relative' }}>
+                    User Account Information
+                    <div
+                        style={{
+                            cursor: 'nwse-resize',
+                            width: '20px',
+                            height: '20px',
+                            position: 'absolute',
+                            right: '10px',
+                            bottom: '10px',
+                            backgroundColor: 'gray',
+                        }}
+                        onMouseDown={handleMouseDown}
+                    />
+                </DialogTitle>
+                <DialogContent>
+                    {userInfo ? (
+                        <div>
+                            <strong>User ID:</strong> {userInfo.id}
+                            <br />
+                            <strong>User Name:</strong> {userInfo.name}
+                            <br />
+                            <strong>Email:</strong> {userInfo.email}
+                        </div>
+                    ) : (
+                        <div>Loading...</div>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>Close</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Settings Dialog */}
+            <Dialog
+                open={settingsOpen}
+                onClose={handleCloseSettings}
+                PaperComponent={DraggableDialog}
+                sx={{
+                    '& .MuiDialog-paper': {
+                        width: dialogSize.width,
+                        height: dialogSize.height,
+                    },
+                }}
+            >
+                <DialogTitle id="draggable-dialog-title" sx={{ cursor: 'move', position: 'relative' }}>
+                    Settings
+                    <div
+                        style={{
+                            cursor: 'nwse-resize',
+                            width: '20px',
+                            height: '20px',
+                            position: 'absolute',
+                            right: '10px',
+                            bottom: '10px',
+                            backgroundColor: 'gray',
+                        }}
+                        onMouseDown={handleMouseDown}
+                    />
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mb: 2 }}>
+                        <ul>
+                            <li>
+                                <Button variant="outlined" onClick={() => setSelectedOption('userDetails')}>
+                                    User Details Edit
+                                </Button>
+                            </li>
+                            <li>
+                                <Button variant="outlined" onClick={() => setSelectedOption('appearance')}>
+                                    Appearance
+                                </Button>
+                            </li>
+                            <li>
+                                <Button variant="outlined" onClick={() => setSelectedOption('faqs')}>
+                                    FAQs
+                                </Button>
+                            </li>
+                            <li>
+                                <Button variant="outlined" onClick={() => setSelectedOption('terms')}>
+                                    Terms & Conditions
+                                </Button>
+                            </li>
+                            <li>
+                                <Button variant="outlined" onClick={() => setSelectedOption('privacy')}>
+                                    Privacy Policy
+                                </Button>
+                            </li>
+                            <li>
+                                <Button variant="outlined" onClick={() => setSelectedOption('contactUs')}>
+                                    Contact Us
+                                </Button>
+                            </li>
+                        </ul>
+                    </Box>
+                    {renderSettingsContent()}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleSaveSettings} variant="contained">Save</Button>
+                    <Button onClick={handleCloseSettings}>Close</Button>
+                </DialogActions>
+            </Dialog>
+        </React.Fragment>
     );
-}
+};
 
 export default AccountMenu;

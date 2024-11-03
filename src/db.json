@@ -1,28 +1,20 @@
 {
   "users": [
     {
-      "id": "3649",
-      "name": "pokuri srivani",
-      "address": "1/29, Kadapayapalli, Lingampalli Post",
-      "phoneNo": "8142898810",
-      "email": "prakhar.garg@exlservice.com",
-      "password": "Wjdnduem@3"
-    },
-    {
-      "id": "4fd3",
-      "name": "Raghu",
-      "address": "Hyderabad",
-      "phoneNo": "0009090808",
-      "email": "indhi@outlook.com",
-      "password": "@Raghu57"
-    },
-    {
       "id": "e702",
       "name": "VENKATA SWETHA",
-      "address": "DNo.1/29,",
-      "phoneNo": "0814289890",
-      "email": "sruthijodu2000@gmail.com",
+      "address": "DNo.1/29, Lingampalli, Hyd",
+      "phoneNumber": "9900833937",
+      "email": "sruthijodu2001@gmail.com",
       "password": "Sruthi@1"
+    },
+    {
+      "id": "1e6c",
+      "name": "Sruthi Jodu",
+      "address": "DNo.1/29,",
+      "phoneNo": "8688842126",
+      "email": "jodi@outlook.com",
+      "password": "sdfdrgsf@44fS"
     }
   ],
   "hotels": [
@@ -63,14 +55,5 @@
       "reviews": []
     }
   ],
-  "bookings": [
-    {
-      "id": "a5a0",
-      "startDate": "2024-11-13T00:00:00.000Z",
-      "endDate": "2024-11-23T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "double with A/c"
-    }
-  ]
+  "bookings": []
 }

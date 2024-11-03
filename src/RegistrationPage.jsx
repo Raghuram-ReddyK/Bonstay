@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from './Slices/registerSlice'; // Import the Redux action
-import { Button, TextField, Typography, Link as MuiLink } from '@mui/material';
+import { Button, TextField, Typography, Link as MuiLink, Container } from '@mui/material';
+import CountrySelect from './CountrySelect';
 
 const RegistrationPage = () => {
     const [state, setState] = useState({
@@ -137,7 +138,7 @@ const RegistrationPage = () => {
     };
 
     return (
-        <div className="container">
+        <Container className="container">
             <Typography variant="h4" gutterBottom>
                 Register
             </Typography>
@@ -159,6 +160,10 @@ const RegistrationPage = () => {
                     onChange={handleChange}
                     fullWidth
                     margin="normal"
+                />
+                <CountrySelect
+                onChange={handleChange}
+                margin="normal"
                 />
                 <TextField
                     name="phoneNo"
@@ -209,7 +214,7 @@ const RegistrationPage = () => {
             <MuiLink href="/login" underline="true" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                 Already have an account? Login here.
             </MuiLink>
-        </div>
+        </Container>
     );
 };
 

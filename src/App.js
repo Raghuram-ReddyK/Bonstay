@@ -1,3 +1,4 @@
+// App.js
 import './App.css';
 import AccountMenu from './BonstayAfterLogin/AccountMenu';
 import BookARoom from './BonstayAfterLogin/BookARoom';
@@ -13,22 +14,17 @@ import Login from './Login';
 import PageNotFound from './PageNotFound';
 import RegistrationPage from './RegistrationPage';
 import ThemeToggle from './Themes/ThemeToggle';
-import { darkTheme, lightTheme } from './Themes/Theme'
-
+import { darkTheme, lightTheme } from './Themes/Theme';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Box, FormControlLabel, ThemeProvider } from '@mui/material';
-// import Hierarchy from './AgGrid/Hierarchy';
 import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-// import  GridExample  from './AgGrid/GridExample';
-
 
 const App = () => {
-
   const themeMode = useSelector((state) => state.theme.mode);
   const appliedTheme = themeMode === 'light' ? lightTheme : darkTheme;
 
@@ -37,10 +33,7 @@ const App = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if the user is logged in on initial render
     const storedUserId = sessionStorage.getItem('id');
-    // console.log(storedUserId);
-
     if (storedUserId) {
       setIsLoggedIn(true);
       setUserId(storedUserId);
@@ -71,14 +64,12 @@ const App = () => {
                 <Button color="inherit" component={NavLink} to={`/view/${userId}`}>View</Button>
                 <AccountMenu handleLogout={handleLogout} />
               </div>
-
             ) : (
               <div>
                 <FormControlLabel control={<ThemeToggle />} />
                 <Button color="inherit" component={NavLink} to="/">Home</Button>
                 <Button color="inherit" component={NavLink} to="/login">Login</Button>
                 <Button color="inherit" component={NavLink} to="/register">Register</Button>
-                {/* <Button color="inherit" component={NavLink} to="/AgGrid">Grid</Button> */}
               </div>
             )}
           </Toolbar>
@@ -87,9 +78,7 @@ const App = () => {
         <Routes>
           <Route index path="/" element={<Home />} />
           <Route path="/register" element={<RegistrationPage />} />
-          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} navigate={navigate} />} />
-          {/* <Route path='/AgGrid' element={<Hierarchy />} /> */}
-
+          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />} />
           {isLoggedIn && (
             <>
               <Route path='/dashboard' element={<DashBoard />} />
@@ -109,9 +98,9 @@ const App = () => {
               <Route path="/bookings/:id" element={<Bookings />} />
               {/* <Route path="/getallusers" element={<GetAllUsers />} /> */}
               <Route path="/viewReview/" element={<ViewReviews />} />
-              <Route path="*" element={<PageNotFound />} />
             </>
           )}
+          <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Box>
     </ThemeProvider>

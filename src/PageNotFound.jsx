@@ -1,19 +1,38 @@
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button, Typography, Box } from '@mui/material';
 
 const PageNotFound = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    
     return (
-        // <div container display-1>
-        //     PageNotFound 404, Please go back to
-        //     <Link to="/" className="login-paragraph"> Home</Link>
-        // </div>
-        <div className='container text-center p-5'>
-            <h1 className='display-1 text-danger'>PageNotFound 404, Please go back to</h1>
-            {/* <p>Please visit Home Page</p> */}
-            <button className='btn btn-primary' onClick={() => { navigate("/") }}>Click to Home</button>
-        </div>
-    )
-}
+        <Box 
+            sx={{ 
+                backgroundImage: 'url(https://media.gettyimages.com/id/1451783304/vector/404-page.jpg?b=1&s=170667a&w=0&k=20&c=Id_qleimXb29S11I7hriGlK8SeeDbkmyLvFXrYBaUPI=)', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                height: '100vh', 
+                textAlign: 'center',
+                color:'blue' 
+            }}
+        >
+            <Typography variant="h1" color="error">
+                Page Not Found 404
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+                Please go back to
+            </Typography>
+            <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={() => navigate("/")}
+            >
+                Click to Home
+            </Button>
+        </Box>
+    );
+};
 
-export default PageNotFound
+export default PageNotFound;
