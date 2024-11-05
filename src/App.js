@@ -1,4 +1,3 @@
-// App.js
 import './App.css';
 import AccountMenu from './BonstayAfterLogin/AccountMenu';
 import BookARoom from './BonstayAfterLogin/BookARoom';
@@ -19,10 +18,11 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Box, FormControlLabel, ThemeProvider } from '@mui/material';
-import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
+import { Box, FormControlLabel, IconButton, Badge, ThemeProvider, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 const App = () => {
   const themeMode = useSelector((state) => state.theme.mode);
@@ -30,7 +30,12 @@ const App = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [notifications, setNotifications] = useState([]); // Store multiple notifications
+  const [unreadNotifications, setUnreadNotifications] = useState(0); // Track unread notifications count
+  const [dialogOpen, setDialogOpen] = useState(false); // Dialog state for displaying notifications
+
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('id');
@@ -40,40 +45,141 @@ const App = () => {
     }
   }, []);
 
+  // Handle logout
   const handleLogout = () => {
     sessionStorage.removeItem('id');
     setIsLoggedIn(false);
     setUserId(null);
+    addNotification('Logged out successfully!');
     navigate('/');
   };
+
+  // Function to show page-specific notifications
+  const showPageNotification = () => {
+    let newMessage = '';
+    switch (location.pathname) {
+      case '/hotels':
+      case `/hotels/${userId}`:
+        newMessage = 'Hotels retrieved successfully!';
+        break;
+      case '/bookings':
+      case `/bookings/${userId}`:
+        newMessage = 'Bookings retrieved successfully!';
+        break;
+      case '/bookroom':
+      case `/bookroom/${userId}`:
+        newMessage = 'Booking information loaded!';
+        break;
+      default:
+        break;
+    }
+    if (newMessage) {
+      addNotification(newMessage);
+    }
+  };
+
+  // Add a new notification to the list
+  const addNotification = (message) => {
+    const newNotification = {
+      id: Date.now(), // unique id based on timestamp
+      message,
+      read: false,
+    };
+    setNotifications((prev) => [...prev, newNotification]);
+    setUnreadNotifications((prev) => prev + 1); // Increment unread count
+  };
+
+  // Mark a notification as read
+  const markAsRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((notif) =>
+        notif.id === id ? { ...notif, read: true } : notif
+      )
+    );
+    setUnreadNotifications((prev) => prev - 1); // Decrease unread count
+  };
+
+  // Remove a notification from the list
+  const removeNotification = (id) => {
+    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+    setUnreadNotifications((prev) => prev - 1); // Decrease unread count
+  };
+
+  // Toggle the notification dialog open/close
+  const toggleDialog = () => {
+    setDialogOpen(!dialogOpen);
+  };
+
+  // Trigger notification when route changes
+  useEffect(() => {
+    showPageNotification();
+  }, [location]);
 
   return (
     <ThemeProvider theme={appliedTheme}>
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static">
-          <Toolbar>
+          <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Bonstay Hotel
             </Typography>
             {isLoggedIn ? (
-              <div>
-                <FormControlLabel control={<ThemeToggle />} />
-                <Button color="inherit" component={NavLink} to={`/dashboard/${userId}`}>Dashboard</Button>
-                <Button color="inherit" component={NavLink} to={`/hotels/${userId}`}>Hotels</Button>
-                <Button color="inherit" component={NavLink} to={`/bookings/${userId}`}>Bookings</Button>
-                <Button color="inherit" component={NavLink} to={`/view/${userId}`}>View</Button>
-                <AccountMenu handleLogout={handleLogout} />
-              </div>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {/* Left side: Navigation buttons */}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Button color="inherit" component={NavLink} to={`/dashboard/${userId}`}>Dashboard</Button>
+                  <Button color="inherit" component={NavLink} to={`/hotels/${userId}`}>Hotels</Button>
+                  <Button color="inherit" component={NavLink} to={`/bookings/${userId}`}>Bookings</Button>
+                  <Button color="inherit" component={NavLink} to={`/view/${userId}`}>View</Button>
+                </Box>
+                {/* Right side: Theme Toggle, Notification Icon, Account Menu */}
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <FormControlLabel control={<ThemeToggle />} />
+                  {/* Notification Icon with Badge */}
+                  <IconButton color="inherit" onClick={toggleDialog}>
+                    <Badge badgeContent={unreadNotifications} color="error">
+                      <NotificationsIcon />
+                    </Badge>
+                  </IconButton>
+                  <AccountMenu handleLogout={handleLogout} />
+                </Box>
+              </Box>
             ) : (
-              <div>
-                <FormControlLabel control={<ThemeToggle />} />
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Button color="inherit" component={NavLink} to="/">Home</Button>
                 <Button color="inherit" component={NavLink} to="/login">Login</Button>
                 <Button color="inherit" component={NavLink} to="/register">Register</Button>
-              </div>
+              </Box>
             )}
           </Toolbar>
         </AppBar>
+
+        {/* Notification Dialog */}
+        <Dialog open={dialogOpen} onClose={toggleDialog}>
+          <DialogTitle>Notifications</DialogTitle>
+          <DialogContent>
+            {notifications.length === 0 ? (
+              <Typography>No new notifications</Typography>
+            ) : (
+              notifications.map((notif) => (
+                <Box key={notif.id} sx={{ marginBottom: 2 }}>
+                  <Typography>{notif.message}</Typography>
+                  {!notif.read && (
+                    <Button onClick={() => markAsRead(notif.id)} color="primary" size="small">
+                      Mark as Read
+                    </Button>
+                  )}
+                  <Button onClick={() => removeNotification(notif.id)} color="secondary" size="small">
+                    Remove
+                  </Button>
+                </Box>
+              ))
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={toggleDialog} color="primary">Close</Button>
+          </DialogActions>
+        </Dialog>
 
         <Routes>
           <Route index path="/" element={<Home />} />
@@ -85,18 +191,14 @@ const App = () => {
               <Route path='/dashboard/:id' element={<DashBoard />} />
               <Route path="/bookroom" element={<BookARoom />} />
               <Route path="/bookroom/:id" element={<BookARoom />} />
-              <Route path="/hotels/:id/bookroom/:id" element={<BookARoom />} />
-              {/* <Route path="/details/:id" element={<ViewCustomer />} /> */}
               <Route path="/hotels" element={<Hotels />} />
               <Route path="/hotels/:id" element={<Hotels />} />
               <Route path="/review" element={<Review />} />
-              {/* <Route path="/hotelDet" element={<GetHotel />} /> */}
               <Route path="/view" element={<View />} />
               <Route path="/view/:id" element={<View />} />
               <Route path="/reschedule/:id" element={<ReSchedule />} />
               <Route path="/bookings" element={<Bookings />} />
               <Route path="/bookings/:id" element={<Bookings />} />
-              {/* <Route path="/getallusers" element={<GetAllUsers />} /> */}
               <Route path="/viewReview/" element={<ViewReviews />} />
               <Route path="/viewReview/:id" element={<ViewReviews />} />
             </>
