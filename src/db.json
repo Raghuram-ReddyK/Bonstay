@@ -106,14 +106,6 @@
       "noOfPersons": 1,
       "noOfRooms": 1,
       "typeOfRoom": "double with A/c"
-    },
-    {
-      "id": "a4f9",
-      "startDate": "2024-11-04T00:00:00.000Z",
-      "endDate": "2024-11-07T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "suite with A/c"
     }
   ]
 }

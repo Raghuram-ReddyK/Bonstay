@@ -1,4 +1,4 @@
-import { Button, Container, Typography } from '@mui/material';
+import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,8 @@ const Bookings = () => {
     const [hotels, setHotels] = useState([]);
     const [cancelSuccess, setCancelSuccess] = useState('');
     const [cancelError, setCancelError] = useState('');
+    const [dialogOpen, setDialogOpen] = useState(false); // State for confirmation dialog
+    const [selectedBookingId, setSelectedBookingId] = useState(null); // Store the ID of the selected booking to be canceled
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,9 +32,10 @@ const Bookings = () => {
 
     const handleCancelBooking = async (bookingId) => {
         try {
-            await axios.delete(`http://localhost:4000/bookings/${bookingId}`); // Use template literal correctly
+            await axios.delete(`http://localhost:4000/bookings/${bookingId}`);
             setBookings(bookings.filter((booking) => booking.id !== bookingId));
             setCancelSuccess('Booking cancelled successfully!');
+            setDialogOpen(false); // Close the confirmation dialog
         } catch (error) {
             setCancelError('Error canceling booking. Please try again later.');
         }
@@ -43,6 +46,18 @@ const Bookings = () => {
     hotels.forEach(hotel => {
         hotelMap[hotel.id] = hotel.hotelName;
     });
+
+    // Open the confirmation dialog
+    const openConfirmationDialog = (bookingId) => {
+        setSelectedBookingId(bookingId);
+        setDialogOpen(true);
+    };
+
+    // Close the confirmation dialog
+    const closeConfirmationDialog = () => {
+        setDialogOpen(false);
+        setSelectedBookingId(null);
+    };
 
     return (
         <Container className="text-center">
@@ -76,7 +91,7 @@ const Bookings = () => {
                                     <Button
                                         variant="contained"
                                         color="secondary"
-                                        onClick={() => handleCancelBooking(booking.id)}
+                                        onClick={() => openConfirmationDialog(booking.id)} // Open confirmation dialog
                                     >
                                         Cancel Booking
                                     </Button>
@@ -93,6 +108,25 @@ const Bookings = () => {
                     </MuiLink>
                 </Typography>
             )}
+
+            {/* Confirmation Dialog */}
+            <Dialog open={dialogOpen} onClose={closeConfirmationDialog}>
+                <DialogTitle>Confirm Cancellation</DialogTitle>
+                <DialogContent>
+                    <Typography>Are you sure you want to cancel this booking?</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={closeConfirmationDialog} color="primary">
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={() => handleCancelBooking(selectedBookingId)}
+                        color="secondary"
+                    >
+                        Confirm Cancellation
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 };

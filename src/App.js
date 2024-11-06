@@ -18,11 +18,12 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Box, FormControlLabel, IconButton, Badge, ThemeProvider, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, FormControlLabel, IconButton, Badge, ThemeProvider } from '@mui/material';
 import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsDialog from './NotificationsDialog';  // Import the new NotificationsDialog component
 
 const App = () => {
   const themeMode = useSelector((state) => state.theme.mode);
@@ -70,6 +71,14 @@ const App = () => {
       case `/bookroom/${userId}`:
         newMessage = 'Booking information loaded!';
         break;
+        case '/dashboard':
+      case `/dashboard/${userId}`:
+        newMessage = 'Dashboard information loaded!';
+        break;
+        case '/view':
+          case `/view/${userId}`:
+            newMessage = 'View information loaded!';
+            break;
       default:
         break;
     }
@@ -104,6 +113,12 @@ const App = () => {
     setNotifications((prev) => prev.filter((notif) => notif.id !== id));
     setUnreadNotifications((prev) => prev - 1); // Decrease unread count
   };
+  
+  // Remove all notifications
+  const removeAllNotifications = () => {
+    setNotifications([]); // Clear all notifications
+    setUnreadNotifications(0); // Reset unread count
+  };
 
   // Toggle the notification dialog open/close
   const toggleDialog = () => {
@@ -127,6 +142,7 @@ const App = () => {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 {/* Left side: Navigation buttons */}
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <FormControlLabel control={<ThemeToggle />} />
                   <Button color="inherit" component={NavLink} to={`/dashboard/${userId}`}>Dashboard</Button>
                   <Button color="inherit" component={NavLink} to={`/hotels/${userId}`}>Hotels</Button>
                   <Button color="inherit" component={NavLink} to={`/bookings/${userId}`}>Bookings</Button>
@@ -134,7 +150,6 @@ const App = () => {
                 </Box>
                 {/* Right side: Theme Toggle, Notification Icon, Account Menu */}
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <FormControlLabel control={<ThemeToggle />} />
                   {/* Notification Icon with Badge */}
                   <IconButton color="inherit" onClick={toggleDialog}>
                     <Badge badgeContent={unreadNotifications} color="error">
@@ -154,32 +169,16 @@ const App = () => {
           </Toolbar>
         </AppBar>
 
-        {/* Notification Dialog */}
-        <Dialog open={dialogOpen} onClose={toggleDialog}>
-          <DialogTitle>Notifications</DialogTitle>
-          <DialogContent>
-            {notifications.length === 0 ? (
-              <Typography>No new notifications</Typography>
-            ) : (
-              notifications.map((notif) => (
-                <Box key={notif.id} sx={{ marginBottom: 2 }}>
-                  <Typography>{notif.message}</Typography>
-                  {!notif.read && (
-                    <Button onClick={() => markAsRead(notif.id)} color="primary" size="small">
-                      Mark as Read
-                    </Button>
-                  )}
-                  <Button onClick={() => removeNotification(notif.id)} color="secondary" size="small">
-                    Remove
-                  </Button>
-                </Box>
-              ))
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={toggleDialog} color="primary">Close</Button>
-          </DialogActions>
-        </Dialog>
+        {/* Notification Dialog Component */}
+        <NotificationsDialog
+          notifications={notifications}
+          unreadNotifications={unreadNotifications}
+          dialogOpen={dialogOpen}
+          toggleDialog={toggleDialog}
+          markAsRead={markAsRead}
+          removeNotification={removeNotification}
+          removeAllNotifications={removeAllNotifications}
+        />
 
         <Routes>
           <Route index path="/" element={<Home />} />

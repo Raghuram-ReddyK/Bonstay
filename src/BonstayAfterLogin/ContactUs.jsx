@@ -1,6 +1,6 @@
-// ContactUs.js
 import React, { useState } from 'react';
 import { Button, Box, Typography, CircularProgress } from '@mui/material';
+import MailIcon from '@mui/icons-material/Mail';  // Importing MailIcon
 
 const ContactUs = ({ userInfo }) => {
     const [loading, setLoading] = useState(false); // State to manage loading
@@ -15,17 +15,7 @@ const ContactUs = ({ userInfo }) => {
 
             Sender Email: ${senderEmail}
 
-
-
-
-
-
-
-
-
-
             
-
 
             Thanks & Regards,
             ${userInfo.name || 'User'}
@@ -48,8 +38,13 @@ const ContactUs = ({ userInfo }) => {
             <Typography>
                 You can contact us at +91 - 9505908380
             </Typography>
-            <Typography variant="body1">You can reach us via email: By clicking below link</Typography>
-            <Button variant="outlined" onClick={handleContactUs} disabled={loading}>
+            <Typography variant="body1">You can reach us via email by clicking below:</Typography>
+            <Button
+                variant="outlined"
+                onClick={handleContactUs}
+                disabled={loading}
+                startIcon={<MailIcon />}  // Adding the MailIcon inside the button
+            >
                 {loading ? <CircularProgress size={30} /> : 'Contact Us'}
             </Button>
         </Box>
