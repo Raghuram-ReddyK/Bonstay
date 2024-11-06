@@ -11,6 +11,10 @@ import {
     Link as MuiLink,
     CircularProgress,
     Alert,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
 } from '@mui/material';
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
@@ -21,6 +25,13 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    // Forgot password related states
+    const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+    const [forgotPasswordUserId, setForgotPasswordUserId] = useState('');
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+    const [forgotPasswordError, setForgotPasswordError] = useState('');
+    const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -43,6 +54,28 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
             setError('Error while logging in.');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleForgotPasswordSubmit = async () => {
+        if (!forgotPasswordUserId || !forgotPasswordEmail) {
+            setForgotPasswordError('Please enter both UserID and Email');
+            return;
+        }
+        setForgotPasswordError('');
+        setForgotPasswordSuccess('');
+
+        try {
+            // Call the API to request password reset email with UserID and Email
+            await axios.post('http://localhost:4000/forgot-password', {
+                userId: forgotPasswordUserId,
+                email: forgotPasswordEmail,
+            });
+
+            setForgotPasswordSuccess('A password reset link has been sent to your email address.');
+        } catch (error) {
+            console.error(error);
+            setForgotPasswordError('Failed to send password reset email.');
         }
     };
 
@@ -85,10 +118,55 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3 }}>
                     Login
                 </Button>
-                <MuiLink href="/register" underline="true" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <MuiLink href="/register" underline="true" color='blue' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     Don't have an account? Sign Up
                 </MuiLink>
+
+                {/* Forgot Password Link */}
+                <MuiLink
+                    onClick={() => setForgotPasswordOpen(true)}
+                    underline="true"
+                    color="blue"
+                    sx={{ mt: 2, display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
+                >
+                    Forgot Password?
+                </MuiLink>
             </form>
+
+            {/* Forgot Password Dialog */}
+            <Dialog open={forgotPasswordOpen} onClose={() => setForgotPasswordOpen(false)}>
+                <DialogTitle>Reset Password</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        label="Enter your UserID"
+                        margin="normal"
+                        fullWidth
+                        value={forgotPasswordUserId}
+                        onChange={(e) => setForgotPasswordUserId(e.target.value)}
+                        error={Boolean(forgotPasswordError)}
+                        helperText={forgotPasswordError || ''}
+                    />
+                    <TextField
+                        label="Enter your Email"
+                        margin="normal"
+                        fullWidth
+                        value={forgotPasswordEmail}
+                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                        error={Boolean(forgotPasswordError)}
+                        helperText={forgotPasswordError || ''}
+                    />
+                    {forgotPasswordSuccess && <Alert severity="success">{forgotPasswordSuccess}</Alert>}
+                    {forgotPasswordError && <Alert severity="error">{forgotPasswordError}</Alert>}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setForgotPasswordOpen(false)} color="primary">
+                        Close
+                    </Button>
+                    <Button onClick={handleForgotPasswordSubmit} variant="contained" color="primary">
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 };

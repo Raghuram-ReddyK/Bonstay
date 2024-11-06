@@ -4,7 +4,7 @@
       "id": "e702",
       "name": "VENKATA SWETHA",
       "address": "DNo.1/29, Lingampalli, Hyd",
-      "phoneNumber": "9900833937",
+      "phoneNo": "8142898810",
       "email": "sruthijodu2001@gmail.com",
       "password": "Sruthi@1"
     },
@@ -20,7 +20,7 @@
       "id": "4fa8",
       "name": "Mallikharjun",
       "address": "Pandilla Palli",
-      "phoneNumber": "0000000000",
+      "phoneNo": "7893859304",
       "email": "malli@gmail.com",
       "password": "Malli@1"
     },
@@ -106,6 +106,77 @@
       "noOfPersons": 1,
       "noOfRooms": 1,
       "typeOfRoom": "double with A/c"
+    }
+  ],
+  "forgot-password": [
+    {
+      "id": "a7f7",
+      "userId": null,
+      "email": "raghuramireddykarnati@gmail.com"
+    }
+  ],
+  "responses": [
+    {
+      "keywords": [
+        "book",
+        "room",
+        "reservation",
+        "booking"
+      ],
+      "response": "To book a room, please visit the 'Book a Room' section on our website.",
+      "id": "51b8"
+    },
+    {
+      "keywords": [
+        "wifi",
+        "internet",
+        "free internet",
+        "connectivity"
+      ],
+      "response": "Our hotel offers free Wi-Fi in all rooms and public areas.",
+      "id": "96d8"
+    },
+    {
+      "keywords": [
+        "location",
+        "where is the hotel",
+        "address",
+        "location of hotel"
+      ],
+      "response": "Our hotel is located in the heart of the city, near the central park.",
+      "id": "e46a"
+    },
+    {
+      "keywords": [
+        "contact",
+        "call",
+        "email",
+        "reach us"
+      ],
+      "response": "You can contact us by email at info@bonstay.com or call us at +91 9000000999.",
+      "id": "db13"
+    },
+    {
+      "keywords": [
+        "amenities",
+        "facilities",
+        "what amenities",
+        "services",
+        "hotel facilities"
+      ],
+      "response": "Our hotel offers free Wi-Fi, a swimming pool, a fitness center, and a restaurant.",
+      "id": "a577"
+    },
+    {
+      "keywords": [
+        "check-in",
+        "check in",
+        "time",
+        "check-in time",
+        "checkin"
+      ],
+      "response": "Check-in time is from 2 PM onwards.",
+      "id": "b3ed"
     }
   ]
 }
