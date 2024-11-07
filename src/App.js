@@ -13,7 +13,7 @@ import Login from './Login';
 import PageNotFound from './PageNotFound';
 import RegistrationPage from './RegistrationPage';
 import ThemeToggle from './Themes/ThemeToggle';
-import { blueTheme, blackTheme, greenTheme, lightTheme, redTheme } from './Themes/Theme';
+import { blueTheme, blackTheme, greenTheme, lightTheme, yellowTheme } from './Themes/Theme';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -24,6 +24,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsDialog from './NotificationsDialog';  // Import the new NotificationsDialog component
+import PrivacyPolicy from './BonstayAfterLogin/PrivacyPolicy';
 
 const App = () => {
   const themeMode = useSelector((state) => state.theme.mode);
@@ -34,7 +35,7 @@ const App = () => {
   const appliedTheme = (() => {
     switch (colorScheme) {
       case 'blue': return blueTheme;
-      case 'red': return redTheme;
+      case 'red': return yellowTheme;
       case 'green': return greenTheme;
       case 'light': return lightTheme;
       case 'dark': return blackTheme;
@@ -205,6 +206,8 @@ const App = () => {
           <Route index path="/" element={<Home />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
+
           {isLoggedIn && (
             <>
               <Route path='/dashboard' element={<DashBoard />} />

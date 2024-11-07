@@ -209,7 +209,7 @@ const RegistrationPage = () => {
                         Successfully registered! Your user ID is: {registeredId}
                     </Typography>
                 )}
-                <MuiLink href="/Login" underline="true" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <MuiLink href="/Login" underline="hover" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     Already have an account? Login here.
                 </MuiLink>
             </form>

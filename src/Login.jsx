@@ -22,6 +22,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const [id, setId] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+    const [acceptPrivacy, setAcceptPrivacy] = useState(false); // State to track Privacy checkbox
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +36,12 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        
+        if (!acceptPrivacy) {
+            setError('Please read and accept the privacy policy before logging in.');
+            return; // Prevent login if privacy policy is not accepted
+        }
+
         setIsLoading(true);
         try {
             const response = await axios.get(`http://localhost:4000/users/${id}`);
@@ -88,6 +95,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 {isLoading && <CircularProgress sx={{ mx: 'auto', mb: 2 }} />}
                 {error && <Alert severity="error">{error}</Alert>}
                 {success && <Alert severity="success">{success}</Alert>}
+
                 <TextField
                     label="UserID"
                     margin="normal"
@@ -118,17 +126,32 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     label="Remember me"
                     sx={{ color: 'white' }}
                 />
+
+                {/* Privacy Policy Checkbox */}
+                <FormControlLabel
+                    control={<Checkbox checked={acceptPrivacy} onChange={(e) => setAcceptPrivacy(e.target.checked)} />}
+                    label={
+                        <span>
+                            I have read and agree to the{' '}
+                            <MuiLink href="/privacy-policy" underline="true" color="white">
+                                Privacy Policy
+                            </MuiLink>
+                        </span>
+                    }
+                    sx={{ color: 'white' }}
+                />
+
                 <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3 }}>
                     Login
                 </Button>
-                <MuiLink href="/Register" underline="true" color="white" sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <MuiLink href="/Register" underline="hover" color="white" sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     Don't have an account? Sign Up
                 </MuiLink>
 
                 {/* Forgot Password Link */}
                 <MuiLink
                     onClick={() => setForgotPasswordOpen(true)}
-                    underline="true"
+                    underline="hover"
                     color="white"
                     sx={{ mt: 2, display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
                 >

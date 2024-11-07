@@ -17,11 +17,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Draggable from 'react-draggable';
-import { Paper, TextField, Typography } from '@mui/material';
+import { Paper, TextField } from '@mui/material';
 import ContactUs from './ContactUs'; // Import the ContactUs component
 import TermsAndConditions from './TermsAndConditions';
 import FAQs from './FAQs';
 import PrivacyPolicy from './PrivacyPolicy';
+import * as XLSX from 'xlsx';
+// import { parse } from 'json2csv'; // Import json2csv
 
 const DraggableDialog = (props) => {
     const { onClose, ...other } = props;
@@ -87,6 +89,7 @@ const AccountMenu = ({ handleLogout }) => {
         setSettingsOpen(false);
     };
 
+    // Resize handler for the dialog window
     const handleMouseDown = (e) => {
         e.preventDefault();
         document.addEventListener('mousemove', handleResize);
@@ -106,6 +109,7 @@ const AccountMenu = ({ handleLogout }) => {
         }));
     };
 
+    // Validation functions
     const validateEmail = (email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
@@ -149,6 +153,41 @@ const AccountMenu = ({ handleLogout }) => {
         }
     };
 
+    // Export functions
+    // const handleExportCSV = () => {
+    //     if (userInfo) {
+    //         const csv = parse([userInfo]);
+    //         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    //         const link = document.createElement('a');
+    //         link.href = URL.createObjectURL(blob);
+    //         link.download = 'user_info.csv';
+    //         link.click();
+    //     }
+    // };
+
+    const handleExportExcel = () => {
+        if (userInfo) {
+            const ws = XLSX.utils.json_to_sheet([userInfo]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'User Info');
+            XLSX.writeFile(wb, 'user_info.xlsx');
+        }
+    };
+
+    const handlePrint = () => {
+        if (userInfo) {
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>User Account Info</title></head><body>');
+            printWindow.document.write(`<h1>User Account Information</h1>`);
+            printWindow.document.write(`<strong>User ID:</strong> ${userInfo.id.toUpperCase()}<br />`);
+            printWindow.document.write(`<strong>User Name:</strong> ${userInfo.name.toUpperCase()}<br />`);
+            printWindow.document.write(`<strong>Email:</strong> ${userInfo.email.toUpperCase()}<br />`);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+    };
+
     const renderSettingsContent = () => {
         switch (selectedOption) {
             case 'userDetails':
@@ -180,14 +219,14 @@ const AccountMenu = ({ handleLogout }) => {
                         />
                     </>
                 );
-            case 'contactUs':
-                return userInfo && <ContactUs userInfo={userInfo} />;
-            case 'faqs':
-                return <FAQs/>
-            case 'terms':
-                return <TermsAndConditions/>
-            case 'privacy':
-                return <PrivacyPolicy/>
+                case 'contactUs':
+                    return userInfo && <ContactUs userInfo={userInfo} />;
+                case 'faqs':
+                    return <FAQs/>
+                case 'terms':
+                    return <TermsAndConditions/>
+                case 'privacy':
+                    return <PrivacyPolicy/>
             default:
                 return null;
         }
@@ -281,6 +320,9 @@ const AccountMenu = ({ handleLogout }) => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog}>Close</Button>
+                    {/* <Button onClick={handleExportCSV}>Export as CSV</Button> */}
+                    <Button onClick={handleExportExcel}>Export as Excel</Button>
+                    <Button onClick={handlePrint}>Print</Button>
                 </DialogActions>
             </Dialog>
 

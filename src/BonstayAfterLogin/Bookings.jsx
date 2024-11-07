@@ -1,8 +1,9 @@
-import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Link as MuiLink } from '@mui/material';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link as MuiLink } from '@mui/material';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const Bookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -18,7 +19,6 @@ const Bookings = () => {
             try {
                 const bookingsResponse = await axios.get('http://localhost:4000/bookings/');
                 const hotelsResponse = await axios.get('http://localhost:4000/hotels/');
-                console.log('Hotels:', hotelsResponse.data);
 
                 setBookings(bookingsResponse.data);
                 setHotels(hotelsResponse.data);
@@ -34,7 +34,7 @@ const Bookings = () => {
         try {
             await axios.delete(`http://localhost:4000/bookings/${bookingId}`);
             setBookings(bookings.filter((booking) => booking.id !== bookingId));
-            setCancelSuccess('Booking cancelled successfully!');
+            setCancelSuccess(`Booking cancelled successfully! with ${bookingId}`);
             setDialogOpen(false); // Close the confirmation dialog
         } catch (error) {
             setCancelError('Error canceling booking. Please try again later.');
@@ -59,19 +59,60 @@ const Bookings = () => {
         setSelectedBookingId(null);
     };
 
+    // Export to Excel
+    const handleExportExcel = () => {
+        const data = bookings.map((booking) => ({
+            'Booking ID': booking.id,
+            'Hotel Name': hotelMap[booking.hotelId] || 'Unknown Hotel',
+            'Check-In Date': booking.startDate,
+            'Check-Out Date': booking.endDate,
+            'Number of Persons': booking.noOfPersons,
+            'Number of Rooms': booking.noOfRooms,
+            'Type of Room': booking.typeOfRoom,
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Bookings');
+        
+        // Save as Excel file
+        const excelFile = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        saveAs(new Blob([excelFile], { type: 'application/octet-stream' }), 'bookings.xlsx');
+    };
+
+    // Print the page
+    const handlePrint = () => {
+        const printContent = document.getElementById('printable-bookings');
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write(printContent.innerHTML);
+        printWindow.document.close();
+        printWindow.print();
+    };
+
     return (
         <Container className="text-center">
-            <Typography variant='h3' color='blue'> --- Bookings --- </Typography>
+            <Typography variant="h3" color="blue">
+                --- Bookings ---
+            </Typography>
             {cancelSuccess && <div className="alert alert-success">{cancelSuccess}</div>}
             {cancelError && <div className="alert alert-danger">{cancelError}</div>}
+
+            {/* Export and Print buttons */}
+            <Button variant="outlined" color="primary" onClick={handleExportExcel} sx={{ m: 2 }}>
+                Export to Excel
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={handlePrint} sx={{ m: 2 }}>
+                Print Bookings
+            </Button>
+
             {bookings.length > 0 ? (
-                <div className="row row-cols-1 row-cols-md-2 g-4">
+                <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 g-4">
                     {bookings.map((booking) => (
                         <div key={booking.id} className="col">
                             <div className="card h-100 shadow-sm">
                                 <div className="card-body">
                                     <h5 className="card-title">
-                                        {hotelMap[booking.id] || 'Unknown Hotel'} {/* Correctly referencing hotelId */}
+                                        {hotelMap[booking.hotelId] || 'Unknown Hotel'}
                                     </h5>
                                     <p><b>Booking Id:</b> {booking.id}</p>
                                     <p><b>Check-In Date:</b> {booking.startDate}</p>
@@ -84,14 +125,14 @@ const Bookings = () => {
                                     <Button
                                         variant="contained"
                                         color="primary"
-                                        onClick={() => navigate(`/reschedule/${booking.id}`)} // Use template literal correctly
+                                        onClick={() => navigate(`/reschedule/${booking.id}`)}
                                     >
                                         Reschedule Booking
                                     </Button>
                                     <Button
                                         variant="contained"
                                         color="secondary"
-                                        onClick={() => openConfirmationDialog(booking.id)} // Open confirmation dialog
+                                        onClick={() => openConfirmationDialog(booking.id)}
                                     >
                                         Cancel Booking
                                     </Button>
@@ -101,7 +142,7 @@ const Bookings = () => {
                     ))}
                 </div>
             ) : (
-                <Typography variant='h4' color='red'>
+                <Typography variant="h4" color="red">
                     No bookings found. Please try to book the hotels....
                     <MuiLink href="/hotels" underline="true">
                         Click here

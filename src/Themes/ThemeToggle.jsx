@@ -1,18 +1,12 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setTheme, toggleTheme } from '../Slices/themeSlice';
-import { MenuItem, Select, FormControl, InputLabel, IconButton } from '@mui/material';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
+import { setTheme } from '../Slices/themeSlice';
+import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+
 
 const ThemeToggle = () => {
     const dispatch = useDispatch();
-    const themeMode = useSelector((state) => state.theme.mode);
     const colorScheme = useSelector((state) => state.theme.colorScheme);
-
-    const handleThemeToggle = () => {
-        dispatch(toggleTheme());
-    };
 
     const handleColorChange = (event) => {
         dispatch(setTheme(event.target.value));
@@ -20,10 +14,6 @@ const ThemeToggle = () => {
 
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-            {/* Theme Mode Toggle Button */}
-            <IconButton onClick={handleThemeToggle} color="inherit">
-                {themeMode === 'light' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
             
             {/* Theme Color Picker Dropdown */}
             <FormControl variant="outlined" sx={{ marginLeft: 2 }}>
@@ -37,7 +27,7 @@ const ThemeToggle = () => {
                 >
                     <MenuItem value="default">Default</MenuItem>
                     <MenuItem value="blue">Blue</MenuItem>
-                    <MenuItem value="red">Red</MenuItem>
+                    <MenuItem value="red">Yellow</MenuItem>
                     <MenuItem value="green">Green</MenuItem>
                 </Select>
             </FormControl>

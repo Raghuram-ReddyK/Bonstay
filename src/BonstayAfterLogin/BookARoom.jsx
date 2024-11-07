@@ -79,9 +79,9 @@ const BookARoom = () => {
                 typeOfRoom,
             })
                 .then((response) => {
-                    const userId = response.data.userId; // Adjust this based on your API response
+                    // const userId = response.data.userId;
                     setSuccess("Booked Successfully: " + response.data.id);
-                    navigate(`/bookroom?userId=${userId}`); // Navigate to the URL with userId
+                    // navigate(`/bookroom?userId=${userId}`); 
                 })
                 .catch(() => {
                     setErrors("Error while booking");

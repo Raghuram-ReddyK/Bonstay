@@ -106,7 +106,32 @@
       "reviews": []
     }
   ],
-  "bookings": [],
+  "bookings": [
+    {
+      "id": "52e4",
+      "startDate": "2024-11-08T00:00:00.000Z",
+      "endDate": "2024-11-22T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "suite with A/c"
+    },
+    {
+      "id": "b68d",
+      "startDate": "2024-11-08T00:00:00.000Z",
+      "endDate": "2024-11-15T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "single with A/c"
+    },
+    {
+      "id": "db49",
+      "startDate": "2024-11-08T00:00:00.000Z",
+      "endDate": "2024-11-09T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "single with A/c"
+    }
+  ],
   "forgot-password": [
     {
       "id": "a7f7",

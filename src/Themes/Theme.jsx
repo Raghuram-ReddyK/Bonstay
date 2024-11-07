@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material/styles';
-import { blue, pink, red, green, grey } from '@mui/material/colors';
+import { blue, pink, red, green, grey, yellow } from '@mui/material/colors';
 
 // Light Theme
 const lightTheme = createTheme({
@@ -60,14 +60,14 @@ const blueTheme = createTheme({
     },
 });
 
-const redTheme = createTheme({
+const yellowTheme = createTheme({
     palette: {
         mode: 'light',
         primary: {
-            main: red[700], // Dark red for primary color
+            main: yellow[700], // Dark red for primary color
         },
         secondary: {
-            main: red[300], // Lighter red for secondary color
+            main: yellow[300], // Lighter red for secondary color
         },
         background: {
             default: '#ffebee', // Light red background
@@ -93,4 +93,4 @@ const greenTheme = createTheme({
 });
 
 // Export themes
-export { lightTheme, blackTheme, blueTheme, redTheme, greenTheme };
+export { lightTheme, blackTheme, blueTheme, yellowTheme, greenTheme };
