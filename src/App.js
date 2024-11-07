@@ -13,7 +13,7 @@ import Login from './Login';
 import PageNotFound from './PageNotFound';
 import RegistrationPage from './RegistrationPage';
 import ThemeToggle from './Themes/ThemeToggle';
-import { darkTheme, lightTheme } from './Themes/Theme';
+import { blueTheme, blackTheme, greenTheme, lightTheme, redTheme } from './Themes/Theme';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -27,7 +27,21 @@ import NotificationsDialog from './NotificationsDialog';  // Import the new Noti
 
 const App = () => {
   const themeMode = useSelector((state) => state.theme.mode);
-  const appliedTheme = themeMode === 'light' ? lightTheme : darkTheme;
+  const colorScheme = useSelector((state) => state.theme.colorScheme);
+  // const appliedTheme = themeMode === 'light' ? lightTheme : darkTheme;
+
+  // Apply the selected color theme
+  const appliedTheme = (() => {
+    switch (colorScheme) {
+      case 'blue': return blueTheme;
+      case 'red': return redTheme;
+      case 'green': return greenTheme;
+      case 'light': return lightTheme;
+      case 'dark': return blackTheme;
+
+      default: return blackTheme; // Default to lightTheme
+    }
+  })();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
@@ -71,14 +85,14 @@ const App = () => {
       case `/bookroom/${userId}`:
         newMessage = 'Booking information loaded!';
         break;
-        case '/dashboard':
+      case '/dashboard':
       case `/dashboard/${userId}`:
         newMessage = 'Dashboard information loaded!';
         break;
-        case '/view':
-          case `/view/${userId}`:
-            newMessage = 'View information loaded!';
-            break;
+      case '/view':
+      case `/view/${userId}`:
+        newMessage = 'View information loaded!';
+        break;
       default:
         break;
     }
@@ -113,7 +127,7 @@ const App = () => {
     setNotifications((prev) => prev.filter((notif) => notif.id !== id));
     setUnreadNotifications((prev) => prev - 1); // Decrease unread count
   };
-  
+
   // Remove all notifications
   const removeAllNotifications = () => {
     setNotifications([]); // Clear all notifications
@@ -142,7 +156,7 @@ const App = () => {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 {/* Left side: Navigation buttons */}
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <FormControlLabel control={<ThemeToggle />} />
+                  <FormControlLabel control={<ThemeToggle />} />
                   <Button color="inherit" component={NavLink} to={`/dashboard/${userId}`}>Dashboard</Button>
                   <Button color="inherit" component={NavLink} to={`/hotels/${userId}`}>Hotels</Button>
                   <Button color="inherit" component={NavLink} to={`/bookings/${userId}`}>Bookings</Button>
@@ -158,13 +172,19 @@ const App = () => {
                   </IconButton>
                   <AccountMenu handleLogout={handleLogout} />
                 </Box>
+                {/* Display User ID next to the Account Menu */}
+                {isLoggedIn && (
+                  <Typography variant="body2" sx={{ marginRight: 2 }}>
+                    {`${userId.toUpperCase()}`}
+                  </Typography>
+                )}
               </Box>
             ) : (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <FormControlLabel control={<ThemeToggle />} />
                 <Button color="inherit" component={NavLink} to="/">Home</Button>
-                <Button color="inherit" component={NavLink} to="/login">Login</Button>
-                <Button color="inherit" component={NavLink} to="/register">Register</Button>
+                <Button color="inherit" component={NavLink} to="/Login">Login</Button>
+                <Button color="inherit" component={NavLink} to="/Register">Register</Button>
               </Box>
             )}
           </Toolbar>

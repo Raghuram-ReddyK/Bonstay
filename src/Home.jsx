@@ -18,7 +18,7 @@ const Home = () => {
   };
 
   return (
-    <div className="home" style={{ padding: '20px' }}>
+    <Box className="home" style={{ padding: '20px' }}>
       <Typography variant="body1">
         Bonstay always provides you an amazing and pleasant stay<br />
         with your friends and family at reasonable prices.<br />
@@ -27,7 +27,7 @@ const Home = () => {
       </Typography>
 
       {/* Main Button */}
-      <Button variant="contained" color="primary" component={Link} to="/login" sx={{ marginTop: 3 }}>
+      <Button variant="contained" color="primary" component={Link} to="/Login" sx={{ marginTop: 3 }}>
         Click here to login
       </Button>
 
@@ -77,7 +77,7 @@ const Home = () => {
 
       {/* Render Chatbot when chatVisible is true */}
       {chatVisible && <Chatbot onClose={handleCloseChat} />}
-    </div>
+    </Box>
   );
 };
 

@@ -269,11 +269,11 @@ const AccountMenu = ({ handleLogout }) => {
                 <DialogContent>
                     {userInfo ? (
                         <div>
-                            <strong>User ID:</strong> {userInfo.id}
+                            <strong>User ID:</strong> {userInfo.id.toUpperCase()}
                             <br />
-                            <strong>User Name:</strong> {userInfo.name}
+                            <strong>User Name:</strong> {userInfo.name.toUpperCase()}
                             <br />
-                            <strong>Email:</strong> {userInfo.email}
+                            <strong>Email:</strong> {userInfo.email.toUpperCase()}
                         </div>
                     ) : (
                         <div>Loading...</div>

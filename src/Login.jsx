@@ -80,9 +80,9 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 5, display: 'flex', justifyContent: 'center' }} className='login'>
-            <form onSubmit={handleSubmit} noValidate autoComplete="off">
-                <Typography variant="h4" gutterBottom>
+        <Container maxWidth="md" className="login-container">
+            <form onSubmit={handleSubmit} noValidate autoComplete="off" className="login-form">
+                <Typography variant="h4" gutterBottom color="white">
                     Login Form
                 </Typography>
                 {isLoading && <CircularProgress sx={{ mx: 'auto', mb: 2 }} />}
@@ -98,6 +98,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     onChange={(e) => setId(e.target.value)}
                     error={Boolean(error)}
                     helperText={error === 'Invalid Username/Password' ? 'UserID or password is incorrect.' : ''}
+                    sx={{ color: 'white' }}
                 />
                 <TextField
                     label="Password"
@@ -110,15 +111,17 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     error={Boolean(error)}
                     helperText={error === 'Invalid Username/Password' ? 'UserID or password is incorrect.' : ''}
+                    sx={{ color: 'white' }}
                 />
                 <FormControlLabel
                     control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />}
                     label="Remember me"
+                    sx={{ color: 'white' }}
                 />
                 <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3 }}>
                     Login
                 </Button>
-                <MuiLink href="/register" underline="true" color='blue' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <MuiLink href="/Register" underline="true" color="white" sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     Don't have an account? Sign Up
                 </MuiLink>
 
@@ -126,7 +129,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 <MuiLink
                     onClick={() => setForgotPasswordOpen(true)}
                     underline="true"
-                    color="blue"
+                    color="white"
                     sx={{ mt: 2, display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
                 >
                     Forgot Password?

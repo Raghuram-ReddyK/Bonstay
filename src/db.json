@@ -47,6 +47,14 @@
       "phoneNo": "7013175757",
       "email": "syamakurirajasekharreddy@gmail.com",
       "password": "Rajasekhar@1"
+    },
+    {
+      "id": "d9f1",
+      "name": "Chandhu",
+      "address": "America",
+      "phoneNo": "9990808080",
+      "email": "chandhu@gmail.com",
+      "password": "Chnadhu@1"
     }
   ],
   "hotels": [
@@ -98,16 +106,7 @@
       "reviews": []
     }
   ],
-  "bookings": [
-    {
-      "id": "c676",
-      "startDate": "2024-11-04T00:00:00.000Z",
-      "endDate": "2024-11-05T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "double with A/c"
-    }
-  ],
+  "bookings": [],
   "forgot-password": [
     {
       "id": "a7f7",

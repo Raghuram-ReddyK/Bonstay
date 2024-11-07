@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from './Slices/registerSlice'; // Import the Redux action
@@ -139,10 +138,10 @@ const RegistrationPage = () => {
 
     return (
         <Container className="container">
+            <form onSubmit={handleSubmit}>
             <Typography variant="h4" gutterBottom>
                 Register
             </Typography>
-            <form onSubmit={handleSubmit}>
                 <TextField
                     name="name"
                     label="Name"
@@ -162,8 +161,8 @@ const RegistrationPage = () => {
                     margin="normal"
                 />
                 <CountrySelect
-                onChange={handleChange}
-                margin="normal"
+                    onChange={handleChange}
+                    margin="normal"
                 />
                 <TextField
                     name="phoneNo"
@@ -210,10 +209,11 @@ const RegistrationPage = () => {
                         Successfully registered! Your user ID is: {registeredId}
                     </Typography>
                 )}
+                <MuiLink href="/Login" underline="true" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                    Already have an account? Login here.
+                </MuiLink>
             </form>
-            <MuiLink href="/login" underline="true" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                Already have an account? Login here.
-            </MuiLink>
+
         </Container>
     );
 };
