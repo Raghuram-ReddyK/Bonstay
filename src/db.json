@@ -92,7 +92,9 @@
       "phoneNo": 9393939393,
       "address": "190/1B, Mumbai, Maharastra",
       "imageUrl": "5.jpg",
-      "reviews": []
+      "reviews": [
+        "Must visit this hotel when your family visits mumbai. This hotel is very comfortable for family"
+      ]
     },
     {
       "id": "5",
@@ -108,28 +110,40 @@
   ],
   "bookings": [
     {
-      "id": "52e4",
-      "startDate": "2024-11-08T00:00:00.000Z",
-      "endDate": "2024-11-22T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "suite with A/c"
-    },
-    {
-      "id": "b68d",
-      "startDate": "2024-11-08T00:00:00.000Z",
+      "id": "ccf0",
+      "startDate": "2024-11-09T00:00:00.000Z",
       "endDate": "2024-11-15T00:00:00.000Z",
       "noOfPersons": 1,
       "noOfRooms": 1,
-      "typeOfRoom": "single with A/c"
+      "typeOfRoom": "single with A/c",
+      "hotelId": "2"
     },
     {
-      "id": "db49",
-      "startDate": "2024-11-08T00:00:00.000Z",
-      "endDate": "2024-11-09T00:00:00.000Z",
+      "id": "f861",
+      "startDate": "2024-11-15T00:00:00.000Z",
+      "endDate": "2024-11-22T00:00:00.000Z",
       "noOfPersons": 1,
       "noOfRooms": 1,
-      "typeOfRoom": "single with A/c"
+      "typeOfRoom": "double with A/c",
+      "hotelId": "4"
+    },
+    {
+      "id": "8c44",
+      "startDate": "2024-11-11T00:00:00.000Z",
+      "endDate": "2024-11-22T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "double with A/c",
+      "hotelId": "3"
+    },
+    {
+      "id": "a197",
+      "startDate": "2024-11-13T00:00:00.000Z",
+      "endDate": "2024-11-29T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "single with A/c",
+      "hotelId": "5"
     }
   ],
   "forgot-password": [

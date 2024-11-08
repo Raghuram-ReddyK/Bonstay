@@ -1,167 +1,166 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-    TextField,
-    Button,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Typography,
-    Box,
-    Alert,
-} from '@mui/material';
+import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography, Box, Alert } from '@mui/material';
+import { useSelector, useDispatch } from 'react-redux';
+import { setStartDate, setEndDate, setNoOfPersons, setNoOfRooms, setTypeOfRoom, setErrorMessage, setSuccessMessage, setError } from '../Slices/bookingSlice';
 
 const BookARoom = () => {
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
-    const [noOfPersons, setNoOfPersons] = useState(1);
-    const [noOfRooms, setNoOfRooms] = useState(1);
-    const [typeOfRoom, setTypeOfRoom] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
-    const [success, setSuccess] = useState('');
-    const [error, setErrors] = useState('');
-    const params = useParams();
-    const navigate = useNavigate();
-    const { id, hotelName } = params;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { id, hotelName } = useParams(); // hotelName and hotelId come from the URL
 
-    const validateForm = () => {
-        let isValid = true;
-        setErrorMessage('');
+  const {
+    startDate,
+    endDate,
+    noOfPersons,
+    noOfRooms,
+    typeOfRoom,
+    errorMessage,
+    successMessage,
+    error,
+  } = useSelector((state) => state.booking);
 
-        if (!startDate) {
-            isValid = false;
-            setErrorMessage('Check-In date is required.');
-        } else if (startDate < new Date()) {
-            isValid = false;
-            setErrorMessage('Check-In date must be in the future.');
-        }
+  // Validate the form fields
+  const validateForm = () => {
+    let isValid = true;
+    dispatch(setErrorMessage(''));
 
-        if (!endDate) {
-            isValid = false;
-            setErrorMessage('End date is required.');
-        } else if (endDate < startDate) {
-            isValid = false;
-            setErrorMessage('Check-Out date must be after the Check-In date.');
-        } else if (endDate < new Date()) {
-            isValid = false;
-            setErrorMessage('Check-Out date must be in the future.');
-        }
+    if (!startDate) {
+      isValid = false;
+      dispatch(setErrorMessage('Check-In date is required.'));
+    } else if (startDate < new Date()) {
+      isValid = false;
+      dispatch(setErrorMessage('Check-In date must be in the future.'));
+    }
 
-        if (!noOfPersons || noOfPersons <= 0 || noOfPersons > 5) {
-            isValid = false;
-            setErrorMessage('Number of persons must be between 1 and 5.');
-        }
+    if (!endDate) {
+      isValid = false;
+      dispatch(setErrorMessage('End date is required.'));
+    } else if (endDate < startDate) {
+      isValid = false;
+      dispatch(setErrorMessage('Check-Out date must be after the Check-In date.'));
+    } else if (endDate < new Date()) {
+      isValid = false;
+      dispatch(setErrorMessage('Check-Out date must be in the future.'));
+    }
 
-        if (!noOfRooms || noOfRooms <= 0 || noOfRooms > 3) {
-            isValid = false;
-            setErrorMessage('Number of rooms must be between 1 and 3.');
-        }
+    if (!noOfPersons || noOfPersons <= 0 || noOfPersons > 5) {
+      isValid = false;
+      dispatch(setErrorMessage('Number of persons must be between 1 and 5.'));
+    }
 
-        if (!typeOfRoom) {
-            isValid = false;
-            setErrorMessage('Type of room is required.');
-        }
+    if (!noOfRooms || noOfRooms <= 0 || noOfRooms > 3) {
+      isValid = false;
+      dispatch(setErrorMessage('Number of rooms must be between 1 and 3.'));
+    }
 
-        return isValid;
-    };
+    if (!typeOfRoom) {
+      isValid = false;
+      dispatch(setErrorMessage('Type of room is required.'));
+    }
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
+    return isValid;
+  };
 
-        if (validateForm()) {
-            axios.post("http://localhost:4000/bookings", {
-                startDate,
-                endDate,
-                noOfPersons,
-                noOfRooms,
-                typeOfRoom,
-            })
-                .then((response) => {
-                    // const userId = response.data.userId;
-                    setSuccess("Booked Successfully: " + response.data.id);
-                    // navigate(`/bookroom?userId=${userId}`); 
-                })
-                .catch(() => {
-                    setErrors("Error while booking");
-                });
-        }
-    };
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
-    // Fetch hotels (not directly related to booking)
-    useEffect(() => {
-        axios.get(`http://localhost:4000/bookings/${id}`)
-            .then((result) => {
-                // Handle fetched hotels if necessary
-            })
-            .catch(() => {
-                // Handle errors appropriately
-            });
-    }, [id]);
+    if (validateForm()) {
+      axios
+        .post('http://localhost:4000/bookings', {
+          startDate,
+          endDate,
+          noOfPersons,
+          noOfRooms,
+          typeOfRoom,
+          hotelId: id, // Include hotelId in the booking data
+        })
+        .then((response) => {
+          dispatch(setSuccessMessage('Booked Successfully: ' + response.data.id));
+        })
+        .catch(() => {
+          dispatch(setError('Error while booking'));
+        });
+    }
+  };
 
-    return (
-        <Box className='bookpage' sx={{ p: 2 }}>
-            <Typography variant="h4" gutterBottom>
-                Book Hotel {hotelName}
-            </Typography>
-            <form onSubmit={handleSubmit}>
-                {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-                {success && <Alert severity="success">{success}</Alert>}
-                {error && <Alert severity="error">{error}</Alert>}
+  useEffect(() => {
+    // Fetch the hotel data (optional) if you need more details about the hotel during the booking process
+    axios
+      .get(`http://localhost:4000/hotels/${id}`)
+      .then((result) => {
+        // Do something with the fetched hotel data if needed
+      })
+      .catch(() => {
+        // Handle errors appropriately
+      });
+  }, [id]);
 
-                <TextField
-                    label="Check-In Date"
-                    type="date"
-                    value={startDate.toISOString().substring(0, 10)}
-                    onChange={(e) => setStartDate(new Date(e.target.value))}
-                    InputLabelProps={{ shrink: true }}
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    label="Check-Out Date"
-                    type="date"
-                    value={endDate.toISOString().substring(0, 10)}
-                    onChange={(e) => setEndDate(new Date(e.target.value))}
-                    InputLabelProps={{ shrink: true }}
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    label="Number of Persons"
-                    type="number"
-                    value={noOfPersons}
-                    onChange={(e) => setNoOfPersons(Number(e.target.value))}
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    label="Number of Rooms"
-                    type="number"
-                    value={noOfRooms}
-                    onChange={(e) => setNoOfRooms(Number(e.target.value))}
-                    fullWidth
-                    margin="normal"
-                />
-                <FormControl fullWidth margin="normal">
-                    <InputLabel>Type of Room</InputLabel>
-                    <Select
-                        value={typeOfRoom}
-                        onChange={(e) => setTypeOfRoom(e.target.value)}
-                    >
-                        <MenuItem value=""><em>Select</em></MenuItem>
-                        <MenuItem value="single with A/c">Single with A/c</MenuItem>
-                        <MenuItem value="double with A/c">Double with A/c</MenuItem>
-                        <MenuItem value="suite with A/c">Suite with A/c</MenuItem>
-                    </Select>
-                </FormControl>
-                <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-                    Book Now
-                </Button>
-            </form>
-        </Box>
-    );
-}
+  return (
+    <Box className="bookpage" sx={{ p: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Book Hotel: {hotelName} {/* Display the hotelName passed from the URL */}
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+        {successMessage && <Alert severity="success">{successMessage}</Alert>}
+        {error && <Alert severity="error">{error}</Alert>}
+
+        <TextField
+          label="Check-In Date"
+          type="date"
+          value={startDate.toISOString().substring(0, 10)}
+          onChange={(e) => dispatch(setStartDate(new Date(e.target.value)))}
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Check-Out Date"
+          type="date"
+          value={endDate.toISOString().substring(0, 10)}
+          onChange={(e) => dispatch(setEndDate(new Date(e.target.value)))}
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Number of Persons"
+          type="number"
+          value={noOfPersons}
+          onChange={(e) => dispatch(setNoOfPersons(Number(e.target.value)))}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Number of Rooms"
+          type="number"
+          value={noOfRooms}
+          onChange={(e) => dispatch(setNoOfRooms(Number(e.target.value)))}
+          fullWidth
+          margin="normal"
+        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Type of Room</InputLabel>
+          <Select
+            value={typeOfRoom}
+            onChange={(e) => dispatch(setTypeOfRoom(e.target.value))}
+          >
+            <MenuItem value="">
+              <em>Select</em>
+            </MenuItem>
+            <MenuItem value="single with A/c">Single with A/c</MenuItem>
+            <MenuItem value="double with A/c">Double with A/c</MenuItem>
+            <MenuItem value="suite with A/c">Suite with A/c</MenuItem>
+          </Select>
+        </FormControl>
+        <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+          Book Now
+        </Button>
+      </form>
+    </Box>
+  );
+};
 
 export default BookARoom;

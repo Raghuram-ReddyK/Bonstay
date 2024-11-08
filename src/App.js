@@ -19,19 +19,30 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Box, FormControlLabel, IconButton, Badge, ThemeProvider } from '@mui/material';
-import { NavLink, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Route, Routes, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsDialog from './NotificationsDialog';  // Import the new NotificationsDialog component
 import PrivacyPolicy from './BonstayAfterLogin/PrivacyPolicy';
 
-const App = () => {
-  const themeMode = useSelector((state) => state.theme.mode);
-  const colorScheme = useSelector((state) => state.theme.colorScheme);
-  // const appliedTheme = themeMode === 'light' ? lightTheme : darkTheme;
+// Private Route Component to protect user-specific routes
+const PrivateRoute = ({ element, userId, loggedInUserId }) => {
+  if (!loggedInUserId) {
+    return <Navigate to="/login" replace />; // Redirect to login if not logged in
+  }
 
-  // Apply the selected color theme
+  // If user is logged in but the route is for a different user, redirect to login
+  if (userId && userId !== loggedInUserId) {
+    return <Navigate to="/" replace />;
+  }
+
+  return element;
+};
+
+const App = () => {
+  const colorScheme = useSelector((state) => state.theme.colorScheme);
+
   const appliedTheme = (() => {
     switch (colorScheme) {
       case 'blue': return blueTheme;
@@ -39,8 +50,7 @@ const App = () => {
       case 'green': return greenTheme;
       case 'light': return lightTheme;
       case 'dark': return blackTheme;
-
-      default: return blackTheme; // Default to lightTheme
+      default: return blackTheme; // Default to blackTheme
     }
   })();
 
@@ -54,6 +64,7 @@ const App = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // Check if the user is logged in by checking sessionStorage
     const storedUserId = sessionStorage.getItem('id');
     if (storedUserId) {
       setIsLoggedIn(true);
@@ -165,7 +176,6 @@ const App = () => {
                 </Box>
                 {/* Right side: Theme Toggle, Notification Icon, Account Menu */}
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  {/* Notification Icon with Badge */}
                   <IconButton color="inherit" onClick={toggleDialog}>
                     <Badge badgeContent={unreadNotifications} color="error">
                       <NotificationsIcon />
@@ -206,26 +216,29 @@ const App = () => {
           <Route index path="/" element={<Home />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy/>} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
           {isLoggedIn && (
             <>
-              <Route path='/dashboard' element={<DashBoard />} />
-              <Route path='/dashboard/:id' element={<DashBoard />} />
-              <Route path="/bookroom" element={<BookARoom />} />
-              <Route path="/bookroom/:id" element={<BookARoom />} />
-              <Route path="/hotels" element={<Hotels />} />
-              <Route path="/hotels/:id" element={<Hotels />} />
-              <Route path="/review" element={<Review />} />
-              <Route path="/view" element={<View />} />
-              <Route path="/view/:id" element={<View />} />
-              <Route path="/reschedule/:id" element={<ReSchedule />} />
-              <Route path="/bookings" element={<Bookings />} />
-              <Route path="/bookings/:id" element={<Bookings />} />
-              <Route path="/viewReview/" element={<ViewReviews />} />
-              <Route path="/viewReview/:id" element={<ViewReviews />} />
+              <Route path="/dashboard" element={<PrivateRoute element={<DashBoard />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/dashboard/:id" element={<PrivateRoute element={<DashBoard />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/bookroom" element={<PrivateRoute element={<BookARoom />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/bookroom/:id" element={<PrivateRoute element={<BookARoom />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/bookroom/:id/:hotelName" element={<PrivateRoute element={<BookARoom />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/hotels" element={<PrivateRoute element={<Hotels />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/hotels/:id" element={<PrivateRoute element={<Hotels />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/hotels/:id/:hotelName" element={<PrivateRoute element={<Hotels />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/review" element={<PrivateRoute element={<Review />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/review/:hotelId" element={<PrivateRoute element={<Review />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/viewReview/:hotelId" element={<PrivateRoute element={<ViewReviews />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/view" element={<PrivateRoute element={<View />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/view/:id" element={<PrivateRoute element={<View />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/reschedule/:id" element={<PrivateRoute element={<ReSchedule />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/bookings" element={<PrivateRoute element={<Bookings />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/bookings/:id" element={<PrivateRoute element={<Bookings />} userId={userId} loggedInUserId={userId} />} />
             </>
           )}
+
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Box>

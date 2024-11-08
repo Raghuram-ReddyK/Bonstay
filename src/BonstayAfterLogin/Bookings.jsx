@@ -17,13 +17,20 @@ const Bookings = () => {
     useEffect(() => {
         const fetchBookingsAndHotels = async () => {
             try {
+                // Fetch bookings and hotels data from the API
                 const bookingsResponse = await axios.get('http://localhost:4000/bookings/');
                 const hotelsResponse = await axios.get('http://localhost:4000/hotels/');
 
+                // Check if the data is successfully fetched
+                console.log('Bookings Response:', bookingsResponse.data);
+                console.log('Hotels Response:', hotelsResponse.data);
+
+                // Set the state with the fetched data
                 setBookings(bookingsResponse.data);
                 setHotels(hotelsResponse.data);
             } catch (error) {
                 setCancelError('Error while fetching data. Please try again later.');
+                console.error(error);
             }
         };
 
@@ -42,10 +49,15 @@ const Bookings = () => {
     };
 
     // Create a map of hotel IDs to hotel names for easy lookup
-    const hotelMap = {};
-    hotels.forEach(hotel => {
-        hotelMap[hotel.id] = hotel.hotelName;
-    });
+    const hotelMap = React.useMemo(() => {
+        const map = {};
+        // Loop through hotels to populate hotelMap with hotelId => hotelName mapping
+        hotels.forEach((hotel) => {
+            console.log(`Mapping hotel ID: ${hotel.id} => Hotel Name: ${hotel.hotelName}`);
+            map[String(hotel.id)] = hotel.hotelName; // Ensure hotelId is treated as a string
+        });
+        return map;
+    }, [hotels]);
 
     // Open the confirmation dialog
     const openConfirmationDialog = (bookingId) => {
@@ -63,7 +75,7 @@ const Bookings = () => {
     const handleExportExcel = () => {
         const data = bookings.map((booking) => ({
             'Booking ID': booking.id,
-            'Hotel Name': hotelMap[booking.hotelId] || 'Unknown Hotel',
+            'Hotel Name': hotelMap[String(booking.hotelId)] || 'Unknown Hotel', // Using hotelMap for hotel name
             'Check-In Date': booking.startDate,
             'Check-Out Date': booking.endDate,
             'Number of Persons': booking.noOfPersons,
@@ -107,39 +119,46 @@ const Bookings = () => {
 
             {bookings.length > 0 ? (
                 <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 g-4">
-                    {bookings.map((booking) => (
-                        <div key={booking.id} className="col">
-                            <div className="card h-100 shadow-sm">
-                                <div className="card-body">
-                                    <h5 className="card-title">
-                                        {hotelMap[booking.hotelId] || 'Unknown Hotel'}
-                                    </h5>
-                                    <p><b>Booking Id:</b> {booking.id}</p>
-                                    <p><b>Check-In Date:</b> {booking.startDate}</p>
-                                    <p><b>Check-Out Date:</b> {booking.endDate}</p>
-                                    <p><b>Number of Persons:</b> {booking.noOfPersons}</p>
-                                    <p><b>Number of Rooms:</b> {booking.noOfRooms}</p>
-                                    <p><b>Type of Room:</b> {booking.typeOfRoom}</p>
-                                </div>
-                                <div className="card-footer">
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => navigate(`/reschedule/${booking.id}`)}
-                                    >
-                                        Reschedule Booking
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        color="secondary"
-                                        onClick={() => openConfirmationDialog(booking.id)}
-                                    >
-                                        Cancel Booking
-                                    </Button>
+                    {bookings.map((booking) => {
+                        // Log the booking hotelId and corresponding hotelMap lookup
+                        console.log(`Booking hotelId: ${booking.hotelId}, Hotel Name from hotelMap: ${hotelMap[String(booking.hotelId)]}`);
+                        console.log(`Booking hotelId: ${booking.hotelId}, Hotel Name from hotelMap (as string): ${hotelMap[String(booking.hotelId)] ? hotelMap[String(booking.hotelId)] : 'Not found'}`);
+
+                        return (
+                            <div key={booking.id} className="col">
+                                <div className="card h-100 shadow-sm">
+                                    <div className="card-body">
+                                        <h5 className="card-title">
+                                            {/* Safely using hotelMap to retrieve hotel name */}
+                                            {hotelMap[String(booking.hotelId)] || 'Unknown Hotel'}
+                                        </h5>
+                                        <p><b>Booking Id:</b> {booking.id}</p>
+                                        <p><b>Check-In Date:</b> {booking.startDate}</p>
+                                        <p><b>Check-Out Date:</b> {booking.endDate}</p>
+                                        <p><b>Number of Persons:</b> {booking.noOfPersons}</p>
+                                        <p><b>Number of Rooms:</b> {booking.noOfRooms}</p>
+                                        <p><b>Type of Room:</b> {booking.typeOfRoom}</p>
+                                    </div>
+                                    <div className="card-footer">
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => navigate(`/reschedule/${booking.id}`)}
+                                        >
+                                            Reschedule Booking
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => openConfirmationDialog(booking.id)}
+                                        >
+                                            Cancel Booking
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             ) : (
                 <Typography variant="h4" color="red">
