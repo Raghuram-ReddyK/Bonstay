@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography, CircularProgress } from '@mui/material';
 import axios from 'axios';
 
 const Chatbot = ({ onClose }) => {
@@ -7,7 +7,7 @@ const Chatbot = ({ onClose }) => {
     { sender: 'bot', text: 'Hello! How can I assist you with your hotel booking today?' }
   ]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Track loading state
 
   // Function to handle user message
   const handleUserMessage = async () => {
@@ -15,7 +15,7 @@ const Chatbot = ({ onClose }) => {
 
     // Add the user's message to the chat
     setMessages([...messages, { sender: 'user', text: input }]);
-    setIsLoading(true);
+    setIsLoading(true); // Set loading to true while waiting for response
 
     try {
       // Fetch all responses from the mock API
@@ -52,9 +52,9 @@ const Chatbot = ({ onClose }) => {
       ]);
     }
 
-    // Clear the input field
+    // Clear the input field and stop the loading state
     setInput('');
-    setIsLoading(false);
+    setIsLoading(false); // Set loading to false after processing
   };
 
   return (
@@ -91,6 +91,11 @@ const Chatbot = ({ onClose }) => {
             </Typography>
           </div>
         ))}
+        {isLoading && (
+          <div style={{ textAlign: 'center' }}>
+            <CircularProgress size={24} /> {/* Show a spinner when loading */}
+          </div>
+        )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <TextField
@@ -101,12 +106,14 @@ const Chatbot = ({ onClose }) => {
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleUserMessage()}
           placeholder="Type a message..."
+          disabled={isLoading} // Disable input while loading
         />
         <Button
           variant="contained"
           color="primary"
           onClick={handleUserMessage}
           sx={{ marginLeft: '10px' }}
+          disabled={isLoading} // Disable button while loading
         >
           Send
         </Button>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { TextField, Button, Typography, Box, Alert } from '@mui/material';
+import { TextField, Button, Typography, Alert } from '@mui/material';
 
 const ReSchedule = () => {
     const { id } = useParams();
@@ -9,7 +9,7 @@ const ReSchedule = () => {
     const [endDate, setEndDate] = useState(new Date());
     const [errorMessage, setErrorMessage] = useState('');
     const [success, setSuccess] = useState('');
-    const [error, setError] = useState('');
+    const [error, setError] = useState('');  // This is the general error state
     const [bookingData, setBookingData] = useState({});
 
     useEffect(() => {
@@ -21,7 +21,7 @@ const ReSchedule = () => {
                 setEndDate(new Date(response.data.endDate));
             } catch (error) {
                 console.error('Error fetching booking data:', error);
-                setError('An error occurred while fetching booking data.');
+                setError('An error occurred while fetching booking data.'); // Set error state here
             }
         };
 
@@ -66,8 +66,8 @@ const ReSchedule = () => {
                 console.log(response);
 
                 if (response.status === 200) {
-                    setError('');
-                    setErrorMessage('');
+                    setError(''); // Clear the general error
+                    setErrorMessage(''); // Clear the specific error
                     setStartDate(new Date());
                     setEndDate(new Date());
                     setSuccess('Re-scheduled successfully!');
@@ -75,7 +75,7 @@ const ReSchedule = () => {
                     setError(response.data.error || 'An error occurred while re-scheduling.');
                 }
             } catch (error) {
-                setError('An error occurred while re-scheduling.', error);
+                setError('An error occurred while re-scheduling. Please try again later.'); // Set error state for general errors
             }
         }
     };
@@ -83,7 +83,8 @@ const ReSchedule = () => {
     return (
         <div className='bookpage' sx={{ maxWidth: 400, mx: 'auto', mt: 4 }}>
             <form onSubmit={handleSubmit}>
-                {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+                {error && <Alert severity="error">{error}</Alert>} {/* Display general error */}
+                {errorMessage && <Alert severity="error">{errorMessage}</Alert>} {/* Display specific error */}
                 {success && <Alert severity="success">{success}</Alert>}
                 <Typography variant="h4" gutterBottom>
                     Re-Schedule Hotel

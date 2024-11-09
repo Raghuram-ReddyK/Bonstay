@@ -1,5 +1,4 @@
-import { Box, Snackbar, Alert } from '@mui/material';
-import { useState } from 'react';
+import { Snackbar, Alert } from '@mui/material';
 
 const Notification = ({ open, message, onClose }) => {
   return (

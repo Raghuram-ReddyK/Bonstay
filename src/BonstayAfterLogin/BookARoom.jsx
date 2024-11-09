@@ -1,13 +1,12 @@
 import axios from 'axios';
 import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography, Box, Alert } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { setStartDate, setEndDate, setNoOfPersons, setNoOfRooms, setTypeOfRoom, setErrorMessage, setSuccessMessage, setError } from '../Slices/bookingSlice';
 
 const BookARoom = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { id, hotelName } = useParams(); // hotelName and hotelId come from the URL
 
   const {

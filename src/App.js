@@ -21,7 +21,7 @@ import Button from '@mui/material/Button';
 import { Box, FormControlLabel, IconButton, Badge, ThemeProvider } from '@mui/material';
 import { NavLink, Route, Routes, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';  // Import useCallback to memoize showPageNotification
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsDialog from './NotificationsDialog';  // Import the new NotificationsDialog component
 import PrivacyPolicy from './BonstayAfterLogin/PrivacyPolicy';
@@ -82,7 +82,7 @@ const App = () => {
   };
 
   // Function to show page-specific notifications
-  const showPageNotification = () => {
+  const showPageNotification = useCallback(() => {  // Memoize with useCallback
     let newMessage = '';
     switch (location.pathname) {
       case '/hotels':
@@ -111,7 +111,7 @@ const App = () => {
     if (newMessage) {
       addNotification(newMessage);
     }
-  };
+  }, [location.pathname, userId]); // Add location.pathname and userId as dependencies
 
   // Add a new notification to the list
   const addNotification = (message) => {
@@ -154,7 +154,7 @@ const App = () => {
   // Trigger notification when route changes
   useEffect(() => {
     showPageNotification();
-  }, [location]);
+  }, [showPageNotification]);  // Add showPageNotification to the dependency array
 
   return (
     <ThemeProvider theme={appliedTheme}>
