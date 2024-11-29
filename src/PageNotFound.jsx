@@ -18,10 +18,10 @@ const PageNotFound = () => {
                 color:'blue' 
             }}
         >
-            <Typography variant="h1" color="error">
+            <Typography variant="h1" color="red">
                 Page Not Found 404
             </Typography>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 }} color='red'>
                 Please go back to
             </Typography>
             <Button 

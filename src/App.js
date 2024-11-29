@@ -25,6 +25,9 @@ import { useEffect, useState, useCallback } from 'react';  // Import useCallback
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsDialog from './NotificationsDialog';  // Import the new NotificationsDialog component
 import PrivacyPolicy from './BonstayAfterLogin/PrivacyPolicy';
+import Footer from './Footer';
+import TermsAndConditions from './BonstayAfterLogin/TermsAndConditions';
+import PaymentPage from './BonstayAfterLogin/PaymentPage';
 
 // Private Route Component to protect user-specific routes
 const PrivateRoute = ({ element, userId, loggedInUserId }) => {
@@ -217,6 +220,8 @@ const App = () => {
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-conditions" element={<TermsAndConditions />} />
+
 
           {isLoggedIn && (
             <>
@@ -224,6 +229,8 @@ const App = () => {
               <Route path="/dashboard/:id" element={<PrivateRoute element={<DashBoard />} userId={userId} loggedInUserId={userId} />} />
               <Route path="/bookroom" element={<PrivateRoute element={<BookARoom />} userId={userId} loggedInUserId={userId} />} />
               <Route path="/bookroom/:id" element={<PrivateRoute element={<BookARoom />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/bookings" element={<PrivateRoute element={<Bookings userId={userId}/>} loggedInUserId={userId} />} />
+              <Route path="/bookings/:id" element={<PrivateRoute element={<Bookings userId={userId}/>} loggedInUserId={userId} />} />
               <Route path="/bookroom/:id/:hotelName" element={<PrivateRoute element={<BookARoom />} userId={userId} loggedInUserId={userId} />} />
               <Route path="/hotels" element={<PrivateRoute element={<Hotels />} userId={userId} loggedInUserId={userId} />} />
               <Route path="/hotels/:id" element={<PrivateRoute element={<Hotels />} userId={userId} loggedInUserId={userId} />} />
@@ -236,11 +243,14 @@ const App = () => {
               <Route path="/reschedule/:id" element={<PrivateRoute element={<ReSchedule />} userId={userId} loggedInUserId={userId} />} />
               <Route path="/bookings" element={<PrivateRoute element={<Bookings />} userId={userId} loggedInUserId={userId} />} />
               <Route path="/bookings/:id" element={<PrivateRoute element={<Bookings />} userId={userId} loggedInUserId={userId} />} />
+              <Route path="/payment/:bookingId" element={<PaymentPage />} />
+              
             </>
           )}
 
           <Route path="*" element={<PageNotFound />} />
         </Routes>
+        <Footer/>
       </Box>
     </ThemeProvider>
   );

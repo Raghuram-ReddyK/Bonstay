@@ -1,13 +1,16 @@
 const jsonServer = require('json-server');
-const cors = require('cors');
+const serverless = require('serverless-http');
+
+// Create a new JSON Server instance
 const server = jsonServer.create();
-const router = jsonServer.router('db.json');  // Path to your db.json
+const router = jsonServer.router('db.json');  // This should be your data file
 const middlewares = jsonServer.defaults();
 
-server.use(cors());  // Enable CORS (optional but often needed)
-server.use(middlewares);  // Use default middlewares
-server.use(router);  // Use the router to handle API requests
+// Use default middlewares (logger, static, etc.)
+server.use(middlewares);
 
-server.listen(4000, () => {
-  console.log('JSON Server is running on http://localhost:4000');
-});
+// Use your mock data (db.json)
+server.use(router);
+
+// Export the handler for Netlify Function
+module.exports.handler = serverless(server);

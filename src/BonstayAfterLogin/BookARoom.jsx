@@ -1,12 +1,13 @@
 import axios from 'axios';
 import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography, Box, Alert } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { setStartDate, setEndDate, setNoOfPersons, setNoOfRooms, setTypeOfRoom, setErrorMessage, setSuccessMessage, setError } from '../Slices/bookingSlice';
 
 const BookARoom = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Use useNavigate hook for programmatic navigation
   const { id, hotelName } = useParams(); // hotelName and hotelId come from the URL
 
   const {
@@ -77,6 +78,9 @@ const BookARoom = () => {
         })
         .then((response) => {
           dispatch(setSuccessMessage('Booked Successfully: ' + response.data.id));
+
+          // Redirect to the payment page with the booking ID as a query parameter
+          navigate(`/payment/${response.data.id}`); // Navigate to payment page
         })
         .catch(() => {
           dispatch(setError('Error while booking'));

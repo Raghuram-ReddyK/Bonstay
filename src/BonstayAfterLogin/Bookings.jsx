@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
-const Bookings = () => {
+const Bookings = ({ userId }) => { // Destructure userId prop here
     const [bookings, setBookings] = useState([]);
     const [hotels, setHotels] = useState([]);
     const [cancelSuccess, setCancelSuccess] = useState('');
@@ -13,12 +13,14 @@ const Bookings = () => {
     const [dialogOpen, setDialogOpen] = useState(false); // State for confirmation dialog
     const [selectedBookingId, setSelectedBookingId] = useState(null); // Store the ID of the selected booking to be canceled
     const navigate = useNavigate();
+    // const { id } = useParams();
 
     useEffect(() => {
         const fetchBookingsAndHotels = async () => {
             try {
-                // Fetch bookings and hotels data from the API
-                const bookingsResponse = await axios.get('http://localhost:4000/bookings/');
+                // Fetch bookings for the logged-in user
+                console.log(`Fetching bookings for User ID: ${userId}`);
+                const bookingsResponse = await axios.get(`http://localhost:4000/bookings`); // Fetch bookings for the logged-in user
                 const hotelsResponse = await axios.get('http://localhost:4000/hotels/');
 
                 // Check if the data is successfully fetched
@@ -34,8 +36,10 @@ const Bookings = () => {
             }
         };
 
-        fetchBookingsAndHotels();
-    }, []);
+        if (userId) {
+            fetchBookingsAndHotels();
+        }
+    }, [userId]); // Fetch data whenever userId changes
 
     const handleCancelBooking = async (bookingId) => {
         try {
@@ -51,9 +55,8 @@ const Bookings = () => {
     // Create a map of hotel IDs to hotel names for easy lookup
     const hotelMap = React.useMemo(() => {
         const map = {};
-        // Loop through hotels to populate hotelMap with hotelId => hotelName mapping
         hotels.forEach((hotel) => {
-            console.log(`Mapping hotel ID: ${hotel.id} => Hotel Name: ${hotel.hotelName}`);
+            // console.log(`Mapping hotel ID: ${hotel.id} => Hotel Name: ${hotel.hotelName}`);
             map[String(hotel.id)] = hotel.hotelName; // Ensure hotelId is treated as a string
         });
         return map;
@@ -120,16 +123,11 @@ const Bookings = () => {
             {bookings.length > 0 ? (
                 <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 g-4">
                     {bookings.map((booking) => {
-                        // Log the booking hotelId and corresponding hotelMap lookup
-                        console.log(`Booking hotelId: ${booking.hotelId}, Hotel Name from hotelMap: ${hotelMap[String(booking.hotelId)]}`);
-                        console.log(`Booking hotelId: ${booking.hotelId}, Hotel Name from hotelMap (as string): ${hotelMap[String(booking.hotelId)] ? hotelMap[String(booking.hotelId)] : 'Not found'}`);
-
                         return (
                             <div key={booking.id} className="col">
                                 <div className="card h-100 shadow-sm">
                                     <div className="card-body">
                                         <h5 className="card-title">
-                                            {/* Safely using hotelMap to retrieve hotel name */}
                                             {hotelMap[String(booking.hotelId)] || 'Unknown Hotel'}
                                         </h5>
                                         <p><b>Booking Id:</b> {booking.id}</p>
@@ -177,13 +175,13 @@ const Bookings = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeConfirmationDialog} color="primary">
-                        Cancel
+                        No
                     </Button>
                     <Button
                         onClick={() => handleCancelBooking(selectedBookingId)}
                         color="secondary"
                     >
-                        Confirm Cancellation
+                        Yes
                     </Button>
                 </DialogActions>
             </Dialog>

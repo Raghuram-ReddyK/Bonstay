@@ -11,12 +11,15 @@ import {
     Alert,
     CircularProgress,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const View = () => {
     const [userId, setUserId] = useState('');
     const [userDetails, setUserDetails] = useState({ id: '', name: '', email: '' });
     const [deleteMessage, setDeleteMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const navigate = useNavigate();
 
     const handleChange = (event) => {
         setUserId(event.target.value);
@@ -46,6 +49,7 @@ const View = () => {
             setUserDetails({ id: '', name: '', email: '' });
             setUserId('');
             setDeleteMessage('User deleted successfully');
+            navigate('/')
         } catch (error) {
             setDeleteMessage('Error deleting user. Please try again later.');
             console.error(error);

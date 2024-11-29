@@ -354,34 +354,46 @@ const AccountMenu = ({ handleLogout }) => {
                     />
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ mb: 2 }}>
-                        <ul>
-                            <li>
-                                <Button variant="outlined" onClick={() => setSelectedOption('userDetails')}>
-                                    User Details Edit
-                                </Button>
-                            </li>
-                            <li>
-                                <Button variant="outlined" onClick={() => setSelectedOption('faqs')}>
-                                    FAQs
-                                </Button>
-                            </li>
-                            <li>
-                                <Button variant="outlined" onClick={() => setSelectedOption('terms')}>
-                                    Terms & Conditions
-                                </Button>
-                            </li>
-                            <li>
-                                <Button variant="outlined" onClick={() => setSelectedOption('privacy')}>
-                                    Privacy Policy
-                                </Button>
-                            </li>
-                            <li>
-                                <Button variant="outlined" onClick={() => setSelectedOption('contactUs')}>
-                                    Contact Us
-                                </Button>
-                            </li>
-                        </ul>
+                <Box sx={{ maxHeight: '400px', overflowY: 'auto', mt: 2 }}>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setSelectedOption('userDetails')}
+                            fullWidth
+                            sx={{ mb: 1 }}
+                        >
+                            User Details Edit
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setSelectedOption('faqs')}
+                            fullWidth
+                            sx={{ mb: 1 }}
+                        >
+                            FAQs
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setSelectedOption('terms')}
+                            fullWidth
+                            sx={{ mb: 1 }}
+                        >
+                            Terms & Conditions
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setSelectedOption('privacy')}
+                            fullWidth
+                            sx={{ mb: 1 }}
+                        >
+                            Privacy Policy
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setSelectedOption('contactUs')}
+                            fullWidth
+                        >
+                            Contact Us
+                        </Button>
                     </Box>
                     {renderSettingsContent()}
                 </DialogContent>
