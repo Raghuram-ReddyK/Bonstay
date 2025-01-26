@@ -17,14 +17,6 @@
       "password": "sdfdrgsf@44fS"
     },
     {
-      "id": "4fa8",
-      "name": "Mallikharjun",
-      "address": "Pandilla Palli",
-      "phoneNo": "7893859304",
-      "email": "malli@gmail.com",
-      "password": "Malli@1"
-    },
-    {
       "id": "05fb",
       "name": "Raghurami Reddy k",
       "address": "Pandilla Palli, Chirala",
@@ -47,14 +39,6 @@
       "phoneNo": "7013175757",
       "email": "syamakurirajasekharreddy@gmail.com",
       "password": "Rajasekhar@1"
-    },
-    {
-      "id": "d9f1",
-      "name": "Chandhu",
-      "address": "America",
-      "phoneNo": "9990808080",
-      "email": "chandhu@gmail.com",
-      "password": "Chnadhu@1"
     }
   ],
   "payments": [
@@ -66,25 +50,61 @@
     },
     {
       "id": "42ce",
-      "bookingId": "570a",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "4b01",
-      "bookingId": "570a",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "69c5",
-      "bookingId": "b3fb",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "7a4a",
-      "bookingId": "b3fb",
+      "bookingId": null,
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "6ef2",
+      "bookingId": null,
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "6fd8",
+      "bookingId": null,
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "dd5d",
+      "bookingId": null,
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "603c",
+      "bookingId": null,
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "342a",
+      "bookingId": "60e5",
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "2924",
+      "bookingId": "e3cd",
       "amount": 1,
       "method": "Google Pay"
     }
@@ -142,20 +162,20 @@
   ],
   "bookings": [
     {
-      "id": "570a",
-      "startDate": "2024-11-29T00:00:00.000Z",
-      "endDate": "2024-12-04T00:00:00.000Z",
+      "id": "60e5",
+      "startDate": "2024-12-14T00:00:00.000Z",
+      "endDate": "2024-12-16T00:00:00.000Z",
       "noOfPersons": 1,
       "noOfRooms": 1,
-      "typeOfRoom": "double with A/c",
-      "hotelId": "5"
+      "typeOfRoom": "single with A/c",
+      "hotelId": "2"
     },
     {
-      "id": "b3fb",
-      "startDate": "2024-11-29T00:00:00.000Z",
-      "endDate": "2024-12-04T00:00:00.000Z",
-      "noOfPersons": 4,
-      "noOfRooms": 3,
+      "id": "e3cd",
+      "startDate": "2024-12-21T00:00:00.000Z",
+      "endDate": "2024-12-25T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
       "typeOfRoom": "double with A/c",
       "hotelId": "3"
     }

@@ -22,7 +22,7 @@ const Chatbot = ({ onClose }) => {
       const response = await axios.get(`http://localhost:4000/responses`);
       
       // Look for the first response whose keywords match the user input
-      let matchedResponse = "Sorry, I couldn't understand that. Can you please rephrase?"; // Default response
+      let matchedResponse = "Sorry, I couldn't understand that. Can you please contact us through mail or phone?"; // Default response
 
       // Check each response for matching keywords
       for (let item of response.data) {
@@ -33,7 +33,7 @@ const Chatbot = ({ onClose }) => {
             break; // Stop checking after the first match
           }
         }
-        if (matchedResponse !== "Sorry, I couldn't understand that. Can you please rephrase?") {
+        if (matchedResponse !== "Sorry, I couldn't understand that. Can you please contact us through mail or phone?") {
           break;
         }
       }

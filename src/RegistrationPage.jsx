@@ -91,7 +91,7 @@ const RegistrationPage = () => {
     const validateForm = () => {
         const errors = {};
 
-        if (!state.name || state.name.length < 3) {
+        if (!state.name || state.name.length < 5) {
             errors.name = 'Name must be at least 5 characters';
         }
 
@@ -104,7 +104,8 @@ const RegistrationPage = () => {
             errors.email = 'Invalid email format';
         }
 
-        if (!state.password || state.password.length < 4 || state.password.length > 100) {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*!])[A-Za-z\d@#$%^&*!]{4,100}$/;
+        if (!state.password || !passwordRegex.test(state.password)) {
             errors.password = 'Password must be between 4 and 100 characters, include at least one Uppercase, one lowercase, one number, and one special character';
         }
 
@@ -209,11 +210,10 @@ const RegistrationPage = () => {
                         Successfully registered! Your user ID is: {registeredId}
                     </Typography>
                 )}
-                <MuiLink href="/Login" underline="hover" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <MuiLink href="/Login" underline="hover" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }} >
                     Already have an account? Login here.
                 </MuiLink>
             </form>
-
         </Container>
     );
 };

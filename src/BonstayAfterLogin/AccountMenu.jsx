@@ -262,7 +262,7 @@ const AccountMenu = ({ handleLogout }) => {
                     <ListItemIcon>
                         <Settings fontSize="small" />
                     </ListItemIcon>
-                    Settings
+                    More
                 </MenuItem>
                 <MenuItem onClick={handleCloseMenu}>
                     <ListItemIcon>
