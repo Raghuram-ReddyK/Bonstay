@@ -67,6 +67,7 @@ const BookARoom = () => {
     event.preventDefault();
 
     if (validateForm()) {
+      const userId = sessionStorage.getItem('id')
       axios
         .post('http://localhost:4000/bookings', {
           startDate,
@@ -75,6 +76,7 @@ const BookARoom = () => {
           noOfRooms,
           typeOfRoom,
           hotelId: id, // Include hotelId in the booking data
+          userId: userId,
         })
         .then((response) => {
           dispatch(setSuccessMessage('Booked Successfully: ' + response.data.id));

@@ -23,12 +23,21 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                 const bookingsResponse = await axios.get(`http://localhost:4000/bookings`); // Fetch bookings for the logged-in user
                 const hotelsResponse = await axios.get('http://localhost:4000/hotels/');
 
-                // Check if the data is successfully fetched
-                console.log('Bookings Response:', bookingsResponse.data);
-                console.log('Hotels Response:', hotelsResponse.data);
+                const userBookings = bookingsResponse.data.filter(booking => {
+                    const hadUserId = booking.userId !== undefined && booking.userId !== null;
+                    const matchesCurrentUser = hadUserId && String(booking.userId) === String(userId);
+                    return matchesCurrentUser;
+                })
 
+                if(userBookings.length === 0) {
+                    console.log(`No bookings found for user ${userId}. This could be bacause:`);
+                    console.log('1. The user has not made any bookings yet');
+                    console.log('2. Existing bookings were created before the userId field was added');
+                    console.log('3. There might be a data type mismatch between userId and booking.userId')
+                }
+                
                 // Set the state with the fetched data
-                setBookings(bookingsResponse.data);
+                setBookings(userBookings);
                 setHotels(hotelsResponse.data);
             } catch (error) {
                 setCancelError('Error while fetching data. Please try again later.');
