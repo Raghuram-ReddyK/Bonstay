@@ -39,6 +39,23 @@
       "phoneNo": "7013175757",
       "email": "syamakurirajasekharreddy@gmail.com",
       "password": "Rajasekhar@1"
+    },
+    {
+      "id": "4fde",
+      "name": "pavan reddy",
+      "address": "Piduguralla",
+      "phoneNo": "0630368000",
+      "email": "pavan@outlook.com",
+      "password": "Pav@1"
+    },
+    {
+      "id": "3140",
+      "name": "SRIRAMISETTY SURESH",
+      "address": "",
+      "country": "Australia",
+      "phoneNo": "0000000000",
+      "email": "ri604@gmail.com",
+      "password": "Sri@1"
     }
   ],
   "payments": [

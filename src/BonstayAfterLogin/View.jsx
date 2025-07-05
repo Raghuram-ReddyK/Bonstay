@@ -85,6 +85,7 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
                             </Typography>
                             <Typography variant="body1">id: {userDetails.id}</Typography>
                             <Typography variant="body2">Name: {userDetails.name}</Typography>
+                            <Typography variant="body1">Country: {userDetails.country}</Typography>
                             <Typography variant="body1">Address: {userDetails.address}</Typography>
                             <Typography variant="body1">PhoneNo: {userDetails.phoneNo}</Typography>
                             <Typography variant="body1">Email: {userDetails.email}</Typography>

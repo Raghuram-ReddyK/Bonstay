@@ -3,13 +3,24 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 
-export default function CountrySelect() {
+export default function CountrySelect({ onChange, value, margin }) {
+    const handleCountryChange = (_event, newValue) => {
+        const syntheticEvent = {
+            target: {
+                name: 'country',
+                value: newValue ? newValue.label : ''
+            }
+        };
+        onChange(syntheticEvent)
+    }
     return (
         <Autocomplete
             id="country-select-demo"
-            sx={{ width: 300 }}
+            sx={{ width: '100%', marginTop: margin === 'normal' ? 1 : 0, marginBottom: margin === 'normal' ? 0.5 : 0 }}
             options={countries}
             autoHighlight
+            value = {countries.find(country => country.label === value) || null}
+            onChange={handleCountryChange}
             getOptionLabel={(option) => option.label}
             renderOption={(props, option) => {
                 const { key, ...optionProps } = props;
@@ -35,6 +46,7 @@ export default function CountrySelect() {
                 <TextField
                     {...params}
                     label="Choose a country"
+                    fullWidth
                     slotProps={{
                         htmlInput: {
                             ...params.inputProps,

@@ -8,6 +8,7 @@ const RegistrationPage = () => {
     const [state, setState] = useState({
         name: '',
         address: '',
+        country: '',
         phoneNo: '',
         email: '',
         password: ''
@@ -16,6 +17,7 @@ const RegistrationPage = () => {
     const [formErrors, setFormErrors] = useState({
         name: '',
         address: '',
+        country: '',
         phoneNo: '',
         email: '',
         password: ''
@@ -140,9 +142,9 @@ const RegistrationPage = () => {
     return (
         <Container className="container">
             <form onSubmit={handleSubmit}>
-            <Typography variant="h4" gutterBottom>
-                Register
-            </Typography>
+                <Typography variant="h4" gutterBottom>
+                    Register
+                </Typography>
                 <TextField
                     name="name"
                     label="Name"
@@ -163,6 +165,7 @@ const RegistrationPage = () => {
                 />
                 <CountrySelect
                     onChange={handleChange}
+                    value={state.country}
                     margin="normal"
                 />
                 <TextField
