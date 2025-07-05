@@ -1,10 +1,9 @@
-import React from 'react';
 import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever'; // For "Remove All" icon
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
-const NotificationsDialog = ({ notifications, unreadNotifications, dialogOpen, toggleDialog, markAsRead, removeNotification, removeAllNotifications }) => {
+const NotificationsDialog = ({ notifications, dialogOpen, toggleDialog, markAsRead, removeNotification, removeAllNotifications }) => {
   return (
     <Dialog open={dialogOpen} onClose={toggleDialog}>
       <DialogTitle>Notifications</DialogTitle>

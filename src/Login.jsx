@@ -20,10 +20,10 @@ import {
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
     const navigate = useNavigate();
-    const [id, setId] = useState('');
+    const [userIdOrEmail, setUserIdOrEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
-    const [acceptPrivacy, setAcceptPrivacy] = useState(false); // State to track Privacy checkbox
+    const [acceptPrivacy, setAcceptPrivacy] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -40,16 +40,28 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        
+
         if (!acceptPrivacy) {
             setError('Please read and accept the privacy policy before logging in.');
             return; // Prevent login if privacy policy is not accepted
         }
 
         setIsLoading(true);
+        setError('')
+        setSuccess('')
+
         try {
-            const response = await axios.get(`http://localhost:4000/users/${id}`);
-            const userData = response.data;
+            let userData = null
+            const isEmail = userIdOrEmail.includes('@');
+            if (isEmail) {
+                const response = await axios.get(`http://localhost:4000/users`);
+                const allUsers = response.data;
+                userData = allUsers.find(user => user.email === userIdOrEmail);
+            }
+            else {
+                const response = await axios.get(`http://localhost:4000/users/${userIdOrEmail}`);
+                userData = response.data
+            }
 
             if (userData && userData.password === password) {
                 sessionStorage.setItem('id', userData.id);
@@ -58,7 +70,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 setSuccess('Login successful!');
                 navigate(`/dashboard/${userData.id}`); // Correct navigation
             } else {
-                setError('Invalid Username/Password');
+                setError('Invalid Username/Email/Password');
             }
         } catch (error) {
             console.error(error);
@@ -106,15 +118,15 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 {success && <Alert severity="success">{success}</Alert>}
 
                 <TextField
-                    label="UserID"
+                    label="UserID or Email"
                     margin="normal"
                     required
                     fullWidth
-                    name="id"
-                    value={id}
-                    onChange={(e) => setId(e.target.value)}
+                    name="userIdOrEmail"
+                    value={userIdOrEmail}
+                    onChange={(e) => setUserIdOrEmail(e.target.value)}
                     error={Boolean(error)}
-                    helperText={error === 'Invalid Username/Password' ? 'UserID or password is incorrect.' : ''}
+                    helperText={error === 'Invalid Username/Email/Password' ? 'UserID/Email or password is incorrect.' : ''}
                     sx={{ color: 'white' }}
                 />
                 <TextField
@@ -127,7 +139,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     error={Boolean(error)}
-                    helperText={error === 'Invalid Username/Password' ? 'UserID or password is incorrect.' : ''}
+                    helperText={error === 'Invalid Username/Email/Password' ? 'UserID/Email or password is incorrect.' : ''}
                     sx={{ color: 'white' }}
                 />
                 <FormControlLabel
@@ -258,7 +270,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                         <p>We use cookies and similar technologies to enhance the user experience on our website...</p>
                         <li>Remember your preferences.</li>
                         <li>Analyze website traffic.</li>
-                        <li>Customize the content you see.</li><br/>
+                        <li>Customize the content you see.</li><br />
 
                         <h4>5. Security of Your Information</h4>
                         <p>We take the security of your personal information seriously. We implement physical, electronic, and procedural safeguards to protect your data from unauthorized access, alteration, or destruction. However, please note that no method of transmission over the internet is completely secure.</p>
@@ -270,13 +282,13 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                         <h4>7. Your Rights</h4>
                         <p>You have the right to:</p>
                         <ul>
-                        <li>Access the personal information we hold about you.</li>
-                        <li>Correct any inaccurate or incomplete data.</li>
-                        <li>Request the deletion of your personal data, subject to certain exceptions.</li>
-                        <li>Opt-out of marketing communications by following the unsubscribe instructions in our emails.</li>
+                            <li>Access the personal information we hold about you.</li>
+                            <li>Correct any inaccurate or incomplete data.</li>
+                            <li>Request the deletion of your personal data, subject to certain exceptions.</li>
+                            <li>Opt-out of marketing communications by following the unsubscribe instructions in our emails.</li>
                         </ul>
 
-                        <span>To exercise any of these rights, please contact us at [hotel contact information].</span><br/><br/>
+                        <span>To exercise any of these rights, please contact us at [hotel contact information].</span><br /><br />
 
                         <h4>8. Children’s Privacy</h4>
                         <p>Our services are not intended for children under the age of 13. We do not knowingly collect or maintain personal information from children under 13. If we become aware that we have inadvertently collected information from a child under 13, we will take steps to delete such information.</p>
@@ -287,9 +299,9 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                         <h4>10. Contact Us</h4>
                         <p>If you have any questions or concerns about this Privacy Policy, please contact us at:</p>
                         <ul>
-                        <li><strong>Email:</strong> [info@bonstay.com]</li>
-                        <li><strong>Phone:</strong> [+91-3485933941]</li>
-                        <li><strong>Address:</strong> [SRT-121, Oppo to Cure Hospital, Gachibowli, Hyderabad]</li>
+                            <li><strong>Email:</strong> [info@bonstay.com]</li>
+                            <li><strong>Phone:</strong> [+91-3485933941]</li>
+                            <li><strong>Address:</strong> [SRT-121, Oppo to Cure Hospital, Gachibowli, Hyderabad]</li>
                         </ul>
                         {/* Add other sections of the privacy policy */}
                     </DialogContentText>
