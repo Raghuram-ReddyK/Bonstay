@@ -45,7 +45,13 @@ const AccountMenu = ({ handleLogout }) => {
     const [address, setAddress] = React.useState('');
     const [phoneNo, setPhoneNumber] = React.useState('');
     const [selectedOption, setSelectedOption] = React.useState('userDetails');
+    const [userType, setUserType] = React.useState(null)
     const open = Boolean(anchorEl);
+
+    React.useEffect(() => {
+        const storedUserType = sessionStorage.getItem('userType');
+        setUserType(storedUserType)
+    }, [])
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -58,6 +64,8 @@ const AccountMenu = ({ handleLogout }) => {
     const fetchUserInfo = async () => {
         try {
             const userId = sessionStorage.getItem('id');
+            const storedUserType = sessionStorage.getItem('userType');
+            setUserType(storedUserType)
             const response = await axios.get(`http://localhost:4000/users/${userId}`);
             setUserInfo(response.data);
             setEmail(response.data.email);
@@ -219,14 +227,14 @@ const AccountMenu = ({ handleLogout }) => {
                         />
                     </>
                 );
-                case 'contactUs':
-                    return userInfo && <ContactUs userInfo={userInfo} />;
-                case 'faqs':
-                    return <FAQs/>
-                case 'terms':
-                    return <TermsAndConditions/>
-                case 'privacy':
-                    return <PrivacyPolicy/>
+            case 'contactUs':
+                return userInfo && <ContactUs userInfo={userInfo} />;
+            case 'faqs':
+                return <FAQs />
+            case 'terms':
+                return <TermsAndConditions />
+            case 'privacy':
+                return <PrivacyPolicy />
             default:
                 return null;
         }
@@ -258,18 +266,37 @@ const AccountMenu = ({ handleLogout }) => {
                     <Avatar /> My account
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={handleOpenSettings}>
-                    <ListItemIcon>
-                        <Settings fontSize="small" />
-                    </ListItemIcon>
-                    More
-                </MenuItem>
-                <MenuItem onClick={handleCloseMenu}>
-                    <ListItemIcon>
-                        <PersonAdd fontSize="small" />
-                    </ListItemIcon>
-                    Add another account
-                </MenuItem>
+                {userType === 'admin' ? (
+                    <>
+                        <MenuItem onClick={handleOpenSettings}>
+                            <ListItemIcon>
+                                <Settings fontSize='small' />
+                            </ListItemIcon>
+                            Admin Settings
+                        </MenuItem>
+                        <MenuItem onClick={handleCloseMenu}>
+                            <ListItemIcon>
+                                <Settings fontSize='small' />
+                            </ListItemIcon>
+                            User Management
+                        </MenuItem>
+                    </>
+                ) : (
+                    <>
+                        <MenuItem onClick={handleOpenSettings}>
+                            <ListItemIcon>
+                                <Settings fontSize="small" />
+                            </ListItemIcon>
+                            More
+                        </MenuItem>
+                        <MenuItem onClick={handleCloseMenu}>
+                            <ListItemIcon>
+                                <PersonAdd fontSize="small" />
+                            </ListItemIcon>
+                            Add another account
+                        </MenuItem>
+                    </>
+                )}
                 <MenuItem onClick={handleLogout}>
                     <ListItemIcon>
                         <Logout fontSize="small" />
@@ -354,7 +381,7 @@ const AccountMenu = ({ handleLogout }) => {
                     />
                 </DialogTitle>
                 <DialogContent>
-                <Box sx={{ maxHeight: '400px', overflowY: 'auto', mt: 2 }}>
+                    <Box sx={{ maxHeight: '400px', overflowY: 'auto', mt: 2 }}>
                         <Button
                             variant="outlined"
                             onClick={() => setSelectedOption('userDetails')}

@@ -1,12 +1,26 @@
 {
   "users": [
     {
+      "id": "admin01",
+      "name": "Admin User",
+      "address": "Admin Office, Bonstay HQ",
+      "phoneNo": "9999999999",
+      "email": "admin@bonstay.com",
+      "password": "Admin@123",
+      "userType": "admin",
+      "department": "Management"
+    },
+    {
       "id": "e702",
       "name": "VENKATA SWETHA",
       "address": "DNo.1/29, Lingampalli, Hyd",
       "phoneNo": "8142898810",
       "email": "sruthijodu2001@gmail.com",
-      "password": "Sruthi@1"
+      "password": "Sruthi@1",
+      "userType": "user",
+      "dateOfBirth": "1995-05-15",
+      "gender": "female",
+      "occupation": "SE"
     },
     {
       "id": "1e6c",
@@ -14,7 +28,11 @@
       "address": "DNo.1/29,",
       "phoneNo": "8688842126",
       "email": "jodi@outlook.com",
-      "password": "sdfdrgsf@44fS"
+      "password": "sdfdrgsf@44fS",
+      "userType": "user",
+      "dateOfBirth": "1995-05-15",
+      "gender": "female",
+      "occupation": "SE"
     },
     {
       "id": "05fb",
@@ -22,7 +40,11 @@
       "address": "Pandilla Palli, Chirala",
       "phoneNo": "7893859305",
       "email": "raghu@gmail.com",
-      "password": "Raghu@0"
+      "password": "Raghu@0",
+      "userType": "user",
+      "dateOfBirth": "1995-05-10",
+      "gender": "male",
+      "occupation": "SE"
     },
     {
       "id": "2b33",
@@ -30,7 +52,11 @@
       "address": "Srinivasapura, Shimogga",
       "phoneNo": "9964738263",
       "email": "gowthami@gmail.com",
-      "password": "Gow@123"
+      "password": "Gow@123",
+      "userType": "user",
+      "dateOfBirth": "1995-05-15",
+      "gender": "female",
+      "occupation": "SE"
     },
     {
       "id": "a734",
@@ -38,7 +64,11 @@
       "address": "Pandilla Palli, Bestavari Peta, Prakasam. 523334",
       "phoneNo": "7013175757",
       "email": "syamakurirajasekharreddy@gmail.com",
-      "password": "Rajasekhar@1"
+      "password": "Rajasekhar@1",
+      "userType": "user",
+      "dateOfBirth": "1995-05-15",
+      "gender": "male",
+      "occupation": "SE"
     },
     {
       "id": "4fde",
@@ -46,7 +76,11 @@
       "address": "Piduguralla",
       "phoneNo": "0630368000",
       "email": "pavan@outlook.com",
-      "password": "Pav@1"
+      "password": "Pav@1",
+      "userType": "user",
+      "dateOfBirth": "1995-05-15",
+      "gender": "male",
+      "occupation": "SE"
     },
     {
       "id": "3140",
@@ -55,7 +89,41 @@
       "country": "Australia",
       "phoneNo": "0000000000",
       "email": "ri604@gmail.com",
-      "password": "Sri@1"
+      "password": "Sri@1",
+      "userType": "user",
+      "dateOfBirth": "1995-05-15",
+      "gender": "male",
+      "occupation": "SE"
+    },
+    {
+      "id": "32aa",
+      "name": "Tester",
+      "address": "Test",
+      "country": "Afghanistan",
+      "phoneNo": "0000000000",
+      "email": "ri6041@gmail.com",
+      "password": "Test@1",
+      "userType": "user",
+      "adminCode": "",
+      "department": "",
+      "dateOfBirth": "2025-07-11",
+      "gender": "male",
+      "occupation": "Tester"
+    },
+    {
+      "id": "e390",
+      "name": "Tester",
+      "address": "Test",
+      "country": "Armenia",
+      "phoneNo": "0000000000",
+      "email": "test@gmail.com",
+      "password": "Test@1",
+      "userType": "admin",
+      "adminCode": "ADMIN2024",
+      "department": "AD",
+      "dateOfBirth": "",
+      "gender": "",
+      "occupation": ""
     }
   ],
   "payments": [
@@ -122,6 +190,30 @@
     {
       "id": "2924",
       "bookingId": "e3cd",
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "0602",
+      "bookingId": "632b",
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "4bb4",
+      "bookingId": "c8be",
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "5a43",
+      "bookingId": "484a",
+      "amount": 1,
+      "method": "Google Pay"
+    },
+    {
+      "id": "d2a0",
+      "bookingId": "58e2",
       "amount": 1,
       "method": "Google Pay"
     }
@@ -195,6 +287,46 @@
       "noOfRooms": 1,
       "typeOfRoom": "double with A/c",
       "hotelId": "3"
+    },
+    {
+      "id": "632b",
+      "startDate": "2025-07-06T00:00:00.000Z",
+      "endDate": "2025-07-10T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "single with A/c",
+      "hotelId": "2",
+      "userId": "1e6c"
+    },
+    {
+      "id": "c8be",
+      "startDate": "2025-07-07T00:00:00.000Z",
+      "endDate": "2025-07-18T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "double with A/c",
+      "hotelId": "3",
+      "userId": "1e6c"
+    },
+    {
+      "id": "484a",
+      "startDate": "2025-07-15T00:00:00.000Z",
+      "endDate": "2025-08-01T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "single with A/c",
+      "hotelId": "2",
+      "userId": "32aa"
+    },
+    {
+      "id": "58e2",
+      "startDate": "2025-07-06T00:00:00.000Z",
+      "endDate": "2025-07-18T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "single with A/c",
+      "hotelId": "2",
+      "userId": "3140"
     }
   ],
   "forgot-password": [

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from './Slices/registerSlice'; // Import the Redux action
-import { Button, TextField, Typography, Link as MuiLink, Container } from '@mui/material';
+import { Button, TextField, Typography, Link as MuiLink, Container, FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material';
 import CountrySelect from './CountrySelect';
 
 const RegistrationPage = () => {
@@ -11,7 +11,13 @@ const RegistrationPage = () => {
         country: '',
         phoneNo: '',
         email: '',
-        password: ''
+        password: '',
+        userType: 'user',
+        adminCode: '',
+        department: '',
+        dateOfBirth: '',
+        gender: '',
+        occupation: '',
     });
 
     const [formErrors, setFormErrors] = useState({
@@ -20,7 +26,12 @@ const RegistrationPage = () => {
         country: '',
         phoneNo: '',
         email: '',
-        password: ''
+        password: '',
+        adminCode: '',
+        department: '',
+        dateOfBirth: '',
+        gender: '',
+        occupation: '',
     });
 
     const [registeredId, setRegisteredId] = useState(null); // To store the newly created user ID
@@ -57,6 +68,18 @@ const RegistrationPage = () => {
             const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*!])[A-Za-z\d@#$%^&*!]{4,100}$/;
             if (!passwordRegex.test(value)) {
                 error = 'Password must be between 4 and 100 characters, include at least one Uppercase, one lowercase, one number, and one special character';
+            }
+        }
+
+        if (name === 'adminCode' && state.userType === 'admin') {
+            if (value !== 'ADMIN2024') {
+                error = 'Invalid admin code';
+            }
+        }
+
+        if (name === 'department' && state.userType === 'admin') {
+            if (value.length < 2) {
+                error = 'Department must be at least 2 characters';
             }
         }
 
@@ -111,6 +134,28 @@ const RegistrationPage = () => {
             errors.password = 'Password must be between 4 and 100 characters, include at least one Uppercase, one lowercase, one number, and one special character';
         }
 
+        if (state.userType === 'admin') {
+            if (!state.adminCode || state.adminCode !== 'ADMIN2024') {
+                errors.adminCode = 'Valid admin code is required'
+            }
+            if (!state.userType === 'user') {
+                if (!state.department || state.department.length < 2) {
+                    errors.department = 'Department is required'
+                }
+            }
+        }
+
+        if (state.userType === 'user') {
+            if (!state.dateOfBirth) {
+                errors.dateOfBirth = 'Date of birth is required';
+            }
+            if (!state.gender) {
+                errors.errors = 'Gender is required'
+            }
+            if (!state.occupation) {
+                errors.occupation = 'Occupation is required'
+            }
+        }
         setFormErrors(errors);
 
         // Form is valid if there are no error messages
@@ -145,6 +190,20 @@ const RegistrationPage = () => {
                 <Typography variant="h4" gutterBottom>
                     Register
                 </Typography>
+
+                <FormControl fullWidth margin='normal'>
+                    <InputLabel sx={{ color: 'white' }}> Login As </InputLabel>
+                    <Select
+                        name='userType'
+                        value={state.userType}
+                        onChange={handleChange}
+                        label="User Type"
+                    >
+                        <MenuItem value="user"> Normal User </MenuItem>
+                        <MenuItem value="admin"> Administrator </MenuItem>
+                    </Select>
+                </FormControl>
+
                 <TextField
                     name="name"
                     label="Name"
@@ -199,6 +258,75 @@ const RegistrationPage = () => {
                     fullWidth
                     margin="normal"
                 />
+
+                {/* Admin specific Fields*/}
+                {state.userType === 'admin' && (
+                    <>
+                        <TextField
+                            name='adminCode'
+                            label="Admin Code"
+                            onChange={handleChange}
+                            error={!!formErrors.adminCode}
+                            helperText={formErrors.adminCode || "Enter the admin verification code"}
+                            type='password'
+                            fullWidth
+                            margin='normal'
+                        />
+                        <TextField
+                            name='department'
+                            label="Department"
+                            onChange={handleChange}
+                            error={!!formErrors.department}
+                            helperText={formErrors.department}
+                            fullWidth
+                            margin='normal'
+                        />
+                    </>
+                )}
+
+                {/* Normal user specific Fields*/}
+                {state.userType === 'user' && (
+                    <>
+                        <TextField
+                            name='dateOfBirth'
+                            label="Date of Birth"
+                            type='date'
+                            value={state.dateOfBirth}
+                            onChange={handleChange}
+                            error={!!formErrors.dateOfBirth}
+                            helperText={formErrors.dateOfBirth}
+                            fullWidth
+                            margin='normal'
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
+                        <FormControl fullWidth margin='normal' error={!!formErrors.gender}>
+                            <InputLabel> Gender </InputLabel>
+                            <Select
+                                name='gender'
+                                value={state.gender}
+                                onChange={handleChange}
+                                label="Gender"
+                            >
+                                <MenuItem value="male">Male</MenuItem>
+                                <MenuItem value="female">Female</MenuItem>
+                                <MenuItem value="others">Others</MenuItem>
+                            </Select>
+                            {formErrors.gender && <FormHelperText>{formErrors.gender}</FormHelperText>}
+                        </FormControl>
+                        <TextField
+                            name='occupation'
+                            label="Occupation"
+                            value={state.occupation}
+                            onChange={handleChange}
+                            error={!!formErrors.occupation}
+                            helperText={formErrors.occupation}
+                            fullWidth
+                            margin='normal'
+                        />
+                    </>
+                )}
                 <Button
                     type="submit"
                     variant="contained"

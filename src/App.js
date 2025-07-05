@@ -47,13 +47,22 @@ import PrivacyPolicy from "./BonstayAfterLogin/PrivacyPolicy";
 import Footer from "./Footer";
 import TermsAndConditions from "./BonstayAfterLogin/TermsAndConditions";
 import PaymentPage from "./BonstayAfterLogin/PaymentPage";
+import AdminDashboard from "./BonstayAfterLogin/AdminDashboard";
 
 // Private Route Component to protect user-specific routes
-const PrivateRoute = ({ element, userId, loggedInUserId }) => {
+const PrivateRoute = ({ element, userId, loggedInUserId, requiredUserType = null }) => {
+  const userType = sessionStorage.getItem('userType');
   if (!loggedInUserId) {
     return <Navigate to="/login" replace />; // Redirect to login if not logged in
   }
-
+  if (requiredUserType && userType !== requiredUserType) {
+    if (userType === "admin") {
+      return <Navigate to={`/admin-dashboard/${loggedInUserId}`} replace />;
+    }
+    else {
+      return <Navigate to={`/dashboard/${loggedInUserId}`} replace />
+    }
+  }
   // If user is logged in but the route is for a different user, redirect to login
   if (userId && userId !== loggedInUserId) {
     return <Navigate to="/" replace />;
@@ -84,6 +93,7 @@ const App = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [userType, setUserType] = useState(null);
   const [notifications, setNotifications] = useState([]); // Store multiple notifications
   const [unreadNotifications, setUnreadNotifications] = useState(0); // Track unread notifications count
   const [dialogOpen, setDialogOpen] = useState(false); // Dialog state for displaying notifications
@@ -94,17 +104,21 @@ const App = () => {
   useEffect(() => {
     // Check if the user is logged in by checking sessionStorage
     const storedUserId = sessionStorage.getItem("id");
+    const storedUserType = sessionStorage.getItem("userType");
     if (storedUserId) {
       setIsLoggedIn(true);
       setUserId(storedUserId);
+      setUserType(storedUserType);
     }
   }, []);
 
   // Handle logout
   const handleLogout = () => {
     sessionStorage.removeItem("id");
+    sessionStorage.removeItem("userType")
     setIsLoggedIn(false);
     setUserId(null);
+    setUserType(null)
     addNotification("Logged out successfully!");
     navigate("/");
   };
@@ -129,6 +143,10 @@ const App = () => {
       case "/dashboard":
       case `/dashboard/${userId}`:
         newMessage = "Dashboard information loaded!";
+        break;
+      case "/admin-dashboard":
+      case `/admin-dashboard/${userId}`:
+        newMessage = "Admin Dashboard loaded!";
         break;
       case "/view":
       case `/view/${userId}`:
@@ -205,31 +223,35 @@ const App = () => {
                   <Button
                     color="inherit"
                     component={NavLink}
-                    to={`/dashboard/${userId}`}
+                    to={userType === 'admin' ? `/admin-dashboard/${userId}` : `/dashboard/${userId}`}
                   >
                     Dashboard
                   </Button>
-                  <Button
-                    color="inherit"
-                    component={NavLink}
-                    to={`/hotels/${userId}`}
-                  >
-                    Hotels
-                  </Button>
-                  <Button
-                    color="inherit"
-                    component={NavLink}
-                    to={`/bookings/${userId}`}
-                  >
-                    Bookings
-                  </Button>
-                  <Button
-                    color="inherit"
-                    component={NavLink}
-                    to={`/view/${userId}`}
-                  >
-                    View
-                  </Button>
+                  {userType !== 'admin' && (
+                    <>
+                      <Button
+                        color="inherit"
+                        component={NavLink}
+                        to={`/hotels/${userId}`}
+                      >
+                        Hotels
+                      </Button>
+                      <Button
+                        color="inherit"
+                        component={NavLink}
+                        to={`/bookings/${userId}`}
+                      >
+                        Bookings
+                      </Button>
+                      <Button
+                        color="inherit"
+                        component={NavLink}
+                        to={`/view/${userId}`}
+                      >
+                        View
+                      </Button>
+                    </>
+                  )}
                 </Box>
                 {/* Right side: Theme Toggle, Notification Icon, Account Menu */}
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -296,6 +318,7 @@ const App = () => {
                     element={<DashBoard />}
                     userId={userId}
                     loggedInUserId={userId}
+                    requiredUserType="user"
                   />
                 }
               />
@@ -306,6 +329,29 @@ const App = () => {
                     element={<DashBoard />}
                     userId={userId}
                     loggedInUserId={userId}
+                    requiredUserType="user"
+                  />
+                }
+              />
+              <Route
+                path="/admin-dashboard/:id"
+                element={
+                  <PrivateRoute
+                    element={<AdminDashboard />}
+                    userId={userId}
+                    loggedInUserId={userId}
+                    requiredUserType="admin"
+                  />
+                }
+              />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <PrivateRoute
+                    element={<AdminDashboard />}
+                    userId={userId}
+                    loggedInUserId={userId}
+                    requiredUserType="admin"
                   />
                 }
               />
@@ -441,7 +487,7 @@ const App = () => {
                 path="/view/:id"
                 element={
                   <PrivateRoute
-                    element={<View handleLogout={handleLogout} userId={userId}/>}
+                    element={<View handleLogout={handleLogout} userId={userId} />}
                     userId={userId}
                     loggedInUserId={userId}
                   />

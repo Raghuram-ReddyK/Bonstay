@@ -16,12 +16,17 @@ import {
     DialogContent,
     DialogTitle,
     DialogContentText,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@mui/material';
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
     const navigate = useNavigate();
     const [userIdOrEmail, setUserIdOrEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [userType, setUserType] = useState('user') // Track Login Type
     const [rememberMe, setRememberMe] = useState(false);
     const [acceptPrivacy, setAcceptPrivacy] = useState(false);
     const [success, setSuccess] = useState('');
@@ -61,14 +66,25 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
             else {
                 const response = await axios.get(`http://localhost:4000/users/${userIdOrEmail}`);
                 userData = response.data
+                console.log('userData: ', userData);
             }
 
             if (userData && userData.password === password) {
+                if (userData.userType !== userType) {
+                    setError(`Invalid login type. This account is registered as ${userData.userType === 'admin' ? 'Administrator' : 'Normal User'}`)
+                    return;
+                }
                 sessionStorage.setItem('id', userData.id);
+                sessionStorage.setItem('userType', userData.userType);
                 setIsLoggedIn(true);
                 setUserId(userData.id); // Set the userId in the state immediately
                 setSuccess('Login successful!');
-                navigate(`/dashboard/${userData.id}`); // Correct navigation
+
+                if (userData.userType === 'admin') {
+                    navigate(`/admin-dashboard/${userData.id}`)
+                } else {
+                    navigate(`/dashboard/${userData.id}`);
+                }
             } else {
                 setError('Invalid Username/Email/Password');
             }
@@ -116,7 +132,17 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 {isLoading && <CircularProgress sx={{ mx: 'auto', mb: 2 }} />}
                 {error && <Alert severity="error">{error}</Alert>}
                 {success && <Alert severity="success">{success}</Alert>}
-
+                <FormControl fullWidth margin="normal">
+                    <InputLabel sx={{ color: 'white' }}> Login As </InputLabel>
+                    <Select
+                        value={userType}
+                        onChange={(e) => setUserType(e.target.value)}
+                        label="Login As"
+                        sx={{ color: "white", '& .MuiOutlinedInput-notchedOutline': { borderColor: 'white' } }} >
+                        <MenuItem value="user"> Normal User </MenuItem>
+                        <MenuItem value="admin"> Administrator </MenuItem>
+                    </Select>
+                </FormControl>
                 <TextField
                     label="UserID or Email"
                     margin="normal"
