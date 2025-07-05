@@ -445,9 +445,9 @@ const AdminDashboard = () => {
                                         {getUserBookings(selectedUser.id).map((booking) => (
                                             <TableRow key={booking.id}>
                                                 <TableCell>{booking.id}</TableCell>
-                                                <TableCell>{booking.hotelName || booking.hotel}</TableCell>
-                                                <TableCell>{booking.checkIn}</TableCell>
-                                                <TableCell>{booking.checkOut}</TableCell>
+                                                <TableCell>{booking.hotelName || booking.hotelId}</TableCell>
+                                                <TableCell>{booking.startDate}</TableCell>
+                                                <TableCell>{booking.endDate}</TableCell>
                                                 <TableCell>
                                                     <Chip
                                                         label={booking.status || 'confirmed'}
