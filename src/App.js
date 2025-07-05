@@ -441,18 +441,7 @@ const App = () => {
                 path="/view/:id"
                 element={
                   <PrivateRoute
-                    element={<View handleLogout={handleLogout} />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-
-              <Route
-                path="/view/:id"
-                element={
-                  <PrivateRoute
-                    element={<View />}
+                    element={<View handleLogout={handleLogout} userId={userId}/>}
                     userId={userId}
                     loggedInUserId={userId}
                   />
