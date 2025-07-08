@@ -48,6 +48,7 @@ import Footer from "./Footer";
 import TermsAndConditions from "./BonstayAfterLogin/TermsAndConditions";
 import PaymentPage from "./BonstayAfterLogin/PaymentPage";
 import AdminDashboard from "./BonstayAfterLogin/AdminDashboard";
+import AdminCodeRequest from "./BonstayAfterLogin/AdminCodeRequest";
 
 // Private Route Component to protect user-specific routes
 const PrivateRoute = ({ element, userId, loggedInUserId, requiredUserType = null }) => {
@@ -300,6 +301,7 @@ const App = () => {
         <Routes>
           <Route index path="/" element={<Home />} />
           <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/admin-code-request" element={<AdminCodeRequest />} />
           <Route
             path="/login"
             element={

@@ -272,6 +272,12 @@ const RegistrationPage = () => {
                             fullWidth
                             margin='normal'
                         />
+                        <Typography variant='body2' sx={{ mt: 1, mb: 2 }}>
+                            Don't have an admin code?
+                            <MuiLink href="/admin-code-request" target="_blank" sx={{ ml: 1 }}>
+                                request Admin Code
+                            </MuiLink>
+                        </Typography>
                         <TextField
                             name='department'
                             label="Department"
