@@ -41,7 +41,7 @@ const AdminDashboard = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [userDialogOpen, setUserDialogOpen] = useState(false);
     const [, setBookingDialogOpen] = useState(false);
-    const [adminCodeRequests, setAdminCodeRequests] = useState('');
+    const [adminCodeRequests, setAdminCodeRequests] = useState([]);
     const [requestDialogOpen, setRequestDialogOpen] = useState('');
     const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
         try {
             const timeStamp = Date.now();
             const url = forceRefresh ? `http://localhost:4000/admin-code-requests?_t=${timeStamp}&_nocache=true` :
-                `http://localhost:4000/admin-code-requests_t=${timeStamp}`
+                `http://localhost:4000/admin-code-requests?_t=${timeStamp}`
             console.log('url: ', url);
             const response = await axios.get(url, {
                 headers: {
@@ -289,7 +289,7 @@ const AdminDashboard = () => {
 
     const resetDialogStates = () => {
         setSelectedRequest(null);
-        setRejectDialogOpen(false);
+        setRequestDialogOpen(false);
         setRejectDialogOpen(false);
         setRejectionReason('');
     }
