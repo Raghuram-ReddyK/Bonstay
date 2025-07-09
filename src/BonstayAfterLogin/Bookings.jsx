@@ -7,6 +7,7 @@ import { saveAs } from 'file-saver';
 
 const Bookings = ({ userId }) => { // Destructure userId prop here
     const [bookings, setBookings] = useState([]);
+    console.log('bookings: ', bookings);
     const [hotels, setHotels] = useState([]);
     const [cancelSuccess, setCancelSuccess] = useState('');
     const [cancelError, setCancelError] = useState('');
@@ -29,13 +30,13 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                     return matchesCurrentUser;
                 })
 
-                if(userBookings.length === 0) {
+                if (userBookings.length === 0) {
                     console.log(`No bookings found for user ${userId}. This could be bacause:`);
                     console.log('1. The user has not made any bookings yet');
                     console.log('2. Existing bookings were created before the userId field was added');
                     console.log('3. There might be a data type mismatch between userId and booking.userId')
                 }
-                
+
                 // Set the state with the fetched data
                 setBookings(userBookings);
                 setHotels(hotelsResponse.data);
@@ -88,17 +89,17 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
         const data = bookings.map((booking) => ({
             'Booking ID': booking.id,
             'Hotel Name': hotelMap[String(booking.hotelId)] || 'Unknown Hotel', // Using hotelMap for hotel name
-            'Check-In Date': booking.startDate,
-            'Check-Out Date': booking.endDate,
-            'Number of Persons': booking.noOfPersons,
+            'Check-In Date': booking.checkIn || booking.startDate,
+            'Check-Out Date': booking.checkOut || booking.endDate,
+            'Number of Persons': booking.guests || booking.noOfPersons,
             'Number of Rooms': booking.noOfRooms,
-            'Type of Room': booking.typeOfRoom,
+            'Type of Room': booking.roomType || booking.typeOfRoom,
         }));
 
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Bookings');
-        
+
         // Save as Excel file
         const excelFile = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
         saveAs(new Blob([excelFile], { type: 'application/octet-stream' }), 'bookings.xlsx');
@@ -140,11 +141,11 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                                             {hotelMap[String(booking.hotelId)] || 'Unknown Hotel'}
                                         </h5>
                                         <p><b>Booking Id:</b> {booking.id}</p>
-                                        <p><b>Check-In Date:</b> {booking.startDate}</p>
-                                        <p><b>Check-Out Date:</b> {booking.endDate}</p>
-                                        <p><b>Number of Persons:</b> {booking.noOfPersons}</p>
+                                        <p><b>Check-In Date:</b> {booking.checkIn || booking.startDate}</p>
+                                        <p><b>Check-Out Date:</b> {booking.checkOut || booking.endDate}</p>
+                                        <p><b>Number of Persons:</b> {booking.guests || booking.noOfPersons}</p>
                                         <p><b>Number of Rooms:</b> {booking.noOfRooms}</p>
-                                        <p><b>Type of Room:</b> {booking.typeOfRoom}</p>
+                                        <p><b>Type of Room:</b> {booking.roomType || booking.typeOfRoom}</p>
                                     </div>
                                     <div className="card-footer">
                                         <Button

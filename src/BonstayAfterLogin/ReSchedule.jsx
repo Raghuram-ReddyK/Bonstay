@@ -17,8 +17,16 @@ const ReSchedule = () => {
             try {
                 const response = await axios.get(`http://localhost:4000/bookings/${id}`);
                 setBookingData(response.data);
-                setStartDate(new Date(response.data.startDate));
-                setEndDate(new Date(response.data.endDate));
+                const startDateValue = response.data.checkIn || response.data.startDate;
+                const endDateValue = response.data.checkout || response.data.endDate;
+
+                if (startDateValue && endDateValue) {
+                    setStartDate(new Date(startDateValue));
+                    setEndDate(new Date(endDateValue));
+                } else {
+                    console.error('Missing date fields in booking data:', response.data);
+                    setError('Invalid booking data: missing date fields.');
+                }
             } catch (error) {
                 console.error('Error fetching booking data:', error);
                 setError('An error occurred while fetching booking data.'); // Set error state here
@@ -56,11 +64,19 @@ const ReSchedule = () => {
 
         if (validateForm()) {
             try {
-                const updatedBooking = {
-                    ...bookingData,
-                    startDate,
-                    endDate,
-                };
+                // Create updated booking with proper field names based on original booking format
+                const updatedBooking = { ...bookingData };
+
+                // Check if original booking used checkin/checkout (admin-created) or startDate/endDate (user-created)
+                if (bookingData.checkIn !== undefined || bookingData.checkout !== undefined) {
+                    // Admin-created booking format
+                    updatedBooking.checkIn = startDate.toISOString().split('T')[0];
+                    updatedBooking.checkout = endDate.toISOString().split('T')[0];
+                } else {
+                    // User-created booking format
+                    updatedBooking.startDate = startDate.toISOString().split('T')[0];
+                    updatedBooking.endDate = endDate.toISOString().split('T')[0];
+                }
 
                 const response = await axios.put(`http://localhost:4000/bookings/${id}`, updatedBooking);
                 console.log(response);

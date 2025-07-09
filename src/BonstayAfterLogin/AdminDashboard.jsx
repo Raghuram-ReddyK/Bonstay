@@ -26,7 +26,8 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    IconButton
+    IconButton,
+    MenuItem,
 } from '@mui/material';
 import { AdminCodeUtils, emailService, smsService } from '../services/communicationServices';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -35,12 +36,12 @@ const AdminDashboard = () => {
     const [admin, setAdmin] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
     const [allBookings, setAllBookings] = useState([]);
+    const [allHotels, setAllHotels] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [tabValue, setTabValue] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [userDialogOpen, setUserDialogOpen] = useState(false);
-    const [, setBookingDialogOpen] = useState(false);
     const [adminCodeRequests, setAdminCodeRequests] = useState([]);
     const [requestDialogOpen, setRequestDialogOpen] = useState('');
     const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -49,6 +50,7 @@ const AdminDashboard = () => {
     const [newBooking, setNewBooking] = useState({
         userId: '',
         hotelName: '',
+        hotelId: '',
         checkIn: '',
         checkout: '',
         guests: 1,
@@ -59,6 +61,7 @@ const AdminDashboard = () => {
         fetchAdminData();
         fetchAllUsers();
         fetchAllBookings();
+        fetchAllHotels();
         fetchAdminCodeRequests();
     }, []);
 
@@ -94,6 +97,15 @@ const AdminDashboard = () => {
             console.error('Error fetching bookings:', error);
         }
     };
+
+    const fetchAllHotels = async () => {
+        try {
+            const response = await axios.get(`http://localhost:4000/hotels`);
+            setAllHotels(response.data);
+        } catch (error) {
+            console.error("Error fetching hotels", error);
+        }
+    }
 
     const fetchAdminCodeRequests = async (forceRefresh = false) => {
         try {
@@ -305,25 +317,65 @@ const AdminDashboard = () => {
 
     const handleCreateBooking = async () => {
         try {
+            if (!newBooking.userId || !newBooking.hotelId || !newBooking.checkIn || !newBooking.checkout) {
+                alert('Please fill the required fields');
+                return;
+            }
+
+            const checkInDate = new Date(newBooking.checkIn);
+            const checkOutDate = new Date(newBooking.checkout);
+            const currentDate = new Date();
+            currentDate.setHours(0, 0, 0, 0);
+
+            if (checkInDate < currentDate) {
+                alert('Check-in date cannot be in the past');
+                return;
+            }
+
+            if (checkOutDate <= checkInDate) {
+                alert('Check-out date must be after check-in date');
+                return;
+            }
+
             const bookingData = {
                 ...newBooking,
                 id: Date.now().toString(),
                 status: 'confirmed',
-                bookingDate: new Date().toISOString().split('T')[0]
+                bookingDate: new Date().toISOString().split('T')[0],
+                createdBy: admin.id,
+                createdAt: new Date().toISOString()
             };
+
             await axios.post(`http://localhost:4000/bookings`, bookingData);
-            setBookingDialogOpen(false);
+
+            const user = allUsers.find(u => u.id === newBooking.userId)
+            const hotel = allUsers.find(h => h.id === newBooking.hotelId)
+            const userName = user ? user.name : newBooking.userId;
+            const hotelInfo = hotel ? `${hotel.hotelName} (${hotel.city})` : newBooking.hotelName;
+
+            alert(`Booking created Successfully! 
+                    User: ${userName}
+                    Hotel: ${hotelInfo}
+                    Check-In: ${newBooking.checkIn}
+                    Check-Out: ${newBooking.checkout}
+                    Guests: ${newBooking.guests}
+                    Room Type: ${newBooking.roomType}
+                    Booking Id: ${bookingData.id}
+                    The booking has been confirmed and is now visible in the Booking Management`)
+
             setNewBooking({
                 userId: '',
                 hotelName: '',
+                hotelId: '',
                 checkIn: '',
                 checkout: '',
                 guests: 1,
                 roomType: 'Standard'
             });
-            fetchAllBookings();
+            await fetchAllBookings();
         } catch (error) {
             console.error('Error creating booking:', error);
+            alert(`Failed to create booking: ${error.response?.data?.message || error.message || 'Unknown error'}`)
         }
     };
 
@@ -484,9 +536,9 @@ const AdminDashboard = () => {
                                     <TableCell>{booking.id}</TableCell>
                                     <TableCell>{booking.userId}</TableCell>
                                     <TableCell>{booking.hotelName || booking.hotel}</TableCell>
-                                    <TableCell>{booking.startDate}</TableCell>
-                                    <TableCell>{booking.endDate}</TableCell>
-                                    <TableCell>{booking.guests}</TableCell>
+                                    <TableCell>{booking.checkIn || booking.startDate}</TableCell>
+                                    <TableCell>{booking.checkOut || booking.endDate}</TableCell>
+                                    <TableCell>{booking.guests || booking.noOfPersons}</TableCell>
                                     <TableCell>
                                         <Chip
                                             label={booking.status || 'confirmed'}
@@ -501,30 +553,74 @@ const AdminDashboard = () => {
             </TabPanel>
 
             <TabPanel value={tabValue} index={2}>
+                <Typography variant='h5' gutterBottom>
+                    Create Booking for User
+                </Typography>
+                <Typography variant='body2' color="text.secondary" sx={{ mb: 3 }}>
+                    Use this form to create hotel bookings on behalf of users. All fields marked with * are required.
+                </Typography>
                 <Box component="form" sx={{ mt: 2 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
                             <Autocomplete
                                 options={allUsers}
-                                getOptionLabel={(option) => `${option.name} (${option.id})`}
+                                getOptionLabel={(option) => `${option.name} ${option.email} - ID: (${option.id})`}
+                                value={allUsers.find(user => user.id === newBooking.userId) || null}
                                 onChange={(_event, value) =>
                                     setNewBooking(prev => ({ ...prev, userId: value?.id || '' }))
                                 }
                                 renderInput={(params) => (
-                                    <TextField {...params} label="Select User" required />
+                                    <TextField
+                                        {...params}
+                                        label="Select User" required
+                                        helperText="Choose the user for whom you're creating this booking"
+                                    />
+                                )}
+                                renderOption={(props, option) => (
+                                    <Box component="li" {...props}>
+                                        <Box>
+                                            <Typography variant='body1'>{option.name}</Typography>
+                                            <Typography>
+                                                {option.email} ID: {option.id}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
                                 )}
                             />
                         </Grid>
 
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Hotel Name"
-                                value={newBooking.hotelName}
-                                onChange={(e) =>
-                                    setNewBooking(prev => ({ ...prev, hotelName: e.target.value }))
-                                }
-                                fullWidth
-                                required
+                            <Autocomplete
+                                options={allHotels}
+                                getOptionLabel={(option) => `${option.hotelName} - ${option.city}`}
+                                value={allHotels.find(hotel => hotel.id === newBooking.hotelId) || null}
+                                onChange={(_event, value) => setNewBooking(prev => ({
+                                    ...prev,
+                                    hotelId: value?.id || '',
+                                    hotelName: value?.hotelName || ''
+                                }))}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Select Hotel"
+                                        required
+                                        helperText="Choose a hotel from available options"
+                                    />
+                                )}
+                                renderOption={(props, option) => (
+                                    <Box component="li" {...props}>
+                                        <Box>
+                                            <Typography variant="body1">{option.hotelName}</Typography>
+                                            <Typography variant='body2' color='text.secondary'>
+                                                {option.city} {option.phoneNo}
+                                            </Typography>
+                                            <Typography variant='caption' color='text.secondary'>
+                                                {option.description}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                )}
+                                isOptionEqualToValue={(option, value) => option.id === value.id}
                             />
                         </Grid>
 
@@ -539,6 +635,8 @@ const AdminDashboard = () => {
                                 fullWidth
                                 required
                                 InputLabelProps={{ shrink: true }}
+                                inputProps={{ min: new Date().toISOString().split('T')[0] }}
+                                helperText="Check-in date {today or later}"
                             />
                         </Grid>
 
@@ -553,6 +651,12 @@ const AdminDashboard = () => {
                                 fullWidth
                                 required
                                 InputLabelProps={{ shrink: true }}
+                                inputProps={{
+                                    min: newBooking.checkIn ?
+                                        new Date(new Date(newBooking.checkIn).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] :
+                                        new Date().toISOString().split('T')[0]
+                                }}
+                                helperText="Check-out date (must be after check-in)"
                             />
                         </Grid>
 
@@ -562,37 +666,117 @@ const AdminDashboard = () => {
                                 type="number"
                                 value={newBooking.guests}
                                 onChange={(e) =>
-                                    setNewBooking(prev => ({ ...prev, guests: parseInt(e.target.value) }))
+                                    setNewBooking(prev => ({ ...prev, guests: parseInt(e.target.value) || 1 }))
                                 }
                                 fullWidth
-                                inputProps={{ min: 1 }}
+                                inputProps={{ min: 1, max: 10 }}
+                                helperText="Number of guests (1-10)"
                             />
                         </Grid>
 
                         <Grid item xs={12} md={6}>
                             <TextField
+                                select
                                 label="Room Type"
                                 value={newBooking.roomType}
                                 onChange={(e) =>
                                     setNewBooking(prev => ({ ...prev, roomType: e.target.value }))
                                 }
                                 fullWidth
-                            />
+                                helperText="Select the type of room" >
+                                <MenuItem value='Standard'>Standard Room</MenuItem>
+                                <MenuItem value='Deluxe'>Deluxe Room</MenuItem>
+                                <MenuItem value='Suite'>Suite</MenuItem>
+                                <MenuItem value='Executive'>Executive Room</MenuItem>
+                                <MenuItem value='Presidential'>Presidential Room</MenuItem>
+                            </TextField>
                         </Grid>
 
+                        {/* Summary Section */}
+                        {newBooking.userId && newBooking.hotelId && newBooking.checkIn && newBooking.checkout && (
+                            <Grid item xs={12}>
+                                <Box
+                                    sx={{
+                                        p: 2,
+                                        bgcolor: 'background.paper',
+                                        border: 1,
+                                        borderColor: 'divider',
+                                        borderRadius: 1,
+                                        mt: 2,
+                                    }}
+                                >
+                                    <Typography variant="h6" gutterBottom>Booking Summary</Typography>
+
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography>
+                                                <strong>User:</strong> {allUsers.find(u => u.id === newBooking.userId)?.name || 'Unknown'}
+                                            </Typography>
+
+                                            <Typography>
+                                                <strong>Hotel:</strong>
+                                                {(() => {
+                                                    const hotel = allHotels.find(h => h.id === newBooking.hotelId);
+                                                    return hotel ? `${hotel.hotelName} (${hotel.city})` : 'Unknown';
+                                                })()}
+                                            </Typography>
+
+                                            <Typography><strong>Room Type:</strong> {newBooking.roomType}</Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12} md={6}>
+                                            <Typography><strong>Check-in:</strong> {newBooking.checkIn}</Typography>
+                                            <Typography><strong>Check-out:</strong> {newBooking.checkout}</Typography>
+                                            <Typography><strong>Guests:</strong> {newBooking.guests}</Typography>
+
+                                            {newBooking.checkIn && newBooking.checkout && (
+                                                <Typography>
+                                                    <strong>Duration:</strong>{' '}
+                                                    {Math.ceil(
+                                                        (new Date(newBooking.checkout) - new Date(newBooking.checkIn)) /
+                                                        (1000 * 60 * 60 * 24)
+                                                    )} night(s)
+                                                </Typography>
+                                            )}
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                            </Grid>
+                        )}
+
                         <Grid item xs={12}>
-                            <Button
-                                variant="contained"
-                                onClick={handleCreateBooking}
-                                disabled={
-                                    !newBooking.userId ||
-                                    !newBooking.hotelName ||
-                                    !newBooking.checkIn ||
-                                    !newBooking.checkout
-                                }
-                            >
-                                Create Booking
-                            </Button>
+                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleCreateBooking}
+                                    disabled={
+                                        !newBooking.userId ||
+                                        !newBooking.hotelId ||
+                                        !newBooking.checkIn ||
+                                        !newBooking.checkout
+                                    }
+                                    size='large'
+                                >
+                                    Create Booking
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() =>
+                                        setNewBooking({
+                                            userId: '',
+                                            hotelName: '',
+                                            hotelId: '',
+                                            checkIn: '',
+                                            checkout: '',
+                                            guests: 1,
+                                            roomType: 'Standard',
+                                        })
+                                    }
+                                    size="large"
+                                >
+                                    Clear Form
+                                </Button>
+                            </Box>
                         </Grid>
                     </Grid>
                 </Box>

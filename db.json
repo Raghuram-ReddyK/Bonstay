@@ -249,7 +249,7 @@
     },
     {
       "id": "6693",
-      "bookingId": "a7a7",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     }
@@ -415,14 +415,18 @@
       "userId": "3140"
     },
     {
-      "id": "a7a7",
-      "startDate": "2025-07-10T00:00:00.000Z",
-      "endDate": "2025-07-10T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "suite with A/c",
+      "id": "1752066941407",
+      "userId": "3140",
+      "hotelName": "Sunset Tower",
       "hotelId": "5",
-      "userId": "3140"
+      "checkIn": "2025-07-10",
+      "checkout": "2025-07-18",
+      "guests": 1,
+      "roomType": "Standard",
+      "status": "confirmed",
+      "bookingDate": "2025-07-09",
+      "createdBy": "admin01",
+      "createdAt": "2025-07-09T13:15:41.408Z"
     }
   ],
   "forgot-password": [
