@@ -18,7 +18,7 @@ const ReSchedule = () => {
                 const response = await axios.get(`http://localhost:4000/bookings/${id}`);
                 setBookingData(response.data);
                 const startDateValue = response.data.checkIn || response.data.startDate;
-                const endDateValue = response.data.checkout || response.data.endDate;
+                const endDateValue = response.data.checkOut || response.data.endDate;
 
                 if (startDateValue && endDateValue) {
                     setStartDate(new Date(startDateValue));
@@ -68,10 +68,10 @@ const ReSchedule = () => {
                 const updatedBooking = { ...bookingData };
 
                 // Check if original booking used checkin/checkout (admin-created) or startDate/endDate (user-created)
-                if (bookingData.checkIn !== undefined || bookingData.checkout !== undefined) {
+                if (bookingData.checkIn !== undefined || bookingData.checkOut !== undefined) {
                     // Admin-created booking format
                     updatedBooking.checkIn = startDate.toISOString().split('T')[0];
-                    updatedBooking.checkout = endDate.toISOString().split('T')[0];
+                    updatedBooking.checkOut = endDate.toISOString().split('T')[0];
                 } else {
                     // User-created booking format
                     updatedBooking.startDate = startDate.toISOString().split('T')[0];

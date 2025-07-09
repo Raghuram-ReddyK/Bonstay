@@ -213,37 +213,37 @@
     },
     {
       "id": "d2a0",
-      "bookingId": "58e2",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "87a7",
-      "bookingId": "c41f",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "4d91",
-      "bookingId": "d9a8",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "e4a1",
-      "bookingId": "e463",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "53c4",
-      "bookingId": "ea7c",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "464e",
-      "bookingId": "ca6f",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
@@ -355,78 +355,18 @@
       "userId": "32aa"
     },
     {
-      "id": "58e2",
-      "startDate": "2025-07-06T00:00:00.000Z",
-      "endDate": "2025-07-18T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "single with A/c",
-      "hotelId": "2",
-      "userId": "3140"
-    },
-    {
-      "id": "c41f",
-      "startDate": "2025-07-07T00:00:00.000Z",
-      "endDate": "2025-07-07T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "double with A/c",
-      "hotelId": "2",
-      "userId": "3140"
-    },
-    {
-      "id": "d9a8",
-      "startDate": "2025-07-08T00:00:00.000Z",
-      "endDate": "2025-07-08T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "suite with A/c",
-      "hotelId": "3",
-      "userId": "3140"
-    },
-    {
-      "id": "e463",
-      "startDate": "2025-07-16T00:00:00.000Z",
-      "endDate": "2025-07-16T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "single with A/c",
-      "hotelId": "5",
-      "userId": "3140"
-    },
-    {
-      "id": "ea7c",
-      "startDate": "2025-07-10T00:00:00.000Z",
-      "endDate": "2025-07-10T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "single with A/c",
-      "hotelId": "4",
-      "userId": "3140"
-    },
-    {
-      "id": "ca6f",
-      "startDate": "2025-07-10T00:00:00.000Z",
-      "endDate": "2025-07-10T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "double with A/c",
-      "hotelId": "5",
-      "userId": "3140"
-    },
-    {
-      "id": "1752066941407",
+      "id": "1752067925999",
       "userId": "3140",
-      "hotelName": "Sunset Tower",
-      "hotelId": "5",
-      "checkIn": "2025-07-10",
-      "checkout": "2025-07-18",
+      "hotelName": "Galaxy Paradise",
+      "hotelId": "4",
+      "checkIn": "2025-07-09",
+      "checkOut": "2025-07-11",
       "guests": 1,
       "roomType": "Standard",
       "status": "confirmed",
       "bookingDate": "2025-07-09",
       "createdBy": "admin01",
-      "createdAt": "2025-07-09T13:15:41.408Z"
+      "createdAt": "2025-07-09T13:32:05.999Z"
     }
   ],
   "forgot-password": [

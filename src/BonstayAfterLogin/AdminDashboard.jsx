@@ -52,7 +52,7 @@ const AdminDashboard = () => {
         hotelName: '',
         hotelId: '',
         checkIn: '',
-        checkout: '',
+        checkOut: '',
         guests: 1,
         roomType: 'Standard'
     });
@@ -317,13 +317,13 @@ const AdminDashboard = () => {
 
     const handleCreateBooking = async () => {
         try {
-            if (!newBooking.userId || !newBooking.hotelId || !newBooking.checkIn || !newBooking.checkout) {
+            if (!newBooking.userId || !newBooking.hotelId || !newBooking.checkIn || !newBooking.checkOut) {
                 alert('Please fill the required fields');
                 return;
             }
 
             const checkInDate = new Date(newBooking.checkIn);
-            const checkOutDate = new Date(newBooking.checkout);
+            const checkOutDate = new Date(newBooking.checkOut);
             const currentDate = new Date();
             currentDate.setHours(0, 0, 0, 0);
 
@@ -357,7 +357,7 @@ const AdminDashboard = () => {
                     User: ${userName}
                     Hotel: ${hotelInfo}
                     Check-In: ${newBooking.checkIn}
-                    Check-Out: ${newBooking.checkout}
+                    Check-Out: ${newBooking.checkOut}
                     Guests: ${newBooking.guests}
                     Room Type: ${newBooking.roomType}
                     Booking Id: ${bookingData.id}
@@ -368,7 +368,7 @@ const AdminDashboard = () => {
                 hotelName: '',
                 hotelId: '',
                 checkIn: '',
-                checkout: '',
+                checkOut: '',
                 guests: 1,
                 roomType: 'Standard'
             });
@@ -644,9 +644,9 @@ const AdminDashboard = () => {
                             <TextField
                                 label="Check Out Date"
                                 type="date"
-                                value={newBooking.checkout}
+                                value={newBooking.checkOut}
                                 onChange={(e) =>
-                                    setNewBooking(prev => ({ ...prev, checkout: e.target.value }))
+                                    setNewBooking(prev => ({ ...prev, checkOut: e.target.value }))
                                 }
                                 fullWidth
                                 required
@@ -693,7 +693,7 @@ const AdminDashboard = () => {
                         </Grid>
 
                         {/* Summary Section */}
-                        {newBooking.userId && newBooking.hotelId && newBooking.checkIn && newBooking.checkout && (
+                        {newBooking.userId && newBooking.hotelId && newBooking.checkIn && newBooking.checkOut && (
                             <Grid item xs={12}>
                                 <Box
                                     sx={{
@@ -726,14 +726,14 @@ const AdminDashboard = () => {
 
                                         <Grid item xs={12} md={6}>
                                             <Typography><strong>Check-in:</strong> {newBooking.checkIn}</Typography>
-                                            <Typography><strong>Check-out:</strong> {newBooking.checkout}</Typography>
+                                            <Typography><strong>Check-out:</strong> {newBooking.checkOut}</Typography>
                                             <Typography><strong>Guests:</strong> {newBooking.guests}</Typography>
 
-                                            {newBooking.checkIn && newBooking.checkout && (
+                                            {newBooking.checkIn && newBooking.checkOut && (
                                                 <Typography>
                                                     <strong>Duration:</strong>{' '}
                                                     {Math.ceil(
-                                                        (new Date(newBooking.checkout) - new Date(newBooking.checkIn)) /
+                                                        (new Date(newBooking.checkOut) - new Date(newBooking.checkIn)) /
                                                         (1000 * 60 * 60 * 24)
                                                     )} night(s)
                                                 </Typography>
@@ -753,7 +753,7 @@ const AdminDashboard = () => {
                                         !newBooking.userId ||
                                         !newBooking.hotelId ||
                                         !newBooking.checkIn ||
-                                        !newBooking.checkout
+                                        !newBooking.checkOut
                                     }
                                     size='large'
                                 >
@@ -767,7 +767,7 @@ const AdminDashboard = () => {
                                             hotelName: '',
                                             hotelId: '',
                                             checkIn: '',
-                                            checkout: '',
+                                            checkOut: '',
                                             guests: 1,
                                             roomType: 'Standard',
                                         })
