@@ -12,9 +12,6 @@ import {
   TablePagination,
   Skeleton,
   Typography,
-  Chip,
-  Button,
-  IconButton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -81,28 +78,55 @@ const CustomDataGrid = ({
   };
 
   const descendingComparator = (a, b, orderBy) => {
-    let aValue = a[orderBy];
-    let bValue = b[orderBy];
+    const column = columns.find(col => col.field === orderBy);
 
-    if (orderBy === 'hotelName') {
-      aValue = a.hotelName || a.hotel || '';
-      bValue = b.hotelName || b.hotel || '';
-    } else if (orderBy === 'checkIn') {
-      aValue = a.checkIn || a.startDate || '';
-      bValue = b.checkIn || b.startDate || '';
-    } else if (orderBy === 'checkout') {
-      aValue = a.checkout || a.endDate || '';
-      bValue = b.checkout || b.endDate || '';
-    } else if (orderBy === 'guests') {
-      aValue = a.guests || a.noOfPersons || 0;
-      bValue = b.guests || b.noOfPersons || 0;
+    let aValue, bValue;
+
+    if (column && column.valueGetter) {
+      if (orderBy === 'checkIn' || orderBy === 'checkOut') {
+        aValue = orderBy === 'checkIn' ?
+          (a.checkIn || a.startDate) :
+          (a.checkOut || a.endDate);
+        bValue = orderBy === 'checkOut' ?
+          (a.checkIn || a.startDate) :
+          (a.checkOut || a.endDate);
+      } else if (orderBy === 'guests') {
+        aValue = a.guests || a.noOfRooms || 0;
+        bValue = b.guests || b.noOfRooms || 0;
+      } else if (orderBy === 'rooms') {
+        aValue = a.rooms || a.noOfRooms || 0;
+        bValue = a.rooms || b.noOfRooms || 0;
+      } else {
+        aValue = a[orderBy];
+        bValue = b[orderBy];
+      }
     }
+
+    const isDateField = orderBy.includes('Date') || orderBy.includes('checkIn') || orderBy.includes('checkOut');
+    if (isDateField && aValue !== '' && bValue !== '') {
+      const dateA = new Date(aValue);
+      const dateB = new Date(bValue);
+
+      if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+        return dateB.getTime() - dateA.getTime();
+      }
+    }
+
+    const numA = Number(aValue);
+    const numB = Number(bValue);
+    if (!isNaN(numA) && !isNaN(numB) && aValue !== '' && bValue !== '') {
+      return numB - numA;
+    }
+
+    aValue = String(aValue).toLowerCase();
+    bValue = String(bValue).toLowerCase();
 
     if (bValue < aValue) return -1;
     if (bValue > aValue) return 1;
     return 0;
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const getComparator = (order, orderBy) => {
     return order === 'desc'
       ? (a, b) => descendingComparator(a, b, orderBy)
@@ -121,7 +145,7 @@ const CustomDataGrid = ({
 
   const sortedAndPaginatedRows = useMemo(() => {
     if (!rows.length) return [];
-    
+
     let sortedRows = rows;
     if (orderBy && sortable) {
       sortedRows = stableSort(rows, getComparator(order, orderBy));
@@ -129,7 +153,7 @@ const CustomDataGrid = ({
     const start = page * rowsPerPage;
     const end = start + rowsPerPage;
     return sortedRows.slice(start, end);
-  }, [rows, order, orderBy, page, rowsPerPage, sortable]);
+  }, [rows, orderBy, sortable, page, rowsPerPage, getComparator, order]);
 
   const renderCellContent = (row, column) => {
     if (column.renderCell) {
