@@ -88,7 +88,9 @@ const UserManagement = ({
                         field: 'bookingsCount',
                         headerName: 'Bookings',
                         width: 120,
-                        sortable: false,
+                        sortable: true,
+                        valueGetter: ({ row }) => getUserBookings(row.id).length,
+                        sortValueGetter: ({ row }) => Number(getUserBookings(row.id).length),
                         renderCell: ({ row }) => (
                             <Chip
                                 label={getUserBookings(row.id).length}

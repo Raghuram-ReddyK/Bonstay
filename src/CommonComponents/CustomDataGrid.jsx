@@ -42,6 +42,36 @@ const SkeletonRow = ({ columns }) => (
   </TableRow>
 );
 
+/**
+ * CustomDataGrid – A reusable, generic data grid component with sorting and pagination.
+ *
+ * Column Configuration Options:
+ * field: string - The field name in the data row object
+ * headerName: string - Display name for the column header
+ * width: number - Column width in pixels
+ * sortable: boolean - Whether the column is sortable (default: true)
+ * valueGetter: function(row) - Function to derive the display value from the row data
+ * sortValueGetter: function(row) - Function to get value specifically used for sorting (if different from displayed value)
+ * sortComparator: function(a, b, order) - Custom sorting function for complex sorting logic
+ * renderCell: function({ row, value }) - Custom cell renderer (e.g., for buttons, styled text, or icons)
+ * align: 'left' | 'center' | 'right' - Text alignment in the cell
+ * minWidth: number - Minimum width the column can shrink to
+
+// Grid Props:
+
+* @param {Array} rows - The data rows to be displayed in the grid
+* @param {Array} columns - Array of column configuration objects
+* @param {boolean} loading - Whether to show a loading/skeleton view
+* @param {number} pageSize - Default number of rows per page (default: 5)
+* @param {Array} pageSizeOptions -  Options for page sizes the user can select (default: [5, 10, 25])
+* @param {boolean }sortable - Global setting to enable/disable sorting for all columns (default: true)
+* @param {function} onRowClickCallback - Callback function when a row is clicked (optional)
+* @param {string} title - Title of the grid (displayed above the table)
+* @param {string} subtitle - Subtitle shown below the title, for extra context
+* @param {ReactNode} actions - Optional React elements (e.g., buttons) displayed in the grid header (top-right)
+*/
+
+
 const CustomDataGrid = ({
   rows = [],
   columns = [],
@@ -82,40 +112,40 @@ const CustomDataGrid = ({
 
     let aValue, bValue;
 
-    if (column && column.valueGetter) {
-      if (orderBy === 'checkIn' || orderBy === 'checkOut') {
-        aValue = orderBy === 'checkIn' ?
-          (a.checkIn || a.startDate) :
-          (a.checkOut || a.endDate);
-        bValue = orderBy === 'checkOut' ?
-          (a.checkIn || a.startDate) :
-          (a.checkOut || a.endDate);
-      } else if (orderBy === 'guests') {
-        aValue = a.guests || a.noOfRooms || 0;
-        bValue = b.guests || b.noOfRooms || 0;
-      } else if (orderBy === 'rooms') {
-        aValue = a.rooms || a.noOfRooms || 0;
-        bValue = a.rooms || b.noOfRooms || 0;
-      } else {
-        aValue = a[orderBy];
-        bValue = b[orderBy];
-      }
+    if (column && column.sortComparator) {
+      return column.sortComparator(a, b, orderBy);
     }
 
-    const isDateField = orderBy.includes('Date') || orderBy.includes('checkIn') || orderBy.includes('checkOut');
-    if (isDateField && aValue !== '' && bValue !== '') {
-      const dateA = new Date(aValue);
-      const dateB = new Date(bValue);
-
-      if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
-        return dateB.getTime() - dateA.getTime();
-      }
+    if (column && column.sortValueGetter) {
+      aValue = column.sortValueGetter({ row: a });
+      bValue = column.sortValueGetter({ row: b });
+    } else if (column && column.valueGetter) {
+      aValue = column.valueGetter({ row: a });
+      bValue = column.valueGetter({ row: b });
+    } else {
+      aValue = a[orderBy];
+      bValue = b[orderBy];
     }
+
+    if (aValue == null) aValue = '';
+    if (bValue == null) bValue = '';
 
     const numA = Number(aValue);
     const numB = Number(bValue);
     if (!isNaN(numA) && !isNaN(numB) && aValue !== '' && bValue !== '') {
       return numB - numA;
+    }
+
+    const dateA = new Date(aValue);
+    const dateB = new Date(bValue);
+    if (
+      !isNaN(dateA.getTime()) &&
+      !isNaN(dateB.getTime()) &&
+      (aValue.toString().length > 8 ||
+        aValue.toString().includes('-') ||
+        aValue.toString().includes('/'))
+    ) {
+      return dateB.getTime() - dateA.getTime();
     }
 
     aValue = String(aValue).toLowerCase();
@@ -125,6 +155,7 @@ const CustomDataGrid = ({
     if (bValue > aValue) return 1;
     return 0;
   };
+
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getComparator = (order, orderBy) => {

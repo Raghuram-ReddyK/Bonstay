@@ -42,6 +42,10 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                         } catch (error) {
                             return dateValue;
                         }
+                    },
+                    sortValueGetter: ({ row }) => {
+                        const dateValue = row.checkIn || row.startDate;
+                        return dateValue || '';
                     }
                 },
                 {
@@ -61,6 +65,10 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                         } catch (error) {
                             return dateValue;
                         }
+                    },
+                    sortValueGetter: ({ row }) => {
+                        const dateValue = row.checkOut || row.endDate;
+                        return dateValue || '';
                     }
                 },
                 {
@@ -69,6 +77,7 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                     width: 100,
                     sortable: true,
                     valueGetter: ({ row }) => row.guests || row.noOfPersons || 1,
+                    sortValueGetter: ({ row }) => Number(row.guests || row.noOfPersons || 1)
                 },
                 {
                     field: 'rooms',
@@ -76,6 +85,7 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                     width: 100,
                     sortable: true,
                     valueGetter: ({ row }) => getRoomsCount(row),
+                    sortValueGetter: ({ row }) => Number(getRoomsCount(row)),
                 },
                 {
                     field: 'status',
