@@ -367,6 +367,26 @@
       "bookingDate": "2025-07-09",
       "createdBy": "admin01",
       "createdAt": "2025-07-09T13:32:05.999Z"
+    },
+    {
+      "id": "1752212649213",
+      "userId": "3140",
+      "hotelName": "Monsoon Stay",
+      "hotelId": "3",
+      "checkIn": "2025-07-11",
+      "checkOut": "2025-07-12",
+      "guests": 2,
+      "rooms": 4,
+      "roomType": "Executive",
+      "status": "confirmed",
+      "bookingDate": "2025-07-11",
+      "createdBy": "admin01",
+      "createdAt": "2025-07-11T05:44:09.213Z",
+      "noOfPersons": 2,
+      "noOfRooms": 4,
+      "typeOfRooms": "Executive",
+      "startDate": "2025-07-11",
+      "endDate": "2025-07-12"
     }
   ],
   "forgot-password": [

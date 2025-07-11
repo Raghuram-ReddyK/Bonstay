@@ -31,6 +31,7 @@ import {
 } from '@mui/material';
 import { AdminCodeUtils, emailService, smsService } from '../services/communicationServices';
 import ClearIcon from '@mui/icons-material/Clear';
+import CustomDataGrid from '../CommonComponents/CustomDataGrid';
 
 const AdminDashboard = () => {
     const [admin, setAdmin] = useState(null);
@@ -54,6 +55,7 @@ const AdminDashboard = () => {
         checkIn: '',
         checkOut: '',
         guests: 1,
+        rooms: 1,
         roomType: 'Standard'
     });
 
@@ -310,6 +312,25 @@ const AdminDashboard = () => {
         return allBookings.filter(booking => booking.userId === userId);
     };
 
+    const getHotelName = (booking) => {
+        if (booking.hotelName)
+            return booking.hotelName;
+        if (booking.hotel)
+            return booking.hotel;
+
+        if (booking.hotelId && allHotels.length > 0) {
+            const hotel = allHotels.find(h => h.id === booking.hotelId);
+            if (hotel)
+                return hotel.hotelName;
+        }
+
+        return 'Unknown Hotel';
+    }
+
+    const getRoomsCount = (booking) => {
+        return booking.rooms || booking.noOfPersons || 1;
+    };
+
     const handleViewUserDetails = (user) => {
         setSelectedUser(user);
         setUserDialogOpen(true);
@@ -343,7 +364,12 @@ const AdminDashboard = () => {
                 status: 'confirmed',
                 bookingDate: new Date().toISOString().split('T')[0],
                 createdBy: admin.id,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                noOfPersons: newBooking.guests,
+                noOfRooms: newBooking.rooms,
+                typeOfRooms: newBooking.roomType,
+                startDate: newBooking.checkIn,
+                endDate: newBooking.checkOut
             };
 
             await axios.post(`http://localhost:4000/bookings`, bookingData);
@@ -359,6 +385,7 @@ const AdminDashboard = () => {
                     Check-In: ${newBooking.checkIn}
                     Check-Out: ${newBooking.checkOut}
                     Guests: ${newBooking.guests}
+                    Rooms: ${newBooking.rooms}
                     Room Type: ${newBooking.roomType}
                     Booking Id: ${bookingData.id}
                     The booking has been confirmed and is now visible in the Booking Management`)
@@ -370,7 +397,8 @@ const AdminDashboard = () => {
                 checkIn: '',
                 checkOut: '',
                 guests: 1,
-                roomType: 'Standard'
+                rooms: 1,
+                roomType: 'Standard',
             });
             await fetchAllBookings();
         } catch (error) {
@@ -478,78 +506,143 @@ const AdminDashboard = () => {
                     </Typography>
                 </Box>
 
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>User ID</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Phone</TableCell>
-                                <TableCell>Bookings</TableCell>
-                                <TableCell>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredUsers.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>{user.id}</TableCell>
-                                    <TableCell>{user.name}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>{user.phoneNo}</TableCell>
-                                    <TableCell>
-                                        <Chip label={getUserBookings(user.id).length} color="primary" />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            onClick={() => handleViewUserDetails(user)}
-                                        >
-                                            View Details
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <CustomDataGrid
+                    rows={filteredUsers}
+                    columns={[
+                        {
+                            field: 'id',
+                            headerName: 'User ID',
+                            width: 120,
+                            sortable: true,
+                        },
+                        {
+                            field: 'name',
+                            headerName: 'Name',
+                            width: 200,
+                            sortable: true,
+                        },
+                        {
+                            field: 'email',
+                            headerName: 'Email',
+                            width: 250,
+                            sortable: true,
+                        },
+                        {
+                            field: 'phoneNo',
+                            headerName: 'Phone',
+                            width: 150,
+                            sortable: true,
+                        },
+                        {
+                            field: 'bookingsCount',
+                            headerName: 'Bookings',
+                            width: 120,
+                            sortable: false,
+                            renderCell: ({ row }) => (
+                                <Chip
+                                    label={getUserBookings(row.id).length}
+                                    color="primary"
+                                    size="small"
+                                />
+                            ),
+                        },
+                        {
+                            field: 'actions',
+                            headerName: 'Actions',
+                            width: 150,
+                            sortable: false,
+                            renderCell: ({ row }) => (
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    onClick={() => handleViewUserDetails(row)}
+                                >
+                                    View Details
+                                </Button>
+                            ),
+                        },
+                    ]}
+                    pageSize={5}
+                    pageSizeOptions={[5, 10, 25]}
+                    loading={isLoading}
+                    title="User Management"
+                    subtitle="Manage all registered users and view their booking history"
+                />
+
             </TabPanel>
 
             <TabPanel value={tabValue} index={1}>
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Booking ID</TableCell>
-                                <TableCell>User ID</TableCell>
-                                <TableCell>Hotel</TableCell>
-                                <TableCell>Check In</TableCell>
-                                <TableCell>Check Out</TableCell>
-                                <TableCell>Guests</TableCell>
-                                <TableCell>Status</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {allBookings.map((booking) => (
-                                <TableRow key={booking.id}>
-                                    <TableCell>{booking.id}</TableCell>
-                                    <TableCell>{booking.userId}</TableCell>
-                                    <TableCell>{booking.hotelName || booking.hotel}</TableCell>
-                                    <TableCell>{booking.checkIn || booking.startDate}</TableCell>
-                                    <TableCell>{booking.checkOut || booking.endDate}</TableCell>
-                                    <TableCell>{booking.guests || booking.noOfPersons}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={booking.status || 'confirmed'}
-                                            color={booking.status === 'confirmed' ? 'success' : 'default'}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <CustomDataGrid
+                    rows={allBookings}
+                    columns={[
+                        {
+                            field: 'id',
+                            headerName: 'Booking ID',
+                            width: 130,
+                            sortable: true,
+                        },
+                        {
+                            field: 'userId',
+                            headerName: 'User ID',
+                            width: 120,
+                            sortable: true,
+                        },
+                        {
+                            field: 'hotelName',
+                            headerName: 'Hotel',
+                            width: 200,
+                            sortable: true,
+                            valueGetter: ({ row }) => getHotelName(row),
+                        },
+                        {
+                            field: 'checkIn',
+                            headerName: 'Check In',
+                            width: 130,
+                            sortable: true,
+                            valueGetter: ({ row }) => row.checkIn || row.startDate || 'N/A',
+                        },
+                        {
+                            field: 'checkOut',
+                            headerName: 'Check Out',
+                            width: 130,
+                            sortable: true,
+                            valueGetter: ({ row }) => row.checkOut || row.endDate || 'N/A',
+                        },
+                        {
+                            field: 'guests',
+                            headerName: 'Guests',
+                            width: 100,
+                            sortable: true,
+                            valueGetter: ({ row }) => row.guests || row.noOfPersons || 1,
+                        },
+                        {
+                            field: 'rooms',
+                            headerName: 'Rooms',
+                            width: 100,
+                            sortable: true,
+                            valueGetter: ({ row }) => getRoomsCount(row)
+                        },
+                        {
+                            field: 'status',
+                            headerName: 'Status',
+                            width: 120,
+                            sortable: true,
+                            renderCell: ({ row }) => (
+                                <Chip
+                                    label={row.status || 'confirmed'}
+                                    color={row.status === 'confirmed' ? 'success' : 'default'}
+                                    size="small"
+                                />
+                            ),
+                        },
+                    ]}
+                    pageSize={5}
+                    pageSizeOptions={[5, 10, 25]}
+                    loading={isLoading}
+                    title="Booking Management"
+                    subtitle="View and manage all hotel bookings. Sort by any column and use pagination to navigate through bookings."
+                />
+
             </TabPanel>
 
             <TabPanel value={tabValue} index={2}>
@@ -676,6 +769,18 @@ const AdminDashboard = () => {
 
                         <Grid item xs={12} md={6}>
                             <TextField
+                                label="Number of Rooms"
+                                type='number'
+                                value={newBooking.rooms}
+                                onChange={(e) => setNewBooking(prev => ({ ...prev, rooms: parseInt(e.target.value) || 1 }))}
+                                fullWidth
+                                inputProps={{ min: 1, max: 5 }}
+                                helperText="Number of rooms (1-5)"
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                            <TextField
                                 select
                                 label="Room Type"
                                 value={newBooking.roomType}
@@ -728,7 +833,7 @@ const AdminDashboard = () => {
                                             <Typography><strong>Check-in:</strong> {newBooking.checkIn}</Typography>
                                             <Typography><strong>Check-out:</strong> {newBooking.checkOut}</Typography>
                                             <Typography><strong>Guests:</strong> {newBooking.guests}</Typography>
-
+                                            <Typography><strong>Rooms:</strong> {newBooking.rooms}</Typography>
                                             {newBooking.checkIn && newBooking.checkOut && (
                                                 <Typography>
                                                     <strong>Duration:</strong>{' '}
@@ -769,6 +874,7 @@ const AdminDashboard = () => {
                                             checkIn: '',
                                             checkOut: '',
                                             guests: 1,
+                                            rooms: 1,
                                             roomType: 'Standard',
                                         })
                                     }
@@ -929,6 +1035,8 @@ const AdminDashboard = () => {
                                             <TableCell>Hotel</TableCell>
                                             <TableCell>Check In</TableCell>
                                             <TableCell>Check Out</TableCell>
+                                            <TableCell>Guests</TableCell>
+                                            <TableCell>Rooms</TableCell>
                                             <TableCell>Status</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -936,9 +1044,11 @@ const AdminDashboard = () => {
                                         {getUserBookings(selectedUser.id).map((booking) => (
                                             <TableRow key={booking.id}>
                                                 <TableCell>{booking.id}</TableCell>
-                                                <TableCell>{booking.hotelName || booking.hotelId}</TableCell>
-                                                <TableCell>{booking.startDate}</TableCell>
-                                                <TableCell>{booking.endDate}</TableCell>
+                                                <TableCell>{getHotelName(booking)}</TableCell>
+                                                <TableCell>{booking.checkIn || booking.startDate}</TableCell>
+                                                <TableCell>{booking.checkOut || booking.endDate}</TableCell>
+                                                <TableCell>{booking.guests || booking.noOfPersons || 1}</TableCell>
+                                                <TableCell>{getRoomsCount(booking)}</TableCell>
                                                 <TableCell>
                                                     <Chip
                                                         label={booking.status || 'confirmed'}
