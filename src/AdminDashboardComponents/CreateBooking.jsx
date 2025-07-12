@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Typography,
     Box,
@@ -16,6 +16,9 @@ import {
     CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import CustomDataGrid from '../CommonComponents/CustomDataGrid';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker'
 
 const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
     const [formPart1, setFormPart1] = useState({
@@ -37,17 +40,56 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
     const [selectedAvailableBookings, setSelectedAvailableBookings] = useState([]);
     const [selectedForFinalization, setSelectedForFinalization] = useState([]);
     const [selectedFinalizationBookings, setSelectedFinalizationBookings] = useState([]);
+    const [errors, setErrors] = useState({
+        formPart1: {
+            userId: false,
+            hotelId: false,
+            checkIn: false,
+            checkOut: false,
+        },
+        finalization: false
+    });
 
-    const handleAddToAvailableBookings = () => {
-        if (
-            !formPart1.userId ||
-            !formPart1.hotelId ||
-            !formPart1.checkIn ||
-            !formPart1.checkOut
-        ) {
-            alert('Please fill in all mandatory fields (User, Hotel, Check-in and Check-out dates)');
-            return;
+    useEffect(() => {
+        if (selectedAvailableBookings.length > 0) {
+            setErrors(prev => ({ ...prev, finalization: false }));
         }
+    }, [selectedAvailableBookings]);
+
+    // Clear error when form values change
+    useEffect(() => {
+        setErrors(prev => ({
+            ...prev,
+            formPart1: {
+                userId: false,
+                hotelId: false,
+                checkIn: false,
+                checkOut: false,
+            }
+        }));
+    }, [formPart1]);
+
+    // Validation function
+    const validateFormPart1 = () => {
+        const newErrors = {
+            userId: !formPart1.userId,
+            hotelId: !formPart1.hotelId,
+            checkIn: !formPart1.checkIn,
+            checkOut: !formPart1.checkOut,
+        };
+
+        const hasErrors = Object.values(newErrors).some(error => error);
+
+        setErrors(prev => ({
+            ...prev,
+            formPart1: newErrors
+        }));
+        return !hasErrors;
+    };
+
+    const validateDates = () => {
+        if (!formPart1.checkIn || !formPart1.checkOut)
+            return false;
 
         const checkInDate = new Date(formPart1.checkIn);
         const checkOutDate = new Date(formPart1.checkOut);
@@ -55,17 +97,34 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
         today.setHours(0, 0, 0, 0);
 
         if (checkInDate < today) {
-            alert('Check-in date cannot be in the past');
-            return;
+            setErrors(prev => ({
+                ...prev,
+                formPart1: { ...prev.formPart1, checkIn: true }
+            }));
+            return false;
         }
-
         if (checkOutDate <= checkInDate) {
-            alert('Check-out date must be after check-in date');
+            setErrors(prev => ({
+                ...prev,
+                formPart1: { ...prev.formPart1, checkOut: true }
+            }));
+            return false;
+        }
+        return true;
+    };
+
+    const handleAddToAvailableBookings = () => {
+        // validate form
+        if (!validateFormPart1() || !validateDates()) {
             return;
         }
 
-        const newBookingEntry = {
-            tempId: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        const checkInDate = new Date(formPart1.checkIn);
+        const checkOutDate = new Date(formPart1.checkOut);
+
+        // Create booking entry
+        const newBooking = {
+            tempId: Date.now().toString(),
             userId: formPart1.userId,
             userName: formPart1.userName,
             hotelId: formPart1.hotelId,
@@ -75,31 +134,29 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
             guests: formPart2.guests,
             rooms: formPart2.rooms,
             roomType: formPart2.roomType,
-            duration: Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)),
-            status: 'pending',
+            duration: Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))
         };
 
-        setAvailableBookings((prev) => [...prev, newBookingEntry]);
+        setAvailableBookings(prev => [...prev, newBooking]);
 
+        // clear form
         setFormPart1({
             userId: '',
             userName: '',
             hotelId: '',
             hotelName: '',
             checkIn: '',
-            checkOut: '',
+            checkOut: ''
         });
-
         setFormPart2({
             guests: 1,
             rooms: 1,
-            roomType: 'Standard',
+            roomType: 'Standard'
         });
-    };
+    }
 
     const handleMoveToFinalization = () => {
         if (selectedAvailableBookings.length === 0) {
-            alert('Please select bookings from the available bookings table');
             return;
         }
 
@@ -116,7 +173,6 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
 
     const handleRemoveFromFinalization = () => {
         if (selectedFinalizationBookings.length === 0) {
-            alert('Please select bookings to remove');
             return;
         }
 
@@ -127,18 +183,22 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
     };
 
     const handleFinalizeBookings = async () => {
+        if (selectedForFinalization.length === 0) {
+            setErrors(prev => ({ ...prev, finalization: true }));
+            return;
+        }
         if (selectedFinalizationBookings.length === 0) {
-            alert('Please select bookings to finalize');
             return;
         }
 
+        setErrors(prev => ({ ...prev, finalization: false }));
+
+        const bookingsToFinalize = selectedForFinalization.filter((booking) =>
+            selectedFinalizationBookings.includes(booking.tempId)
+        );
+
         try {
             let successCount = 0;
-            let failureCount = 0;
-
-            const bookingsToFinalize = selectedForFinalization.filter((booking) =>
-                selectedFinalizationBookings.includes(booking.tempId)
-            );
 
             for (const booking of bookingsToFinalize) {
                 try {
@@ -168,14 +228,8 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                     successCount++;
                 } catch (error) {
                     console.error('Error creating booking:', error);
-                    failureCount++;
                 }
             }
-
-            const summaryMessage = `Booking finalization complete!\n\nSummary:\nSuccessful: ${successCount} bookings\nFailed: ${failureCount} bookings\n${successCount > 0 ? 'Successful bookings are now visible in the Booking Management tab.' : ''
-                }`;
-
-            alert(summaryMessage);
 
             if (successCount > 0) {
                 setSelectedForFinalization((prev) =>
@@ -185,7 +239,6 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
             }
         } catch (error) {
             console.error('Error finalizing bookings:', error);
-            alert(`Error finalizing bookings: ${error.message}`);
         }
     };
 
@@ -235,7 +288,7 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
     ];
 
     return (
-        <>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h5" gutterBottom>
                     Multi-Booking Management System
@@ -269,7 +322,12 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                                     }))
                                 }
                                 renderInput={(params) => (
-                                    <TextField {...params} label="Select User *" required helperText="Choose the user for this booking" />
+                                    <TextField
+                                        {...params}
+                                        label="Select User *"
+                                        required
+                                        error={errors.formPart1.userId}
+                                        helperText={errors.formPart1.userId ? "Please select a user" : "Choose the user for this booking"} />
                                 )}
                                 renderOption={(props, option) => (
                                     <Box component='li' {...props}>
@@ -297,7 +355,12 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                                     }))
                                 }
                                 renderInput={(params) => (
-                                    <TextField {...params} label="Select Hotel *" required helperText="Choose a hotel" />
+                                    <TextField
+                                        {...params}
+                                        label="Select Hotel *"
+                                        required
+                                        error={errors.formPart1.hotelId}
+                                        helperText={errors.formPart1.hotelId ? "" : "Choose a hotel"} />
                                 )}
                                 renderOption={(props, option) => (
                                     <Box component='li' {...props}>
@@ -313,34 +376,52 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                         </Grid>
 
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Check In Date *"
-                                type="date"
-                                value={formPart1.checkIn}
-                                onChange={(e) => setFormPart1((prev) => ({ ...prev, checkIn: e.target.value }))}
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                inputProps={{
-                                    min: new Date().toISOString().split('T')[0],
+                            <MobileDatePicker
+                                value={formPart1.checkIn ? new Date(formPart1.checkIn) : null}
+                                onChange={(newValue) => {
+                                    setFormPart1(prev => ({
+                                        ...prev,
+                                        checkIn: newValue ? newValue.toISOString().split('T')[0] : ''
+                                    }));
                                 }}
-                                helperText="Check-in date (today or later)"
+                                minDate={new Date()}
+                                slots={{
+                                    textField: TextField,
+                                }}
+                                slotProps={{
+                                    textField: {
+                                        fullWidth: true,
+                                        required: true,
+                                        error: errors.formPart1.checkIn,
+                                        helperText: errors.formPart1.checkIn ?
+                                            "Check-in date cannot be in the past past" : "Check-in date (today or later)"
+                                    }
+                                }}
                             />
                         </Grid>
 
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Check Out Date *"
-                                type="date"
-                                value={formPart1.checkOut}
-                                onChange={(e) => setFormPart1((prev) => ({ ...prev, checkOut: e.target.value }))}
-                                fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                inputProps={{
-                                    min: formPart1.checkIn
-                                        ? new Date(new Date(formPart1.checkIn).getTime() + 86400000).toISOString().split('T')[0]
-                                        : new Date().toISOString().split('T')[0],
+                            <MobileDatePicker
+                                value={formPart1.checkOut ? new Date(formPart1.checkOut) : null}
+                                onChange={(newValue) => {
+                                    setFormPart1(prev => ({
+                                        ...prev,
+                                        checkOut: newValue ? newValue.toISOString().split('T')[0] : ''
+                                    }));
                                 }}
-                                helperText="Check-out date (must be after check-in)"
+                                minDate={formPart1.checkIn ? new Date(new Date(formPart1.checkIn).getTime() + 24 * 60 * 60 * 1000) : new Date()}
+                                slots={{
+                                    textField: TextField,
+                                }}
+                                slotProps={{
+                                    textField: {
+                                        fullWidth: true,
+                                        required: true,
+                                        error: errors.formPart1.checkOut,
+                                        helperText: errors.formPart1.checkOut ?
+                                            "Check-out date must be after check-in" : "Check-out date (mus be after check-in)"
+                                    }
+                                }}
                             />
                         </Grid>
                     </Grid>
@@ -501,6 +582,13 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                         </Button>
                     </Box>
                 </Box>
+                {errors.finalization && (
+                    <Alert severity='error' sx={{ mb: 2 }}>
+                        {selectedForFinalization.length === 0
+                            ? "No bookings available for finalization. Please add bookings to the finalization first."
+                            : "Please select bookings from the first table below using the checkboxes before clicking finalize"}
+                    </Alert>
+                )}
                 <Alert severity="success" sx={{ mb: 2 }}>
                     Select bookings to finalize using checkboxes, then click "Finalize Selected" to create the bookings.
                 </Alert>
@@ -515,7 +603,7 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                     rowIdField="tempId"
                 />
             </Paper>
-        </>
+        </LocalizationProvider>
     );
 };
 
