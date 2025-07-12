@@ -1,4 +1,3 @@
-import { useState, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -12,8 +11,10 @@ import {
   TablePagination,
   Skeleton,
   Typography,
+  Checkbox,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useMemo, useState } from 'react';
 
 const StyledDataGrid = styled(Paper)(({ theme }) => ({
   width: '100%',
@@ -31,16 +32,6 @@ const StyledDataGrid = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(1, 2),
   },
 }));
-
-const SkeletonRow = ({ columns }) => (
-  <TableRow>
-    {columns.map((_column, index) => (
-      <TableCell key={index}>
-        <Skeleton variant="text" width="80%" />
-      </TableCell>
-    ))}
-  </TableRow>
-);
 
 /**
  * CustomDataGrid – A reusable, generic data grid component with sorting and pagination.
@@ -69,6 +60,10 @@ const SkeletonRow = ({ columns }) => (
 * @param {string} title - Title of the grid (displayed above the table)
 * @param {string} subtitle - Subtitle shown below the title, for extra context
 * @param {ReactNode} actions - Optional React elements (e.g., buttons) displayed in the grid header (top-right)
+* @param {boolean} checkboxSelection - Enable checkbox selection (default: false)
+* @param {Array} selectedRows - Arrays of selected row IDs
+* @param {function} onSelectionChange - Callback when selection changes (selectedIds) => void
+* @param {string} rowIdField - Field name to use as row Id (default: 'id')
 */
 
 
@@ -83,6 +78,10 @@ const CustomDataGrid = ({
   title,
   subtitle,
   actions,
+  checkboxSelection = false,
+  selectedRows = [],
+  onSelectionChange,
+  rowIdField = 'id',
   sx = {},
   ...props
 }) => {
@@ -106,6 +105,42 @@ const CustomDataGrid = ({
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  const handleSelectAllClick = (event) => {
+    if (!checkboxSelection || !onSelectionChange)
+      return;
+
+    if (event.target.checked) {
+      const newSelectedOne = rows.map(row => row[rowIdField]);
+      onSelectionChange(newSelectedOne);
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleRowSelectClick = (_event, rowId) => {
+    if (!checkboxSelection || !onSelectionChange)
+      return;
+
+    const selectedIndex = selectedRows.indexOf(rowId);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selectedRows, rowId);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selectedRows.slice(1));
+    } else if (selectedIndex === selectedRows.length - 1) {
+      newSelected = newSelected.concat(selectedRows.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selectedRows.slice(0, selectedIndex),
+        selectedRows.slice(selectedIndex + 1),
+      );
+    }
+    onSelectionChange(newSelected);
+  }
+
+  const isSelected = (rowId) => selectedRows.indexOf(rowId) !== -1;
 
   const descendingComparator = (a, b, orderBy) => {
     const column = columns.find(col => col.field === orderBy);
@@ -228,6 +263,19 @@ const CustomDataGrid = ({
           <Table {...props}>
             <TableHead>
               <TableRow>
+                {checkboxSelection && (
+                  <TableCell padding='checkbox'>
+                    <Checkbox
+                      color='primary'
+                      indeterminate={selectedRows.length > 0 && selectedRows.length < rows.length}
+                      checked={rows.length > 0 && selectedRows.length === rows.length}
+                      onChange={handleSelectAllClick}
+                      inputProps={{
+                        'aria-label': 'select all rows'
+                      }}
+                    />
+                  </TableCell>
+                )}
                 {columns.map((column) => (
                   <TableCell
                     key={column.field}
@@ -254,32 +302,76 @@ const CustomDataGrid = ({
             <TableBody>
               {loading ? (
                 Array.from(new Array(rowsPerPage)).map((_, index) => (
-                  <SkeletonRow key={index} columns={columns} />
-                ))
-              ) : sortedAndPaginatedRows.length > 0 ? (
-                sortedAndPaginatedRows.map((row, index) => (
-                  <TableRow
-                    key={row.id || index}
-                    hover
-                    onClick={() => onRowClick && onRowClick(row)}
-                    sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                  >
-                    {columns.map((column) => (
-                      <TableCell key={column.field} align={column.align || 'left'}>
-                        {renderCellContent(row, column)}
+                  <TableRow key={index}>
+                    {checkboxSelection && (
+                      <TableCell padding='checkbox'>
+                        <Skeleton variant='rectangular' width={20} height={20} />
+                      </TableCell>
+                    )}
+                    {columns.map((column, colIndex) => (
+                      <TableCell key={colIndex}>
+                        <Skeleton variant='text' width="80%" />
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} align="center" sx={{ py: 3 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      No data available
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
+              ) : sortedAndPaginatedRows.length > 0 ? (
+                sortedAndPaginatedRows.map((row, index) => {
+                  const isItemSelected = isSelected(row[rowIdField]);
+                  return (
+                    <TableRow
+                      key={`${row[rowIdField]}|${index}`}
+                      hover
+                      onClick={(event) => {
+                        if (checkboxSelection) {
+                          handleRowSelectClick(event, row[rowIdField]);
+                        } else if (onRowClick) {
+                          onRowClick(row);
+                        }
+                      }}
+                      sx={{
+                        cursor: (checkboxSelection || onRowClick) ? 'pointer' : 'default',
+                        backgroundColor: isItemSelected ? 'rgba(25, 118, 210, 0.08)' : 'inherit',
+                      }}
+                      selected={isItemSelected}
+                    >
+                      {checkboxSelection && (
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            color="primary"
+                            checked={isItemSelected}
+                            onChange={(event) => handleRowSelectClick(event, row[rowIdField])}
+                            inputProps={{
+                              'aria-labelledby': `enhanced-table-checkbox-${index}`,
+                            }}
+                          />
+                        </TableCell>
+                      )}
+
+                      {columns.map((column) => (
+                        <TableCell
+                          key={column.field}
+                          align={column.align || 'left'}
+                        >
+                          {renderCellContent(row, column)}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })
+               ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={(checkboxSelection ? 1 : 0) + columns.length}
+                      align="center"
+                      sx={{ py: 3 }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        No data available
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
             </TableBody>
           </Table>
         </TableContainer>
