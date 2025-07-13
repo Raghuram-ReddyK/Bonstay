@@ -67,7 +67,7 @@ const ReSchedule = () => {
                 // Create updated booking with proper field names based on original booking format
                 const updatedBooking = { ...bookingData };
 
-                // Check if original booking used checkin/checkout (admin-created) or startDate/endDate (user-created)
+                // Check if original booking used checkIn/checkOut (admin-created) or startDate/endDate (user-created)
                 if (bookingData.checkIn !== undefined || bookingData.checkOut !== undefined) {
                     // Admin-created booking format
                     updatedBooking.checkIn = startDate.toISOString().split('T')[0];
