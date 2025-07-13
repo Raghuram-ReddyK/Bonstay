@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
     Typography,
     Box,
@@ -10,6 +10,7 @@ import {
     Paper,
     Divider,
     Alert,
+    CircularProgress,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -19,57 +20,60 @@ import CustomDataGrid from '../CommonComponents/CustomDataGrid';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker'
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    addAvailableBooking,
+    clearForm,
+    clearFormErrors,
+    clearMessage,
+    createMultipleBookings,
+    fetchHotels,
+    fetchUsers,
+    moveBackToAvailable,
+    moveToFinalization,
+    setErrors,
+    setFormPart1,
+    setFormPart2,
+    setSelectedAvailableBookings,
+    setSelectedFinalizationBookings
+} from '../Slices/multiBookingSlice';
 
-const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
-    const [formPart1, setFormPart1] = useState({
-        userId: '',
-        userName: '',
-        hotelId: '',
-        hotelName: '',
-        checkIn: '',
-        checkOut: '',
-    });
 
-    const [formPart2, setFormPart2] = useState({
-        guests: 1,
-        rooms: 1,
-        roomType: 'Standard',
-    });
+const CreateBooking = () => {
+    const dispatch = useDispatch();
 
-    const [availableBookings, setAvailableBookings] = useState([]);
-    const [selectedAvailableBookings, setSelectedAvailableBookings] = useState([]);
-    const [selectedForFinalization, setSelectedForFinalization] = useState([]);
-    const [selectedFinalizationBookings, setSelectedFinalizationBookings] = useState([]);
-    const [errors, setErrors] = useState({
-        formPart1: {
-            userId: false,
-            hotelId: false,
-            checkIn: false,
-            checkOut: false,
-        },
-        finalization: false
-    });
+    // Redux state
+    const {
+        formPart1,
+        formPart2,
+        users,
+        hotels,
+        availableBookings,
+        selectedAvailableBookings,
+        selectedForFinalization,
+        selectedFinalizationBookings,
+        errors,
+        error,
+        success,
+        creationResults,
+        loading,
+    } = useSelector((state) => state.multiBooking);
+    console.log('users: ', users);
+    console.log('hotels: ', hotels);
 
     useEffect(() => {
-        if (selectedAvailableBookings.length > 0) {
-            setErrors(prev => ({ ...prev, finalization: false }));
-        }
-    }, [selectedAvailableBookings]);
+        dispatch(fetchUsers());
+        dispatch(fetchHotels());
 
-    // Clear error when form values change
+        return () => {
+            dispatch(clearMessage());
+        };
+    }, [dispatch]);
+
     useEffect(() => {
-        setErrors(prev => ({
-            ...prev,
-            formPart1: {
-                userId: false,
-                hotelId: false,
-                checkIn: false,
-                checkOut: false,
-            }
-        }));
-    }, [formPart1]);
+        dispatch(clearFormErrors());
+    }, [formPart1, dispatch]);
 
-    // Validation function
     const validateFormPart1 = () => {
         const newErrors = {
             userId: !formPart1.userId,
@@ -80,16 +84,13 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
 
         const hasErrors = Object.values(newErrors).some(error => error);
 
-        setErrors(prev => ({
-            ...prev,
-            formPart1: newErrors
-        }));
+        dispatch(setErrors({ formPart1: newErrors }));
         return !hasErrors;
     };
 
+    // Date validation
     const validateDates = () => {
-        if (!formPart1.checkIn || !formPart1.checkOut)
-            return false;
+        if (!formPart1.checkIn || !formPart1.checkOut) return false;
 
         const checkInDate = new Date(formPart1.checkIn);
         const checkOutDate = new Date(formPart1.checkOut);
@@ -97,32 +98,28 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
         today.setHours(0, 0, 0, 0);
 
         if (checkInDate < today) {
-            setErrors(prev => ({
-                ...prev,
-                formPart1: { ...prev.formPart1, checkIn: true }
+            dispatch(setErrors({
+                formPart1: { ...errors.formPart1, checkIn: true }
             }));
             return false;
         }
+
         if (checkOutDate <= checkInDate) {
-            setErrors(prev => ({
-                ...prev,
-                formPart1: { ...prev.formPart1, checkOut: true }
+            dispatch(setErrors({
+                formPart1: { ...errors.formPart1, checkIn: true }
             }));
             return false;
         }
+
         return true;
     };
 
     const handleAddToAvailableBookings = () => {
-        // validate form
-        if (!validateFormPart1() || !validateDates()) {
-            return;
-        }
+        if (!validateFormPart1() || !validateDates()) return;
 
         const checkInDate = new Date(formPart1.checkIn);
         const checkOutDate = new Date(formPart1.checkOut);
 
-        // Create booking entry
         const newBooking = {
             tempId: Date.now().toString(),
             userId: formPart1.userId,
@@ -134,112 +131,59 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
             guests: formPart2.guests,
             rooms: formPart2.rooms,
             roomType: formPart2.roomType,
-            duration: Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))
+            duration: Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)),
         };
 
-        setAvailableBookings(prev => [...prev, newBooking]);
-
-        // clear form
-        setFormPart1({
-            userId: '',
-            userName: '',
-            hotelId: '',
-            hotelName: '',
-            checkIn: '',
-            checkOut: ''
-        });
-        setFormPart2({
-            guests: 1,
-            rooms: 1,
-            roomType: 'Standard'
-        });
-    }
+        dispatch(addAvailableBooking(newBooking));
+        dispatch(clearForm());
+    };
 
     const handleMoveToFinalization = () => {
-        if (selectedAvailableBookings.length === 0) {
-            return;
-        }
-
-        const bookingsToMove = availableBookings.filter((booking) =>
-            selectedAvailableBookings.includes(booking.tempId)
-        );
-
-        setSelectedForFinalization((prev) => [...prev, ...bookingsToMove]);
-        setAvailableBookings((prev) =>
-            prev.filter((booking) => !selectedAvailableBookings.includes(booking.tempId))
-        );
-        setSelectedAvailableBookings([]);
+        if (selectedAvailableBookings.length === 0) return;
+        dispatch(moveToFinalization());
     };
 
     const handleRemoveFromFinalization = () => {
-        if (selectedFinalizationBookings.length === 0) {
-            return;
-        }
-
-        setSelectedForFinalization((prev) =>
-            prev.filter((booking) => !selectedFinalizationBookings.includes(booking.tempId))
-        );
-        setSelectedFinalizationBookings([]);
+        if (selectedFinalizationBookings.length === 0) return;
+        dispatch(moveBackToAvailable());
     };
 
     const handleFinalizeBookings = async () => {
-        if (selectedForFinalization.length === 0) {
-            setErrors(prev => ({ ...prev, finalization: true }));
-            return;
-        }
-        if (selectedFinalizationBookings.length === 0) {
+        if (selectedForFinalization.length === 0 || selectedFinalizationBookings.length === 0) {
+            dispatch(setErrors({ finalization: true }));
             return;
         }
 
-        setErrors(prev => ({ ...prev, finalization: false }));
+        dispatch(setErrors({ finalization: false }));
 
         const bookingsToFinalize = selectedForFinalization.filter((booking) =>
             selectedFinalizationBookings.includes(booking.tempId)
         );
 
-        try {
-            let successCount = 0;
+        const bookingData = bookingsToFinalize.map(booking => ({
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            userId: booking.userId,
+            hotelId: booking.hotelId,
+            hotelName: booking.hotelName,
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut,
+            guests: booking.guests,
+            rooms: booking.rooms,
+            roomType: booking.roomType,
+            status: 'confirmed',
+            bookingDate: new Date().toISOString().split('T')[0],
+            createdBy: 'admin',
+            createdAt: new Date().toISOString(),
 
-            for (const booking of bookingsToFinalize) {
-                try {
-                    const bookingData = {
-                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                        userId: booking.userId,
-                        hotelId: booking.hotelId,
-                        hotelName: booking.hotelName,
-                        checkIn: booking.checkIn,
-                        checkOut: booking.checkOut,
-                        guests: booking.guests,
-                        rooms: booking.rooms,
-                        roomType: booking.roomType,
-                        status: 'confirmed',
-                        bookingDate: new Date().toISOString().split('T')[0],
-                        createdBy: 'admin',
-                        createdAt: new Date().toISOString(),
+            noOfPersons: booking.guests,
+            noOfRooms: booking.rooms,
+            typeOfRoom: booking.roomType,
+            startDate: booking.checkIn,
+            endDate: booking.checkOut,
+            tempId: booking.tempId,
+        }));
 
-                        noOfPersons: booking.guests,
-                        noOfRooms: booking.rooms,
-                        typeOfRoom: booking.roomType,
-                        startDate: booking.checkIn,
-                        endDate: booking.checkOut,
-                    };
-
-                    await handleCreateBooking(bookingData, false);
-                    successCount++;
-                } catch (error) {
-                    console.error('Error creating booking:', error);
-                }
-            }
-
-            if (successCount > 0) {
-                setSelectedForFinalization((prev) =>
-                    prev.filter((booking) => !selectedFinalizationBookings.includes(booking.tempId))
-                );
-                setSelectedFinalizationBookings([]);
-            }
-        } catch (error) {
-            console.error('Error finalizing bookings:', error);
-        }
+        dispatch(createMultipleBookings(bookingData));
     };
 
     const columns = [
@@ -296,7 +240,31 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                 <Typography variant="body2" color="text.secondary">
                     Create multiple hotel bookings efficiently. Fill the form, add to available bookings, select desired bookings, and finalize them.
                 </Typography>
+
+                {/* Global Error Display*/}
+                {error && (
+                    <Alert severity='error' sx={{ mt: 2 }} onClose={() => dispatch(clearMessage())} >
+                        {error}
+                    </Alert>
+                )}
             </Box>
+
+            {/* Success Results Display*/}
+            {success && creationResults.length > 0 && (
+                <Alert severity='success' sx={{ mt: 2 }} onClose={() => dispatch(clearMessage())}>
+                    <Typography variant='subtitle2' gutterBottom>
+                        Booking Creation Results:
+                    </Typography>
+                    <Typography variant='body2'>
+                        Successfully created: {creationResults.filter(r => r.success).length} bookings
+                    </Typography>
+                    {creationResults.filter(r => !r.success).length > 0 && (
+                        <Typography>
+                            Failed: {creationResults.filter(r => !r.success).length} bookings
+                        </Typography>
+                    )}
+                </Alert>
+            )}
 
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
@@ -311,23 +279,34 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
                             <Autocomplete
-                                options={allUsers}
+                                options={users}
                                 getOptionLabel={(option) => `${option.name} (${option.email}) ID: ${option.id}`}
-                                value={allUsers.find((user) => user.id === formPart1.userId) || null}
+                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                value={users.find(user => user.id === formPart1.userId) || null}
                                 onChange={(_e, value) =>
-                                    setFormPart1((prev) => ({
-                                        ...prev,
+                                    dispatch(setFormPart1({
                                         userId: value?.id || '',
                                         userName: value?.name || '',
                                     }))
                                 }
+                                loading={loading.users}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
                                         label="Select User *"
                                         required
                                         error={errors.formPart1.userId}
-                                        helperText={errors.formPart1.userId ? "Please select a user" : "Choose the user for this booking"} />
+                                        helperText={errors.formPart1.userId ? "Please select a user" : "Choose the user for this booking"}
+                                        InputProps={{
+                                            ...params.InputProps,
+                                            endAdornment: (
+                                                <>
+                                                    {loading.users ? <CircularProgress color='inherit' size={20} /> : null}
+                                                    {params.InputProps.endAdornment}
+                                                </>
+                                            ),
+                                        }}
+                                    />
                                 )}
                                 renderOption={(props, option) => (
                                     <Box component='li' {...props}>
@@ -344,23 +323,34 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
 
                         <Grid item xs={12} md={6}>
                             <Autocomplete
-                                options={allHotels}
+                                options={hotels}
                                 getOptionLabel={(option) => `${option.hotelName} - ${option.city}`}
-                                value={allHotels.find((hotel) => hotel.id === formPart1.hotelId) || null}
-                                onChange={(e, value) =>
-                                    setFormPart1((prev) => ({
-                                        ...prev,
+                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                value={hotels.find(hotel => hotel.id === formPart1.hotelId) || null}
+                                onChange={(_e, value) =>
+                                    dispatch(setFormPart1({
                                         hotelId: value?.id || '',
                                         hotelName: value?.hotelName || '',
                                     }))
                                 }
+                                loading={loading.hotels}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
                                         label="Select Hotel *"
                                         required
                                         error={errors.formPart1.hotelId}
-                                        helperText={errors.formPart1.hotelId ? "" : "Choose a hotel"} />
+                                        helperText={errors.formPart1.hotelId ? "Please select a hotel" : "Choose a hotel"}
+                                        InputProps={{
+                                            ...params.InputProps,
+                                            endAdornment: (
+                                                <>
+                                                    {loading.hotels ? <CircularProgress color='inherit' size={20} /> : null}
+                                                    {params.InputProps.endAdornment}
+                                                </>
+                                            ),
+                                        }}
+                                    />
                                 )}
                                 renderOption={(props, option) => (
                                     <Box component='li' {...props}>
@@ -377,10 +367,10 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
 
                         <Grid item xs={12} md={6}>
                             <MobileDatePicker
+                                label="Check In Date"
                                 value={formPart1.checkIn ? new Date(formPart1.checkIn) : null}
                                 onChange={(newValue) => {
-                                    setFormPart1(prev => ({
-                                        ...prev,
+                                    dispatch(setFormPart1({
                                         checkIn: newValue ? newValue.toISOString().split('T')[0] : ''
                                     }));
                                 }}
@@ -402,10 +392,10 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
 
                         <Grid item xs={12} md={6}>
                             <MobileDatePicker
+                                label="Check Out Date *"
                                 value={formPart1.checkOut ? new Date(formPart1.checkOut) : null}
                                 onChange={(newValue) => {
-                                    setFormPart1(prev => ({
-                                        ...prev,
+                                    dispatch(setFormPart1({
                                         checkOut: newValue ? newValue.toISOString().split('T')[0] : ''
                                     }));
                                 }}
@@ -441,8 +431,7 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                                 type="number"
                                 value={formPart2.guests}
                                 onChange={(e) =>
-                                    setFormPart2((prev) => ({
-                                        ...prev,
+                                    dispatch(setFormPart2({
                                         guests: parseInt(e.target.value) || 1,
                                     }))
                                 }
@@ -458,8 +447,7 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                                 type="number"
                                 value={formPart2.rooms}
                                 onChange={(e) =>
-                                    setFormPart2((prev) => ({
-                                        ...prev,
+                                    dispatch(setFormPart2({
                                         rooms: parseInt(e.target.value) || 1,
                                     }))
                                 }
@@ -475,8 +463,7 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                                 label="Room Type"
                                 value={formPart2.roomType}
                                 onChange={(e) =>
-                                    setFormPart2((prev) => ({
-                                        ...prev,
+                                    dispatch(setFormPart2({
                                         roomType: e.target.value,
                                     }))
                                 }
@@ -509,21 +496,7 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                     </Button>
                     <Button
                         variant="outlined"
-                        onClick={() => {
-                            setFormPart1({
-                                userId: '',
-                                userName: '',
-                                hotelId: '',
-                                hotelName: '',
-                                checkIn: '',
-                                checkOut: '',
-                            });
-                            setFormPart2({
-                                guests: 1,
-                                rooms: 1,
-                                roomType: 'Standard',
-                            });
-                        }}
+                        onClick={() => dispatch(clearForm())}
                     >
                         Clear Form
                     </Button>
@@ -552,7 +525,7 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                     pageSizeOptions={[5, 10, 25]}
                     checkboxSelection
                     selectedRows={selectedAvailableBookings}
-                    onSelectionChange={setSelectedAvailableBookings}
+                    onSelectionChange={(newSelection) => dispatch(setSelectedAvailableBookings(newSelection))}
                     rowIdField="tempId"
                 />
             </Paper>
@@ -575,10 +548,18 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                             size="large"
                             startIcon={<CheckCircleIcon />}
                             onClick={handleFinalizeBookings}
-                            disabled={selectedFinalizationBookings.length === 0}
+                            disabled={selectedFinalizationBookings.length === 0 || loading.creating}
                             sx={{ px: 3 }}
                         >
-                            Finalize Selected ({selectedFinalizationBookings.length})
+                            {
+                                loading.creating ? (
+                                    <>
+                                        <CircularProgress size={20} color='inherit' sx={{ mr: 1 }} />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    `Finalized Selected (${selectedFinalizationBookings.length})`
+                                )}
                         </Button>
                     </Box>
                 </Box>
@@ -599,7 +580,7 @@ const CreateBooking = ({ allUsers, allHotels, handleCreateBooking }) => {
                     pageSizeOptions={[5, 10, 25]}
                     checkboxSelection
                     selectedRows={selectedFinalizationBookings}
-                    onSelectionChange={setSelectedFinalizationBookings}
+                    onSelectionChange={(newSelection) => dispatch(setSelectedFinalizationBookings(newSelection))}
                     rowIdField="tempId"
                 />
             </Paper>

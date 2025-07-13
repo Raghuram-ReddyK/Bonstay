@@ -32,16 +32,6 @@ const AdminDashboard = () => {
     const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [selectedRequest, setSelectedRequest] = useState('');
-    const [newBooking, setNewBooking] = useState({
-        userId: '',
-        hotelName: '',
-        hotelId: '',
-        checkIn: '',
-        checkOut: '',
-        guests: 1,
-        rooms: 1,
-        roomType: 'Standard'
-    });
 
     useEffect(() => {
         fetchAdminData();
@@ -319,77 +309,6 @@ const AdminDashboard = () => {
         setUserDialogOpen(true);
     };
 
-    const handleCreateBooking = async () => {
-        try {
-            if (!newBooking.userId || !newBooking.hotelId || !newBooking.checkIn || !newBooking.checkOut) {
-                alert('Please fill the required fields');
-                return;
-            }
-
-            const checkInDate = new Date(newBooking.checkIn);
-            const checkOutDate = new Date(newBooking.checkOut);
-            const currentDate = new Date();
-            currentDate.setHours(0, 0, 0, 0);
-
-            if (checkInDate < currentDate) {
-                alert('Check-in date cannot be in the past');
-                return;
-            }
-
-            if (checkOutDate <= checkInDate) {
-                alert('Check-out date must be after check-in date');
-                return;
-            }
-
-            const bookingData = {
-                ...newBooking,
-                id: Date.now().toString(),
-                status: 'confirmed',
-                bookingDate: new Date().toISOString().split('T')[0],
-                createdBy: admin.id,
-                createdAt: new Date().toISOString(),
-                noOfPersons: newBooking.guests,
-                noOfRooms: newBooking.rooms,
-                typeOfRooms: newBooking.roomType,
-                startDate: newBooking.checkIn,
-                endDate: newBooking.checkOut
-            };
-
-            await axios.post(`http://localhost:4000/bookings`, bookingData);
-
-            const user = allUsers.find(u => u.id === newBooking.userId)
-            const hotel = allUsers.find(h => h.id === newBooking.hotelId)
-            const userName = user ? user.name : newBooking.userId;
-            const hotelInfo = hotel ? `${hotel.hotelName} (${hotel.city})` : newBooking.hotelName;
-
-            alert(`Booking created Successfully! 
-                    User: ${userName}
-                    Hotel: ${hotelInfo}
-                    Check-In: ${newBooking.checkIn}
-                    Check-Out: ${newBooking.checkOut}
-                    Guests: ${newBooking.guests}
-                    Rooms: ${newBooking.rooms}
-                    Room Type: ${newBooking.roomType}
-                    Booking Id: ${bookingData.id}
-                    The booking has been confirmed and is now visible in the Booking Management`)
-
-            setNewBooking({
-                userId: '',
-                hotelName: '',
-                hotelId: '',
-                checkIn: '',
-                checkOut: '',
-                guests: 1,
-                rooms: 1,
-                roomType: 'Standard',
-            });
-            await fetchAllBookings();
-        } catch (error) {
-            console.error('Error creating booking:', error);
-            alert(`Failed to create booking: ${error.response?.data?.message || error.message || 'Unknown error'}`)
-        }
-    };
-
     const TabPanel = ({ children, value, index }) => (
         <div hidden={value !== index}>
             {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
@@ -445,13 +364,7 @@ const AdminDashboard = () => {
             </TabPanel>
 
             <TabPanel value={tabValue} index={2}>
-                <CreateBooking
-                    newBooking={newBooking}
-                    setNewBooking={setNewBooking}
-                    allUsers={allUsers}
-                    allHotels={allHotels}
-                    handleCreateBooking={handleCreateBooking}
-                />
+                <CreateBooking />
             </TabPanel>
 
             <TabPanel value={tabValue} index={3}>

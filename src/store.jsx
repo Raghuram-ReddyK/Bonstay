@@ -3,6 +3,7 @@ import registerUser from "./Slices/registerSlice";
 import themeSlice from "./Slices/themeSlice";
 import bookingReducer from "./Slices/bookingSlice";
 import reviewReducer from './Slices/reviewSlice';
+import multiBookingReducer from './Slices/multiBookingSlice'
 
 const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
         theme: themeSlice,
         booking: bookingReducer,
         reviews: reviewReducer,
+        multiBooking: multiBookingReducer,
 
     },
 })
