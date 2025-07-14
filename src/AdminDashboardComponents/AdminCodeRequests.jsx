@@ -2,17 +2,11 @@ import {
     Box,
     Typography,
     Button,
-    TableContainer,
-    Table,
-    TableHead,
-    TableRow,
-    TableCell,
-    TableBody,
-    Paper,
     Chip,
     Tooltip,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import CustomDataGrid from '../CommonComponents/CustomDataGrid'
 
 const AdminCodeRequests = ({
     adminCodeRequests,
@@ -20,90 +14,113 @@ const AdminCodeRequests = ({
     setSelectedRequest,
     setRequestDialogOpen,
 }) => {
+
+    const adminCodeHeaders = [
+        {
+            field: 'requestName',
+            headerName: 'Request Date',
+            width: 130,
+            sortable: true,
+            valueGetter: ({ row }) => new Date(row.requestDate).toLocaleDateString(),
+            sortValueGetter: ({ row }) => new Date(row.requestDate).getTime()
+        },
+        {
+            field: 'name',
+            headerName: 'Name',
+            width: 150,
+            sortable: true,
+        },
+        {
+            field: 'email',
+            headerName: 'Email',
+            width: 200,
+            sortable: true,
+        },
+        {
+            field: 'phoneNo',
+            headerName: 'Phone',
+            width: 130,
+            sortable: true,
+        },
+        {
+            field: 'organization',
+            headerName: 'Organization',
+            width: 150,
+            sortable: true,
+        },
+        {
+            field: '6',
+            headerName: 'Status',
+            width: 120,
+            sortable: false,
+            renderCell: ({ row }) => (
+                <Chip
+                    label={row.status}
+                    color={
+                        row.status === 'approved' ? 'success' :
+                            row.status === 'rejected' ? 'error' : 'warning'
+                    }
+                />
+            ),
+        },
+        {
+            field: 'actions',
+            headerName: 'Action',
+            width: 150,
+            sortable: false,
+            renderCell: ({ row }) => (
+                <Box>
+                    {row.status === 'pending' && (
+                        <Button
+                            variant='outlined'
+                            size='small'
+                            onClick={() => {
+                                setSelectedRequest(row);
+                                setRequestDialogOpen(true);
+                            }}
+                            sx={{ mr: 1 }}
+                        >
+                            Review
+                        </Button>
+                    )}
+                    {row.status !== 'pending' && (
+                        <Button
+                            variant='text'
+                            size='small'
+                            onClick={() => {
+                                setSelectedRequest(row);
+                                setRequestDialogOpen(true);
+                            }}
+                        >
+                            View Details
+                        </Button>
+                    )}
+
+                </Box>
+            )
+        }
+    ];
+
     return (
         <>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h5">Admin Code Requests</Typography>
+            <CustomDataGrid
+                rows={adminCodeRequests}
+                columns={adminCodeHeaders}
+                pageSize={5}
+                pageSizeOptions={[5, 10, 25]}
+                loading={false}
+                title="Admin Code Requests"
+                subtitle="Manage admin code requests and approval process"
+                actions={
+                    <Tooltip title="Refresh Requests">
+                        <Button variant='outlined' onClick={fetchAdminCodeRequests} sx={{ ml: 2 }}>
+                            <RefreshIcon />
+                            Refresh
+                        </Button>
+                    </Tooltip>
 
-                <Tooltip title="Refresh Requests">
-                    <Button variant="outlined" onClick={fetchAdminCodeRequests} sx={{ ml: 2 }}>
-                        <RefreshIcon />
-                        Refresh
-                    </Button>
-                </Tooltip>
-
-            </Box>
-
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Request Date</TableCell>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Email</TableCell>
-                            <TableCell>Phone</TableCell>
-                            <TableCell>Organization</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-
-                    <TableBody>
-                        {adminCodeRequests.map((request) => (
-                            <TableRow key={request.id}>
-                                <TableCell>{new Date(request.requestDate).toLocaleDateString()}</TableCell>
-                                <TableCell>{request.name}</TableCell>
-                                <TableCell>{request.email}</TableCell>
-                                <TableCell>{request.phoneNo}</TableCell>
-                                <TableCell>{request.organization}</TableCell>
-                                <TableCell>
-                                    <Chip
-                                        label={request.status}
-                                        color={
-                                            request.status === 'approved'
-                                                ? 'success'
-                                                : request.status === 'rejected'
-                                                    ? 'error'
-                                                    : 'warning'
-                                        }
-                                    />
-                                </TableCell>
-
-                                <TableCell>
-                                    {request.status === 'pending' && (
-                                        <Box>
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                onClick={() => {
-                                                    setSelectedRequest(request);
-                                                    setRequestDialogOpen(true);
-                                                }}
-                                                sx={{ mr: 1 }}
-                                            >
-                                                Review
-                                            </Button>
-                                        </Box>
-                                    )}
-
-                                    {request.status !== 'pending' && (
-                                        <Button
-                                            variant="text"
-                                            size="small"
-                                            onClick={() => {
-                                                setSelectedRequest(request);
-                                                setRequestDialogOpen(true);
-                                            }}
-                                        >
-                                            View Details
-                                        </Button>
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                }
+            />
 
             {adminCodeRequests.length === 0 && (
                 <Box sx={{ textAlign: 'center', mt: 4 }}>

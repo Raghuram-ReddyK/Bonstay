@@ -21,6 +21,63 @@ const UserManagement = ({
     getUserBookings,
     handleViewUserDetails
 }) => {
+    const userManagementHeaders = [
+        {
+            field: 'id',
+            headerName: 'User ID',
+            width: 120,
+            sortable: true,
+        },
+        {
+            field: 'name',
+            headerName: 'Name',
+            width: 200,
+            sortable: true,
+        },
+        {
+            field: 'email',
+            headerName: 'Email',
+            width: 250,
+            sortable: true,
+        },
+        {
+            field: 'phoneNo',
+            headerName: 'Phone',
+            width: 150,
+            sortable: true,
+        },
+        {
+            field: 'bookingsCount',
+            headerName: 'Bookings',
+            width: 120,
+            sortable: true,
+            valueGetter: ({ row }) => getUserBookings(row.id).length,
+            sortValueGetter: ({ row }) => Number(getUserBookings(row.id).length),
+            renderCell: ({ row }) => (
+                <Chip
+                    label={getUserBookings(row.id).length}
+                    color="primary"
+                    size="small"
+                />
+            ),
+        },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 150,
+            sortable: false,
+            renderCell: ({ row }) => (
+                <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleViewUserDetails(row)}
+                >
+                    View Details
+                </Button>
+            ),
+        },
+    ]
+    
     return (
         <>
             <Box sx={{ mb: 3 }}>
@@ -59,62 +116,7 @@ const UserManagement = ({
 
             <CustomDataGrid
                 rows={filteredUsers}
-                columns={[
-                    {
-                        field: 'id',
-                        headerName: 'User ID',
-                        width: 120,
-                        sortable: true,
-                    },
-                    {
-                        field: 'name',
-                        headerName: 'Name',
-                        width: 200,
-                        sortable: true,
-                    },
-                    {
-                        field: 'email',
-                        headerName: 'Email',
-                        width: 250,
-                        sortable: true,
-                    },
-                    {
-                        field: 'phoneNo',
-                        headerName: 'Phone',
-                        width: 150,
-                        sortable: true,
-                    },
-                    {
-                        field: 'bookingsCount',
-                        headerName: 'Bookings',
-                        width: 120,
-                        sortable: true,
-                        valueGetter: ({ row }) => getUserBookings(row.id).length,
-                        sortValueGetter: ({ row }) => Number(getUserBookings(row.id).length),
-                        renderCell: ({ row }) => (
-                            <Chip
-                                label={getUserBookings(row.id).length}
-                                color="primary"
-                                size="small"
-                            />
-                        ),
-                    },
-                    {
-                        field: 'actions',
-                        headerName: 'Actions',
-                        width: 150,
-                        sortable: false,
-                        renderCell: ({ row }) => (
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={() => handleViewUserDetails(row)}
-                            >
-                                View Details
-                            </Button>
-                        ),
-                    },
-                ]}
+                columns={userManagementHeaders}
                 pageSize={5}
                 pageSizeOptions={[5, 10, 25]}
                 loading={isLoading}
