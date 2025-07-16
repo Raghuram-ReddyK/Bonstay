@@ -1,10 +1,27 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from './Slices/registerSlice'; // Import the Redux action
-import { Button, TextField, Typography, Link as MuiLink, Container, FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material';
-import CountrySelect from './CountrySelect';
+import { registerUser } from './Slices/registerSlice'
+import {
+    Button,
+    TextField,
+    Typography,
+    Link as MuiLink,
+    Container,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    FormHelperText,
+    Box,
+    Paper,
+    Divider,
+    Alert
+} from '@mui/material';
+
+import RegistrationFormSections from './RegistrationFormSection';
 
 const RegistrationPage = () => {
+    // STATE MANAGEMENT
     const [state, setState] = useState({
         name: '',
         address: '',
@@ -17,7 +34,7 @@ const RegistrationPage = () => {
         department: '',
         dateOfBirth: '',
         gender: '',
-        occupation: '',
+        occupation: ''
     });
 
     const [formErrors, setFormErrors] = useState({
@@ -31,15 +48,16 @@ const RegistrationPage = () => {
         department: '',
         dateOfBirth: '',
         gender: '',
-        occupation: '',
+        occupation: ''
     });
 
-    const [registeredId, setRegisteredId] = useState(null); // To store the newly created user ID
+    const [registeredId, setRegisteredId] = useState(null);
 
     const dispatch = useDispatch();
-    const { loading, success, error } = useSelector((state) => state.user); // Redux state
 
-    // Validate each input field and set the formErrors state
+    const { loading, success, error } = useSelector((state) => state.user);
+
+    // VALIDATION FUNCTIONS
     const validateField = (name, value) => {
         let error = '';
 
@@ -50,7 +68,6 @@ const RegistrationPage = () => {
         }
 
         if (name === 'phoneNo') {
-            // Check if the phone number contains only digits and is 10 digits long
             const phoneRegex = /^[0-9]{10}$/;
             if (!phoneRegex.test(value)) {
                 error = 'Phone number must be exactly 10 digits and only contain numbers';
@@ -72,7 +89,7 @@ const RegistrationPage = () => {
         }
 
         if (name === 'adminCode' && state.userType === 'admin') {
-            if (value !== 'ADMIN2024') {
+            if (!value) {
                 error = 'Invalid admin code';
             }
         }
@@ -89,31 +106,56 @@ const RegistrationPage = () => {
         }));
     };
 
-    // Handle change for each input field
-    const handleChange = (event) => {
-        const { name, value } = event.target;
+    const validateForm = () => {
+        const errors = {};
 
-        // Allow only numeric input in the phone number field
-        if (name === 'phoneNo') {
-            if (!/^[0-9]*$/.test(value)) {
-                setFormErrors((prevErrors) => ({
-                    ...prevErrors,
-                    phoneNo: 'Phone number can only contain numbers'
-                }));
-                return; // Do not update the state if the value is not numeric
+        if (!state.name || state.name.length < 5) {
+            errors.name = 'Name must be at least 5 characters';
+        }
+
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!state.phoneNo || !phoneRegex.test(state.phoneNo)) {
+            errors.phoneNo = 'Phone number must be exactly 10 digits and only contain numbers';
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!state.email || !emailRegex.test(state.email)) {
+            errors.email = 'Invalid email format';
+        }
+
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*!])[A-Za-z\d@#$%^&*!]{4,100}$/;
+        if (!state.password || !passwordRegex.test(state.password)) {
+            errors.password = 'Password must be between 4 and 100 characters, include at least one Uppercase, one lowercase, one number, and one special character';
+        }
+
+        if (state.userType === 'admin') {
+            if (!state.adminCode) {
+                errors.adminCode = 'Admin code is required';
+            }
+            if (!state.department || state.department.length < 2) {
+                errors.department = 'Department is required';
             }
         }
 
-        setState((prevState) => ({
-            ...prevState,
-            [name]: value
-        }));
+        if (state.userType === 'user') {
+            if (!state.dateOfBirth) {
+                errors.dateOfBirth = 'Date of birth is required';
+            }
+            if (!state.gender) {
+                errors.gender = 'Gender is required';
+            }
+            if (!state.occupation) {
+                errors.occupation = 'Occupation is required';
+            }
+        }
 
-        validateField(name, value);
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
-    // Validate the entire form before submission
-    const validateForm = () => {
+    // Validate basic Info step
+
+    const validateBasicInfo = () => {
         const errors = {};
 
         if (!state.name || state.name.length < 5) {
@@ -134,49 +176,70 @@ const RegistrationPage = () => {
             errors.password = 'Password must be between 4 and 100 characters, include at least one Uppercase, one lowercase, one number, and one special character';
         }
 
-        if (state.userType === 'admin') {
-            if (!state.adminCode || state.adminCode !== 'ADMIN2024') {
-                errors.adminCode = 'Valid admin code is required'
-            }
-            if (!state.userType === 'user') {
-                if (!state.department || state.department.length < 2) {
-                    errors.department = 'Department is required'
-                }
-            }
-        }
-
-        if (state.userType === 'user') {
-            if (!state.dateOfBirth) {
-                errors.dateOfBirth = 'Date of birth is required';
-            }
-            if (!state.gender) {
-                errors.errors = 'Gender is required'
-            }
-            if (!state.occupation) {
-                errors.occupation = 'Occupation is required'
-            }
-        }
         setFormErrors(errors);
+        return Object.keys(errors).length;
+    };
 
-        // Form is valid if there are no error messages
-        return Object.keys(errors).length === 0;
+
+    const handleChange = (event) => {
+        const { name, value } = event.target;
+
+        if (name === 'phoneNo' && !/^[0-9]*$/.test(value)) {
+            setFormErrors((prevErrors) => ({
+                ...prevErrors,
+                phoneNo: 'Phone number can only contain numbers'
+            }));
+            return;
+        }
+
+        setState((prevState) => ({
+            ...prevState,
+            [name]: value
+        }));
+
+        validateField(name, value);
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        // Check if the form is valid before submitting
         if (validateForm()) {
-            // Dispatch the registerUser action with form data
             try {
                 const response = await dispatch(registerUser(state)).unwrap();
-                console.log('Registered successfully with user ID:', response.id);
-                setRegisteredId(response.id); // Set the registered user ID
+                setRegisteredId(response.id);
+
+                setState({
+                    name: '',
+                    address: '',
+                    country: '',
+                    phoneNo: '',
+                    email: '',
+                    password: '',
+                    userType: 'user',
+                    adminCode: '',
+                    department: '',
+                    dateOfBirth: '',
+                    gender: '',
+                    occupation: ''
+                });
+
+                setFormErrors({
+                    name: '',
+                    address: '',
+                    country: '',
+                    phoneNo: '',
+                    email: '',
+                    password: '',
+                    adminCode: '',
+                    department: '',
+                    dateOfBirth: '',
+                    gender: '',
+                    occupation: ''
+                });
             } catch (err) {
                 console.error('Error while registering:', err);
             }
         } else {
-            // Scroll to the first error for better user experience
             const firstErrorField = document.querySelector('.Mui-error');
             if (firstErrorField) {
                 firstErrorField.scrollIntoView({ behavior: 'smooth' });
@@ -184,173 +247,103 @@ const RegistrationPage = () => {
         }
     };
 
-    return (
-        <Container className="container">
-            <form onSubmit={handleSubmit}>
-                <Typography variant="h4" gutterBottom>
-                    Register
+    const formSections = RegistrationFormSections({
+        state,
+        formErrors,
+        error,
+        handleChange
+    });
+
+    const renderStatusDisplay = () => (
+        <Box sx={{ mb: 2 }}>
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
+            {success && registeredId && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                    Successfully registered! Your user ID is: {registeredId}
+                </Alert>
+            )}
+        </Box>
+    );
+
+    const renderFormActions = () => (
+        <Box sx={{ textAlign: 'center' }}>
+            <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={loading}
+                size="large"
+                sx={{
+                    mb: 2,
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    minWidth: 200
+                }}
+            >
+                {loading ? 'Creating Account...' : 'Create My Account'}
+            </Button>
+            <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Already a member?
                 </Typography>
-
-                <FormControl fullWidth margin='normal'>
-                    <InputLabel sx={{ color: 'white' }}> Login As </InputLabel>
-                    <Select
-                        name='userType'
-                        value={state.userType}
-                        onChange={handleChange}
-                        label="User Type"
-                    >
-                        <MenuItem value="user"> Normal User </MenuItem>
-                        <MenuItem value="admin"> Administrator </MenuItem>
-                    </Select>
-                </FormControl>
-
-                <TextField
-                    name="name"
-                    label="Name"
-                    value={state.name}
-                    onChange={handleChange}
-                    error={!!formErrors.name}
-                    helperText={formErrors.name}
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    name="address"
-                    label="Address"
-                    value={state.address}
-                    onChange={handleChange}
-                    fullWidth
-                    margin="normal"
-                />
-                <CountrySelect
-                    onChange={handleChange}
-                    value={state.country}
-                    margin="normal"
-                />
-                <TextField
-                    name="phoneNo"
-                    label="Phone No"
-                    value={state.phoneNo}
-                    onChange={handleChange}
-                    error={!!formErrors.phoneNo}
-                    helperText={formErrors.phoneNo}
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    name="email"
-                    label="Email"
-                    value={state.email}
-                    onChange={handleChange}
-                    error={!!formErrors.email || (error && error === 'Email is already registered')}
-                    helperText={formErrors.email || (error && error === 'Email is already registered' ? error : '')} // Display the error from Redux
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    name="password"
-                    label="Password"
-                    value={state.password}
-                    onChange={handleChange}
-                    error={!!formErrors.password}
-                    helperText={formErrors.password}
-                    type="password"
-                    fullWidth
-                    margin="normal"
-                />
-
-                {/* Admin specific Fields*/}
-                {state.userType === 'admin' && (
-                    <>
-                        <TextField
-                            name='adminCode'
-                            label="Admin Code"
-                            onChange={handleChange}
-                            error={!!formErrors.adminCode}
-                            helperText={formErrors.adminCode || "Enter the admin verification code"}
-                            type='password'
-                            fullWidth
-                            margin='normal'
-                        />
-                        <Typography variant='body2' sx={{ mt: 1, mb: 2 }}>
-                            Don't have an admin code?
-                            <MuiLink href="/admin-code-request" target="_blank" sx={{ ml: 1 }}>
-                                request Admin Code
-                            </MuiLink>
-                        </Typography>
-                        <TextField
-                            name='department'
-                            label="Department"
-                            onChange={handleChange}
-                            error={!!formErrors.department}
-                            helperText={formErrors.department}
-                            fullWidth
-                            margin='normal'
-                        />
-                    </>
-                )}
-
-                {/* Normal user specific Fields*/}
-                {state.userType === 'user' && (
-                    <>
-                        <TextField
-                            name='dateOfBirth'
-                            label="Date of Birth"
-                            type='date'
-                            value={state.dateOfBirth}
-                            onChange={handleChange}
-                            error={!!formErrors.dateOfBirth}
-                            helperText={formErrors.dateOfBirth}
-                            fullWidth
-                            margin='normal'
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                        />
-                        <FormControl fullWidth margin='normal' error={!!formErrors.gender}>
-                            <InputLabel> Gender </InputLabel>
-                            <Select
-                                name='gender'
-                                value={state.gender}
-                                onChange={handleChange}
-                                label="Gender"
-                            >
-                                <MenuItem value="male">Male</MenuItem>
-                                <MenuItem value="female">Female</MenuItem>
-                                <MenuItem value="others">Others</MenuItem>
-                            </Select>
-                            {formErrors.gender && <FormHelperText>{formErrors.gender}</FormHelperText>}
-                        </FormControl>
-                        <TextField
-                            name='occupation'
-                            label="Occupation"
-                            value={state.occupation}
-                            onChange={handleChange}
-                            error={!!formErrors.occupation}
-                            helperText={formErrors.occupation}
-                            fullWidth
-                            margin='normal'
-                        />
-                    </>
-                )}
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    disabled={loading}
-                >
-                    {loading ? 'Registering...' : 'Register'}
-                </Button>
-                {error && <Typography color="error">{error}</Typography>}
-                {success && registeredId && (
-                    <Typography color="primary">
-                        Successfully registered! Your user ID is: {registeredId}
-                    </Typography>
-                )}
-                <MuiLink href="/Login" underline="hover" color='white' sx={{ mt: 2, display: 'flex', justifyContent: 'center' }} >
-                    Already have an account? Login here.
+                <MuiLink href="/login" underline="hover" color="primary.main" fontWeight="bold">
+                    Sign In to Your Account
                 </MuiLink>
-            </form>
+            </Box>
+        </Box>
+    );
+
+    return (
+        <Container maxWidth="lg" sx={{ py: 3, minHeight: '100vh' }}>
+            <Box
+                component="form"
+                onSubmit={handleSubmit}
+                sx={{
+                    width: '100% !important',
+                    backgroundColor: 'transparent !important'
+                }}
+            >
+                <Box sx={{ textAlign: 'center', mb: 4 }}>
+                    <Typography
+                        variant="h3"
+                        component="h1"
+                        gutterBottom
+                        color="primary"
+                        sx={{
+                            fontWeight: 'bold',
+                            fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' }
+                        }}
+                    >
+                        Create Your Account
+                    </Typography>
+                    <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                        Join Bonstay - Your trusted hotel booking platform
+                    </Typography>
+                </Box>
+
+                {renderStatusDisplay()}
+
+                <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden', mb: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' } }}>
+                        <Box sx={{ flex: 1, backgroundColor: '#ffffff', p: { xs: 3, md: 4 } }}>
+                            {formSections.renderBasicInfoSection()}
+                        </Box>
+                        <Box sx={{ flex: 1, backgroundColor: '#f9fafc', p: { xs: 3, md: 4 } }}>
+                            {formSections.renderRoleDetailsSection()}
+                        </Box>
+                    </Box>
+                    <Divider />
+                    <Box sx={{ backgroundColor: '#f9fafb', borderTop: '1px solid #e2e8f0', p: { xs: 3, md: 4 } }}>
+                        {renderFormActions()}
+                    </Box>
+                </Paper>
+            </Box>
         </Container>
     );
 };

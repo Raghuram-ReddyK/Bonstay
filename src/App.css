@@ -52,7 +52,7 @@ h5 {
 }
 
 /* Form styling to ensure proper layout and contrast */
-form {
+.login-form {
   position: relative;
   z-index: 1; /* Ensure form stays above the overlay */
   background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background for the form */
