@@ -16,6 +16,11 @@ import CreateBooking from '../AdminDashboardComponents/CreateBooking';
 import AdminCodeRequests from '../AdminDashboardComponents/AdminCodeRequests';
 import AdminCodeRequestDialog from '../AdminDashboardComponents/AdminCodeRequestDialog';
 import UserDetailsDialog from '../AdminDashboardComponents/UserDetailsDialog';
+import AdminQuickActions from '../AdminDashboardComponents/AdminQuickActions';
+import AdminAnalytics from '../AdminDashboardComponents/AdminAnalytics';
+import AdminSystemMonitoring from '../AdminDashboardComponents/AdminSystemMonitoring';
+import AdminActivityLogs from '../AdminDashboardComponents/AdminActivityLogs';
+import AdminNotificationCenter from '../AdminDashboardComponents/AdminNotificationCenter';
 
 const AdminDashboard = () => {
     const [admin, setAdmin] = useState(null);
@@ -245,7 +250,7 @@ const AdminDashboard = () => {
 
     const handleTabChange = (_event, newValue) => {
         setTabValue(newValue);
-        if (newValue === 3) {
+        if (newValue === 5) {
             fetchAdminCodeRequests(true)
         }
     };
@@ -334,14 +339,43 @@ const AdminDashboard = () => {
 
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={tabValue} onChange={handleTabChange}>
+                    <Tab label="Overview" />
+                    <Tab label="Analytics" />
                     <Tab label="User Management" />
                     <Tab label="Booking Management" />
                     <Tab label="Create Booking" />
                     <Tab label="Admin Code Requests" />
+                    <Tab label="System Monitoring " />
+                    <Tab label="Activity Logs" />
+                    <Tab label="Notifications" />
+
                 </Tabs>
             </Box>
 
             <TabPanel value={tabValue} index={0}>
+                <AdminQuickActions
+                    onTabChange={handleTabChange}
+                    admin={admin}
+                    allUsers={allUsers}
+                    allBookings={allBookings}
+                    allHotels={allHotels}
+                />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={1}>
+                <AdminAnalytics
+                    allUsers={allUsers}
+                    allBookings={allBookings}
+                    allHotels={allHotels}
+                    onRefresh={() => {
+                        fetchAllUsers();
+                        fetchAllBookings();
+                        fetchAllHotels();
+                    }}
+                />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={2}>
                 <UserManagement
                     allUsers={allUsers}
                     searchQuery={searchQuery}
@@ -354,7 +388,7 @@ const AdminDashboard = () => {
                 />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={1}>
+            <TabPanel value={tabValue} index={3}>
                 <BookingManagement
                     allBookings={allBookings}
                     isLoading={isLoading}
@@ -363,17 +397,29 @@ const AdminDashboard = () => {
                 />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={2}>
+            <TabPanel value={tabValue} index={4}>
                 <CreateBooking />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={3}>
+            <TabPanel value={tabValue} index={5}>
                 <AdminCodeRequests
                     adminCodeRequests={adminCodeRequests}
                     fetchAdminCodeRequests={fetchAdminCodeRequests}
                     setSelectedRequest={setSelectedRequest}
                     setRequestDialogOpen={setRequestDialogOpen}
                 />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={6}>
+                <AdminSystemMonitoring />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={7}>
+                <AdminActivityLogs />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={8}>
+                <AdminNotificationCenter />
             </TabPanel>
 
             <UserDetailsDialog
@@ -397,7 +443,7 @@ const AdminDashboard = () => {
                 handleRejectWithReason={handleRejectWithReason}
             />
 
-        </Container>
+        </Container >
     );
 
 };
