@@ -22,6 +22,7 @@ import {
     MenuItem,
 } from '@mui/material';
 import { getApiUrl } from './config/apiConfig';
+import { useUser, useUserByEmail } from './hooks/useSWRData';
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
     const navigate = useNavigate();
@@ -33,6 +34,17 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const isEmail = userIdOrEmail.includes('@');
+    const { data: emailUser, error: emailError, isLoading: emailLoading } = useUserByEmail(
+        userIdOrEmail,
+        isEmail && userIdOrEmail.length > 0
+    );
+
+    const { data: idUser, error: idError, isLoading: idLoading } = useUser(
+        userIdOrEmail,
+        !isEmail && userIdOrEmail.length > 0
+    );
 
     // Forgot password related states
     const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
@@ -60,14 +72,26 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
             let userData = null
             const isEmail = userIdOrEmail.includes('@');
             if (isEmail) {
-                const response = await axios.get(getApiUrl`/users`);
-                const allUsers = response.data;
-                userData = allUsers.find(user => user.email === userIdOrEmail);
+                if (emailLoading) {
+                    setError('Loading user data...');
+                    return;
+                }
+
+                if (emailError) {
+                    setError('Error loading user data. Please try again.')
+                    return;
+                }
             }
             else {
-                const response = await axios.get(getApiUrl(`/users/${userIdOrEmail}`));
-                userData = response.data
-                console.log('userData: ', userData);
+                if (idLoading) {
+                    setError('Loading user data...');
+                    return;
+                }
+                if (idError) {
+                    setError('User not found. Please check your UserId')
+                }
+
+                userData = idUser;
             }
 
             if (userData && userData.password === password) {
@@ -130,7 +154,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 <Typography variant="h4" gutterBottom color="white">
                     Login Form
                 </Typography>
-                {isLoading && <CircularProgress sx={{ mx: 'auto', mb: 2 }} />}
+                {(isLoading || emailLoading || idLoading) && <CircularProgress sx={{ mx: 'auto', mb: 2 }} />}
                 {error && <Alert severity="error">{error}</Alert>}
                 {success && <Alert severity="success">{success}</Alert>}
                 <FormControl fullWidth margin="normal">
@@ -207,7 +231,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     color="primary"
                     fullWidth
                     sx={{ mt: 3 }}
-                    disabled={!acceptPrivacy} // Disable login button until checkbox is checked
+                    disabled={!acceptPrivacy || isLoading || emailLoading || idLoading} // Disable login button until checkbox is checked
                 >
                     Login
                 </Button>

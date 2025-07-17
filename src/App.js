@@ -50,6 +50,7 @@ import PaymentPage from "./BonstayAfterLogin/PaymentPage";
 import AdminDashboard from "./BonstayAfterLogin/AdminDashboard";
 import AdminCodeRequest from "./BonstayAfterLogin/AdminCodeRequest";
 import AdminSettingsPage from "./AdminDashboardComponents/AdminSettingsPage";
+import { SWRConfig } from "swr";
 
 // Private Route Component to protect user-specific routes
 const PrivateRoute = ({ element, userId, loggedInUserId, requiredUserType = null }) => {
@@ -204,348 +205,360 @@ const App = () => {
   }, [showPageNotification]); // Add showPageNotification to the dependency array
 
   return (
-    <ThemeProvider theme={appliedTheme}>
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Bonstay Hotel
-            </Typography>
-            {isLoggedIn ? (
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                {/* Left side: Navigation buttons */}
+    <SWRConfig
+      value={{
+        refreshInterval: 0,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        shouldRetryOnError: false,
+        dedupingInterval: 2000,
+        errorRetryCount: 3,
+        errorRetryInterval: 5000,
+      }}
+    >
+      <ThemeProvider theme={appliedTheme}>
+        <Box sx={{ flexGrow: 1 }}>
+          <AppBar position="static">
+            <Toolbar
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Bonstay Hotel
+              </Typography>
+              {isLoggedIn ? (
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <FormControlLabel control={<ThemeToggle />} />
-                  <Button
-                    color="inherit"
-                    component={NavLink}
-                    to={userType === 'admin' ? `/admin-dashboard/${userId}` : `/dashboard/${userId}`}
-                  >
-                    Dashboard
-                  </Button>
-                  {userType !== 'admin' && (
-                    <>
-                      <Button
-                        color="inherit"
-                        component={NavLink}
-                        to={`/hotels/${userId}`}
-                      >
-                        Hotels
-                      </Button>
-                      <Button
-                        color="inherit"
-                        component={NavLink}
-                        to={`/bookings/${userId}`}
-                      >
-                        Bookings
-                      </Button>
-                      <Button
-                        color="inherit"
-                        component={NavLink}
-                        to={`/view/${userId}`}
-                      >
-                        View
-                      </Button>
-                    </>
+                  {/* Left side: Navigation buttons */}
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <FormControlLabel control={<ThemeToggle />} />
+                    <Button
+                      color="inherit"
+                      component={NavLink}
+                      to={userType === 'admin' ? `/admin-dashboard/${userId}` : `/dashboard/${userId}`}
+                    >
+                      Dashboard
+                    </Button>
+                    {userType !== 'admin' && (
+                      <>
+                        <Button
+                          color="inherit"
+                          component={NavLink}
+                          to={`/hotels/${userId}`}
+                        >
+                          Hotels
+                        </Button>
+                        <Button
+                          color="inherit"
+                          component={NavLink}
+                          to={`/bookings/${userId}`}
+                        >
+                          Bookings
+                        </Button>
+                        <Button
+                          color="inherit"
+                          component={NavLink}
+                          to={`/view/${userId}`}
+                        >
+                          View
+                        </Button>
+                      </>
+                    )}
+                  </Box>
+                  {/* Right side: Theme Toggle, Notification Icon, Account Menu */}
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <IconButton color="inherit" onClick={toggleDialog}>
+                      <Badge badgeContent={unreadNotifications} color="error">
+                        <NotificationsIcon />
+                      </Badge>
+                    </IconButton>
+                    <AccountMenu handleLogout={handleLogout} />
+                  </Box>
+                  {/* Display User ID next to the Account Menu */}
+                  {isLoggedIn && (
+                    <Typography variant="body2" sx={{ marginRight: 2 }}>
+                      {`${userId.toUpperCase()}`}
+                    </Typography>
                   )}
                 </Box>
-                {/* Right side: Theme Toggle, Notification Icon, Account Menu */}
+              ) : (
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <IconButton color="inherit" onClick={toggleDialog}>
-                    <Badge badgeContent={unreadNotifications} color="error">
-                      <NotificationsIcon />
-                    </Badge>
-                  </IconButton>
-                  <AccountMenu handleLogout={handleLogout} />
+                  <FormControlLabel control={<ThemeToggle />} />
+                  <Button color="inherit" component={NavLink} to="/">
+                    Home
+                  </Button>
+                  <Button color="inherit" component={NavLink} to="/Login">
+                    Login
+                  </Button>
+                  <Button color="inherit" component={NavLink} to="/Register">
+                    Register
+                  </Button>
                 </Box>
-                {/* Display User ID next to the Account Menu */}
-                {isLoggedIn && (
-                  <Typography variant="body2" sx={{ marginRight: 2 }}>
-                    {`${userId.toUpperCase()}`}
-                  </Typography>
-                )}
-              </Box>
-            ) : (
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <FormControlLabel control={<ThemeToggle />} />
-                <Button color="inherit" component={NavLink} to="/">
-                  Home
-                </Button>
-                <Button color="inherit" component={NavLink} to="/Login">
-                  Login
-                </Button>
-                <Button color="inherit" component={NavLink} to="/Register">
-                  Register
-                </Button>
-              </Box>
-            )}
-          </Toolbar>
-        </AppBar>
+              )}
+            </Toolbar>
+          </AppBar>
 
-        {/* Notification Dialog Component */}
-        <NotificationsDialog
-          notifications={notifications}
-          unreadNotifications={unreadNotifications}
-          dialogOpen={dialogOpen}
-          toggleDialog={toggleDialog}
-          markAsRead={markAsRead}
-          removeNotification={removeNotification}
-          removeAllNotifications={removeAllNotifications}
-        />
-
-        <Routes>
-          <Route index path="/" element={<Home />} />
-          <Route path="/register" element={<RegistrationPage />} />
-          <Route path="/admin-code-request" element={<AdminCodeRequest />} />
-          <Route
-            path="/login"
-            element={
-              <Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />
-            }
+          {/* Notification Dialog Component */}
+          <NotificationsDialog
+            notifications={notifications}
+            unreadNotifications={unreadNotifications}
+            dialogOpen={dialogOpen}
+            toggleDialog={toggleDialog}
+            markAsRead={markAsRead}
+            removeNotification={removeNotification}
+            removeAllNotifications={removeAllNotifications}
           />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-conditions" element={<TermsAndConditions />} />
 
-          {isLoggedIn && (
-            <>
-              <Route
-                path="/dashboard"
-                element={
-                  <PrivateRoute
-                    element={<DashBoard />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                    requiredUserType="user"
-                  />
-                }
-              />
-              <Route
-                path="/dashboard/:id"
-                element={
-                  <PrivateRoute
-                    element={<DashBoard />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                    requiredUserType="user"
-                  />
-                }
-              />
-              <Route
-                path="/admin-dashboard/:id"
-                element={
-                  <PrivateRoute
-                    element={<AdminDashboard />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                    requiredUserType="admin"
-                  />
-                }
-              />
-              <Route
-                path="/admin-settings/:id"
-                element={
-                  <PrivateRoute
-                    element={<AdminSettingsPage />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                    requiredUserType='admin'
-                  />
-                }
-              />
-              <Route
-                path="/admin-dashboard"
-                element={
-                  <PrivateRoute
-                    element={<AdminDashboard />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                    requiredUserType="admin"
-                  />
-                }
-              />
-              <Route
-                path="/bookroom"
-                element={
-                  <PrivateRoute
-                    element={<BookARoom />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/bookroom/:id"
-                element={
-                  <PrivateRoute
-                    element={<BookARoom />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/bookings"
-                element={
-                  <PrivateRoute
-                    element={<Bookings userId={userId} />}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/bookings/:id"
-                element={
-                  <PrivateRoute
-                    element={<Bookings userId={userId} />}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/bookroom/:id/:hotelName"
-                element={
-                  <PrivateRoute
-                    element={<BookARoom />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/hotels"
-                element={
-                  <PrivateRoute
-                    element={<Hotels />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/hotels/:id"
-                element={
-                  <PrivateRoute
-                    element={<Hotels />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/hotels/:id/:hotelName"
-                element={
-                  <PrivateRoute
-                    element={<Hotels />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/review"
-                element={
-                  <PrivateRoute
-                    element={<Review />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/review/:hotelId"
-                element={
-                  <PrivateRoute
-                    element={<Review />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/viewReview/:hotelId"
-                element={
-                  <PrivateRoute
-                    element={<ViewReviews />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/view"
-                element={
-                  <PrivateRoute
-                    element={<View />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/view"
-                element={
-                  <PrivateRoute
-                    element={<View handleLogout={handleLogout} />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/view/:id"
-                element={
-                  <PrivateRoute
-                    element={<View handleLogout={handleLogout} userId={userId} />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/reschedule/:id"
-                element={
-                  <PrivateRoute
-                    element={<ReSchedule />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/bookings"
-                element={
-                  <PrivateRoute
-                    element={<Bookings />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route
-                path="/bookings/:id"
-                element={
-                  <PrivateRoute
-                    element={<Bookings />}
-                    userId={userId}
-                    loggedInUserId={userId}
-                  />
-                }
-              />
-              <Route path="/payment/:bookingId" element={<PaymentPage />} />
-            </>
-          )}
+          <Routes>
+            <Route index path="/" element={<Home />} />
+            <Route path="/register" element={<RegistrationPage />} />
+            <Route path="/admin-code-request" element={<AdminCodeRequest />} />
+            <Route
+              path="/login"
+              element={
+                <Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />
+              }
+            />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-conditions" element={<TermsAndConditions />} />
 
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-        <Footer />
-      </Box>
-    </ThemeProvider>
+            {isLoggedIn && (
+              <>
+                <Route
+                  path="/dashboard"
+                  element={
+                    <PrivateRoute
+                      element={<DashBoard />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                      requiredUserType="user"
+                    />
+                  }
+                />
+                <Route
+                  path="/dashboard/:id"
+                  element={
+                    <PrivateRoute
+                      element={<DashBoard />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                      requiredUserType="user"
+                    />
+                  }
+                />
+                <Route
+                  path="/admin-dashboard/:id"
+                  element={
+                    <PrivateRoute
+                      element={<AdminDashboard />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                      requiredUserType="admin"
+                    />
+                  }
+                />
+                <Route
+                  path="/admin-settings/:id"
+                  element={
+                    <PrivateRoute
+                      element={<AdminSettingsPage />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                      requiredUserType='admin'
+                    />
+                  }
+                />
+                <Route
+                  path="/admin-dashboard"
+                  element={
+                    <PrivateRoute
+                      element={<AdminDashboard />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                      requiredUserType="admin"
+                    />
+                  }
+                />
+                <Route
+                  path="/bookroom"
+                  element={
+                    <PrivateRoute
+                      element={<BookARoom />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/bookroom/:id"
+                  element={
+                    <PrivateRoute
+                      element={<BookARoom />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/bookings"
+                  element={
+                    <PrivateRoute
+                      element={<Bookings userId={userId} />}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/bookings/:id"
+                  element={
+                    <PrivateRoute
+                      element={<Bookings userId={userId} />}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/bookroom/:id/:hotelName"
+                  element={
+                    <PrivateRoute
+                      element={<BookARoom />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/hotels"
+                  element={
+                    <PrivateRoute
+                      element={<Hotels />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/hotels/:id"
+                  element={
+                    <PrivateRoute
+                      element={<Hotels />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/hotels/:id/:hotelName"
+                  element={
+                    <PrivateRoute
+                      element={<Hotels />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/review"
+                  element={
+                    <PrivateRoute
+                      element={<Review />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/review/:hotelId"
+                  element={
+                    <PrivateRoute
+                      element={<Review />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/viewReview/:hotelId"
+                  element={
+                    <PrivateRoute
+                      element={<ViewReviews />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/view"
+                  element={
+                    <PrivateRoute
+                      element={<View />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/view"
+                  element={
+                    <PrivateRoute
+                      element={<View handleLogout={handleLogout} />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/view/:id"
+                  element={
+                    <PrivateRoute
+                      element={<View handleLogout={handleLogout} userId={userId} />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/reschedule/:id"
+                  element={
+                    <PrivateRoute
+                      element={<ReSchedule />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/bookings"
+                  element={
+                    <PrivateRoute
+                      element={<Bookings />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route
+                  path="/bookings/:id"
+                  element={
+                    <PrivateRoute
+                      element={<Bookings />}
+                      userId={userId}
+                      loggedInUserId={userId}
+                    />
+                  }
+                />
+                <Route path="/payment/:bookingId" element={<PaymentPage />} />
+              </>
+            )}
+
+            <Route path="*" element={<PageNotFound />} />
+          </Routes>
+          <Footer />
+        </Box>
+      </ThemeProvider>
+    </SWRConfig>
   );
 };
 

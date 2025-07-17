@@ -27,7 +27,7 @@ const Review = () => {
     const fetchHotelDetails = async () => {
       try {
         setFetchingHotel(true);
-        const response = await axios.get(getApiUrl(`/${hotelId}`));
+        const response = await axios.get(getApiUrl(`/hotels/${hotelId}`));
         setHotelName(response.data.hotelName || response.data.name || "Unknown Hotel")
       } catch (err) {
         setError("Error fetching reviews. Please try again later.");

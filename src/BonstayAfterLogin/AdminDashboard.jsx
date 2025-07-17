@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 
 import {
@@ -22,90 +22,49 @@ import AdminSystemMonitoring from '../AdminDashboardComponents/AdminSystemMonito
 import AdminActivityLogs from '../AdminDashboardComponents/AdminActivityLogs';
 import AdminNotificationCenter from '../AdminDashboardComponents/AdminNotificationCenter';
 import { getApiUrl } from '../config/apiConfig';
+import { useAdminCodeRequests, useBookings, useHotels, useUser, useUsers } from '../hooks/useSWRData';
 
 const AdminDashboard = () => {
-    const [admin, setAdmin] = useState(null);
-    const [allUsers, setAllUsers] = useState([]);
-    const [allBookings, setAllBookings] = useState([]);
-    const [allHotels, setAllHotels] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [tabValue, setTabValue] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [userDialogOpen, setUserDialogOpen] = useState(false);
-    const [adminCodeRequests, setAdminCodeRequests] = useState([]);
     const [requestDialogOpen, setRequestDialogOpen] = useState('');
     const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [selectedRequest, setSelectedRequest] = useState('');
+    // Get admin Id from session storage
+    const adminId = sessionStorage.getItem('id');
 
-    useEffect(() => {
-        fetchAdminData();
-        fetchAllUsers();
-        fetchAllBookings();
-        fetchAllHotels();
-        fetchAdminCodeRequests();
+    // use SWR hooks for data fetching
+    const { data: admin, error: adminError, isLoading: adminLoading } = useUser(adminId);
+    const { data: allUsersData, error: usersError, isLoading: usersLoading, mutate: mutateUsers } = useUsers();
+    const { data: allBookings, error: bookingError, isLoading: bookingsLoading, mutate: mutateBookings } = useBookings();
+    const { data: allHotels, error: hotelError, isLoading: hotelsLoading } = useHotels();
+    const { data: adminCodeRequests, error: requestsError, isLoading: requestsLoading, mutate: mutateRequests } = useAdminCodeRequests();
+
+    // filter out admin users for user management section
+    const allUsers = allUsersData?.filter(user => user.userType !== 'admin') || [];
+
+    // check for loading states
+    const isLoading = adminLoading || usersLoading || bookingsLoading || hotelsLoading || requestsLoading
+
+
+    const fetchAdminCodeRequests = useCallback(() => {
+        mutateRequests();
+    }, [mutateRequests]);
+
+    const fetchAllUsers = useCallback(() => {
+        mutateUsers();
+    }, [mutateUsers]);
+
+    const fetchAllBookings = useCallback(() => {
+        mutateBookings();
+    }, [mutateBookings]);
+
+    const fetchAllHotels = useCallback(() => {
+        console.log('Hotels automatically fetched with SWR');
     }, []);
-
-    const fetchAdminData = async () => {
-        try {
-            const adminId = sessionStorage.getItem('id');
-            if (adminId) {
-                const response = await axios.get(getApiUrl(`/users/${adminId}`));
-                setAdmin(response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching admin data:', error);
-        }
-    };
-
-    const fetchAllUsers = async () => {
-        try {
-            const response = await axios.get(getApiUrl(`/users`));
-            const regularUsers = response.data.filter(user => user.userType !== 'admin');
-            setAllUsers(regularUsers);
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const fetchAllBookings = async () => {
-        try {
-            const response = await axios.get(getApiUrl(`/bookings`));
-            setAllBookings(response.data);
-        } catch (error) {
-            console.error('Error fetching bookings:', error);
-        }
-    };
-
-    const fetchAllHotels = async () => {
-        try {
-            const response = await axios.get(getApiUrl(`/hotels`));
-            setAllHotels(response.data);
-        } catch (error) {
-            console.error("Error fetching hotels", error);
-        }
-    }
-
-    const fetchAdminCodeRequests = async (forceRefresh = false) => {
-        try {
-            const timeStamp = Date.now();
-            const url = forceRefresh ? getApiUrl(`/admin-code-requests?_t=${timeStamp}&_nocache=true`) :
-                getApiUrl(`admin-code-requests?_t=${timeStamp}`)
-            const response = await axios.get(url, {
-                headers: {
-                    'Cache-control': 'no-cache',
-                    'Pragma': 'no-cache'
-                }
-            });
-            setAdminCodeRequests(response.data || [])
-        } catch (error) {
-            console.error("Error fetching admin code request:", error);
-            setAdminCodeRequests([]);
-        }
-    };
 
     const generateAdminCode = () => {
         return AdminCodeUtils.generateAdminCode();
