@@ -6,9 +6,7 @@
       "address": "Admin Office, Bonstay HQ",
       "phoneNo": "9999999999",
       "email": "admin@bonstay.com",
-      "password": "Admin@123",
-      "userType": "admin",
-      "department": "Management"
+      "password": "Admin@123"
     },
     {
       "id": "e702",

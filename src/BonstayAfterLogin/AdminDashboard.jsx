@@ -9,7 +9,7 @@ import {
     Tabs,
 } from '@mui/material';
 import { AdminCodeUtils, emailService, smsService } from '../services/communicationServices';
-import AdminHeader from '../AdminDashboardComponents/AdminHeader';
+// import AdminHeader from '../AdminDashboardComponents/AdminHeader';
 import UserManagement from '../AdminDashboardComponents/UserManagement';
 import BookingManagement from '../AdminDashboardComponents/BookingManagement';
 import CreateBooking from '../AdminDashboardComponents/CreateBooking';
@@ -329,12 +329,12 @@ const AdminDashboard = () => {
 
     return (
         <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-            <AdminHeader
+            {/* <AdminHeader
                 admin={admin}
                 allUsers={allUsers}
                 allBookings={allBookings}
                 allHotels={allHotels}
-            />
+            /> */}
 
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={tabValue} onChange={handleTabChange}>

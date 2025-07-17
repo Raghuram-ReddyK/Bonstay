@@ -24,6 +24,8 @@ import FAQs from './FAQs';
 import PrivacyPolicy from './PrivacyPolicy';
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../config/apiConfig';
+import AdminSettings from '../AdminDashboardComponents/AdminSettings';
+import { useNavigate } from 'react-router-dom';
 // import { parse } from 'json2csv'; // Import json2csv
 
 const DraggableDialog = (props) => {
@@ -37,6 +39,7 @@ const DraggableDialog = (props) => {
 };
 
 const AccountMenu = ({ handleLogout }) => {
+    const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [userInfo, setUserInfo] = React.useState(null);
     const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -84,10 +87,16 @@ const AccountMenu = ({ handleLogout }) => {
     };
 
     const handleOpenSettings = () => {
-        fetchUserInfo();
-        setSettingsOpen(true);
-        setSelectedOption('userDetails');
-        handleCloseMenu();
+        if (userType === 'admin') {
+            const userId = sessionStorage.getItem('id');
+            navigate(`/admin-settings/${userId}`)
+            handleCloseMenu();
+        } else {
+            fetchUserInfo();
+            setSettingsOpen(true);
+            setSelectedOption('userDetails');
+            handleCloseMenu();
+        }
     };
 
     const handleCloseDialog = () => {
@@ -145,7 +154,7 @@ const AccountMenu = ({ handleLogout }) => {
 
         try {
             const userId = sessionStorage.getItem('id');
-            await axios.put(getApiUrl`/users/${userId}`, {
+            await axios.put(getApiUrl(`/users/${userId}`), {
                 id: userInfo.id,
                 name: userInfo.name,
                 address,
@@ -236,6 +245,8 @@ const AccountMenu = ({ handleLogout }) => {
                 return <TermsAndConditions />
             case 'privacy':
                 return <PrivacyPolicy />
+            case 'adminSettings':
+                return <AdminSettings />
             default:
                 return null;
         }
@@ -288,7 +299,7 @@ const AccountMenu = ({ handleLogout }) => {
                             <ListItemIcon>
                                 <Settings fontSize="small" />
                             </ListItemIcon>
-                            More
+                            Settings
                         </MenuItem>
                         <MenuItem onClick={handleCloseMenu}>
                             <ListItemIcon>
@@ -391,6 +402,16 @@ const AccountMenu = ({ handleLogout }) => {
                         >
                             User Details Edit
                         </Button>
+                        {userType === 'admin' && (
+                            <Button
+                                variant="outlined"
+                                onClick={() => setSelectedOption('adminSettings')}
+                                fullWidth
+                                sx={{ mb: 1 }}
+                            >
+                                Admin Settings
+                            </Button>
+                        )}
                         <Button
                             variant="outlined"
                             onClick={() => setSelectedOption('faqs')}

@@ -43,6 +43,7 @@
     "serverless-http": "^3.2.0",
     "stream-browserify": "^3.0.0",
     "styled-components": "^6.1.13",
+    "swr": "^2.3.4",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
   },

@@ -199,7 +199,7 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                         </Box>
                         <Box display="flex" gap={1}>
                             {/* Top right icons for notifications, settings, and logout */}
-                            <Tooltip title="Notifications">
+                            {/* <Tooltip title="Notifications">
                                 <IconButton color="inherit">
                                     <Notifications />
                                 </IconButton>
@@ -213,7 +213,7 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                 <IconButton color="inherit" onClick={handleLogout}>
                                     <ExitToApp />
                                 </IconButton>
-                            </Tooltip>
+                            </Tooltip> */}
                         </Box>
                     </Box>
                 </CardContent>

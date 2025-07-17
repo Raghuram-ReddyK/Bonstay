@@ -49,6 +49,7 @@ import TermsAndConditions from "./BonstayAfterLogin/TermsAndConditions";
 import PaymentPage from "./BonstayAfterLogin/PaymentPage";
 import AdminDashboard from "./BonstayAfterLogin/AdminDashboard";
 import AdminCodeRequest from "./BonstayAfterLogin/AdminCodeRequest";
+import AdminSettingsPage from "./AdminDashboardComponents/AdminSettingsPage";
 
 // Private Route Component to protect user-specific routes
 const PrivateRoute = ({ element, userId, loggedInUserId, requiredUserType = null }) => {
@@ -343,6 +344,17 @@ const App = () => {
                     userId={userId}
                     loggedInUserId={userId}
                     requiredUserType="admin"
+                  />
+                }
+              />
+              <Route
+                path="/admin-settings/:id"
+                element={
+                  <PrivateRoute
+                    element={<AdminSettingsPage />}
+                    userId={userId}
+                    loggedInUserId={userId}
+                    requiredUserType='admin'
                   />
                 }
               />
