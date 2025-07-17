@@ -10,6 +10,7 @@ import {
     Alert,
     CircularProgress,
 } from '@mui/material';
+import { getApiUrl } from '../config/apiConfig';
 
 const View = ({ handleLogout, userId: loggedInUserId }) => {
     const [userId, setUserId] = useState('');
@@ -33,7 +34,7 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
         setIsLoading(true); // Set loading state to true before API call
         try {
             await delay(5000); // Introduce a 5-second delay
-            const response = await axios.get(`http://localhost:4000/users/${userId}`);
+            const response = await axios.get(getApiUrl(`/users/${userId}`));
             setUserDetails(response.data);
             setDeleteMessage('');
         } catch (error) {
@@ -48,7 +49,7 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
         setIsLoading(true);
         try {
             await delay(5000); // Introduce a 5-second delay
-            await axios.delete(`http://localhost:4000/users/${userId}`);
+            await axios.delete(getApiUrl(`/users/${userId}`));
             setDeleteMessage('User deleted successfully.');
             handleLogout(); // Automatically log out after successful deletion
         } catch (error) {

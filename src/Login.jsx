@@ -21,6 +21,7 @@ import {
     Select,
     MenuItem,
 } from '@mui/material';
+import { getApiUrl } from './config/apiConfig';
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
     const navigate = useNavigate();
@@ -59,12 +60,12 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
             let userData = null
             const isEmail = userIdOrEmail.includes('@');
             if (isEmail) {
-                const response = await axios.get(`http://localhost:4000/users`);
+                const response = await axios.get(getApiUrl`/users`);
                 const allUsers = response.data;
                 userData = allUsers.find(user => user.email === userIdOrEmail);
             }
             else {
-                const response = await axios.get(`http://localhost:4000/users/${userIdOrEmail}`);
+                const response = await axios.get(getApiUrl(`/users/${userIdOrEmail}`));
                 userData = response.data
                 console.log('userData: ', userData);
             }
@@ -106,7 +107,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
 
         try {
             // Call the API to request password reset email with UserID and Email
-            await axios.post('http://localhost:4000/forgot-password', {
+            await axios.post(getApiUrl('/forgot-password'), {
                 userId: forgotPasswordUserId,
                 email: forgotPasswordEmail,
             });

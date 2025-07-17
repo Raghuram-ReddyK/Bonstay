@@ -2,13 +2,14 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { getApiUrl } from '../config/apiConfig';
 
 // Async Thunks
 export const fetchHotelReviews = createAsyncThunk(
     'reviews/fetchHotelReviews',
     async (hotelId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`http://localhost:4000/hotels/${hotelId}`);
+            const response = await axios.get(getApiUrl(`/hotels/${hotelId}`));
             return response.data.reviews || []; // Ensure reviews is always an array
         } catch (error) {
             return rejectWithValue('Error fetching reviews.');
@@ -21,11 +22,11 @@ export const addHotelReview = createAsyncThunk(
     async ({ hotelId, review }, { rejectWithValue }) => {
         try {
             // Get the hotel data first
-            const response = await axios.get(`http://localhost:4000/hotels/${hotelId}`);
+            const response = await axios.get(getApiUrl(`/hotels/${hotelId}`));
             const updatedReviews = [...response.data.reviews, review];
 
             // Now update the reviews on the backend
-            await axios.put(`http://localhost:4000/hotels/${hotelId}`, {
+            await axios.put(getApiUrl(`/hotels/${hotelId}`), {
                 ...response.data,
                 reviews: updatedReviews,
             });

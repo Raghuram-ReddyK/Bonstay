@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Container, Typography, List, ListItem, ListItemText, Paper, Button, Alert, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/apiConfig';
 
 const ViewReviews = () => {
     const { hotelId } = useParams(); // Get the hotelId from the URL
@@ -17,7 +18,7 @@ const ViewReviews = () => {
         const fetchReviewsAndHotelDetails = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:4000/hotels/${hotelId}`);
+                const response = await axios.get(getApiUrl(`/hotels/${hotelId}`));
                 console.log('response: ', response.data.hotelName);
                 setHotelName(response.data.hotelName || response.data.name || "Unknown Hotel")
                 setReviews(response.data.reviews || []); // Assuming the API response contains a 'reviews' array

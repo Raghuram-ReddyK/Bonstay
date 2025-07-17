@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { getApiUrl } from '../config/apiConfig';
 
 const Bookings = ({ userId }) => { // Destructure userId prop here
     const [bookings, setBookings] = useState([]);
@@ -21,8 +22,8 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
             try {
                 // Fetch bookings for the logged-in user
                 console.log(`Fetching bookings for User ID: ${userId}`);
-                const bookingsResponse = await axios.get(`http://localhost:4000/bookings`); // Fetch bookings for the logged-in user
-                const hotelsResponse = await axios.get('http://localhost:4000/hotels/');
+                const bookingsResponse = await axios.get(getApiUrl(`/bookings`));
+                const hotelsResponse = await axios.get(getApiUrl('/hotels/'));
 
                 const userBookings = bookingsResponse.data.filter(booking => {
                     const hadUserId = booking.userId !== undefined && booking.userId !== null;
@@ -53,7 +54,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
 
     const handleCancelBooking = async (bookingId) => {
         try {
-            await axios.delete(`http://localhost:4000/bookings/${bookingId}`);
+            await axios.delete(getApiUrl(`/bookings/${bookingId}`));
             setBookings(bookings.filter((booking) => booking.id !== bookingId));
             setCancelSuccess(`Booking cancelled successfully! with ${bookingId}`);
             setDialogOpen(false); // Close the confirmation dialog

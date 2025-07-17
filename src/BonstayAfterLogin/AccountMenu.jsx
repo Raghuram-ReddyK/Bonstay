@@ -23,6 +23,7 @@ import TermsAndConditions from './TermsAndConditions';
 import FAQs from './FAQs';
 import PrivacyPolicy from './PrivacyPolicy';
 import * as XLSX from 'xlsx';
+import { getApiUrl } from '../config/apiConfig';
 // import { parse } from 'json2csv'; // Import json2csv
 
 const DraggableDialog = (props) => {
@@ -66,7 +67,7 @@ const AccountMenu = ({ handleLogout }) => {
             const userId = sessionStorage.getItem('id');
             const storedUserType = sessionStorage.getItem('userType');
             setUserType(storedUserType)
-            const response = await axios.get(`http://localhost:4000/users/${userId}`);
+            const response = await axios.get(getApiUrl(`/users/${userId}`));
             setUserInfo(response.data);
             setEmail(response.data.email);
             setAddress(response.data.address);
@@ -144,7 +145,7 @@ const AccountMenu = ({ handleLogout }) => {
 
         try {
             const userId = sessionStorage.getItem('id');
-            await axios.put(`http://localhost:4000/users/${userId}`, {
+            await axios.put(getApiUrl`/users/${userId}`, {
                 id: userInfo.id,
                 name: userInfo.name,
                 address,

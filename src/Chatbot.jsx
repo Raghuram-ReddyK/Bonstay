@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, CircularProgress } from '@mui/material';
 import axios from 'axios';
+import { getApiUrl } from './config/apiConfig';
 
 const Chatbot = ({ onClose }) => {
   const [messages, setMessages] = useState([
@@ -19,8 +20,8 @@ const Chatbot = ({ onClose }) => {
 
     try {
       // Fetch all responses from the mock API
-      const response = await axios.get(`http://localhost:4000/responses`);
-      
+      const response = await axios.get(getApiUrl(`/responses`));
+
       // Look for the first response whose keywords match the user input
       let matchedResponse = "Sorry, I couldn't understand that. Can you please contact us through mail or phone?"; // Default response
 

@@ -33,6 +33,7 @@ import {
 
 import { useNavigate } from 'react-router-dom'; // Hook for programmatic navigation
 import axios from 'axios'; // HTTP client for making API requests
+import { getApiUrl } from '../config/apiConfig';
 
 /**
  * AdminQuickActions Component
@@ -74,7 +75,7 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
     const fetchQuickStats = async () => {
         try {
             // Fetch admin code requests to count pending ones
-            const adminRequestsRes = await axios.get('http://localhost:4000/admin-code-requests');
+            const adminRequestsRes = await axios.get(getApiUrl('/admin-code-requests'));
             const pendingRequests = adminRequestsRes.data.filter(req => req.status === 'pending').length;
 
             // Calculate today's bookings from the 'allBookings' prop

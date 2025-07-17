@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Assuming you're using axios for API calls
+import { getApiUrl } from '../config/apiConfig'
 
 import { Container, Typography, CircularProgress } from '@mui/material';
 // import { useParams } from 'react-router-dom';
@@ -16,8 +17,8 @@ const DashBoard = () => {
                 const userId = sessionStorage.getItem('id');
                 if (userId) {
                     const response = await
-                        axios.get(`http://localhost:4000/users/${userId}`); 
-                        
+                        axios.get(getApiUrl(`/users/${userId}`));
+
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                     setUser(response.data);
                 } else {

@@ -18,6 +18,7 @@ import {
     DialogActions,
 } from '@mui/material';
 import axios from 'axios';
+import { getApiUrl } from '../config/apiConfig';
 
 const AdminCodeRequest = () => {
     const [activeStep, setActiveStep] = useState(0);
@@ -86,7 +87,7 @@ const AdminCodeRequest = () => {
                 approvedDate: null,
             };
 
-            await axios.post('http://localhost:4000/admin-code-requests', requestPayload);
+            await axios.post(getApiUrl('/admin-code-requests', requestPayload));
 
             setMessage('Admin code request submitted successfully! You will receive an email notification once your request is reviewed.');
             setDialogOpen(true);

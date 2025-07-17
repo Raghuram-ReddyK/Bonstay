@@ -11,6 +11,7 @@ import {
   Alert
 } from '@mui/material';
 import axios from 'axios';
+import { getApiUrl } from '../config/apiConfig';
 
 const Review = () => {
   const { hotelId } = useParams(); // Get the hotelId from the URL
@@ -26,7 +27,7 @@ const Review = () => {
     const fetchHotelDetails = async () => {
       try {
         setFetchingHotel(true);
-        const response = await axios.get(`http://localhost:4000/hotels/${hotelId}`);
+        const response = await axios.get(getApiUrl(`/${hotelId}`));
         setHotelName(response.data.hotelName || response.data.name || "Unknown Hotel")
       } catch (err) {
         setError("Error fetching reviews. Please try again later.");

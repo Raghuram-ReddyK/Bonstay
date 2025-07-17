@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography, Box, Alert } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { setStartDate, setEndDate, setNoOfPersons, setNoOfRooms, setTypeOfRoom, setErrorMessage, setSuccessMessage, setError } from '../Slices/bookingSlice';
+import { getApiUrl } from '../config/apiConfig';
 
 const BookARoom = () => {
   const dispatch = useDispatch();
@@ -69,7 +70,7 @@ const BookARoom = () => {
     if (validateForm()) {
       const userId = sessionStorage.getItem('id')
       axios
-        .post('http://localhost:4000/bookings', {
+        .post(getApiUrl('/bookings'), {
           startDate,
           endDate,
           noOfPersons,
@@ -93,7 +94,7 @@ const BookARoom = () => {
   useEffect(() => {
     // Fetch the hotel data (optional) if you need more details about the hotel during the booking process
     axios
-      .get(`http://localhost:4000/hotels/${id}`)
+      .get(getApiUrl(`/hotels/${id}`))
       .then((result) => {
         // Do something with the fetched hotel data if needed
       })

@@ -21,6 +21,7 @@ import AdminAnalytics from '../AdminDashboardComponents/AdminAnalytics';
 import AdminSystemMonitoring from '../AdminDashboardComponents/AdminSystemMonitoring';
 import AdminActivityLogs from '../AdminDashboardComponents/AdminActivityLogs';
 import AdminNotificationCenter from '../AdminDashboardComponents/AdminNotificationCenter';
+import { getApiUrl } from '../config/apiConfig';
 
 const AdminDashboard = () => {
     const [admin, setAdmin] = useState(null);
@@ -50,7 +51,7 @@ const AdminDashboard = () => {
         try {
             const adminId = sessionStorage.getItem('id');
             if (adminId) {
-                const response = await axios.get(`http://localhost:4000/users/${adminId}`);
+                const response = await axios.get(getApiUrl(`/users/${adminId}`));
                 setAdmin(response.data);
             }
         } catch (error) {
@@ -60,7 +61,7 @@ const AdminDashboard = () => {
 
     const fetchAllUsers = async () => {
         try {
-            const response = await axios.get(`http://localhost:4000/users/`);
+            const response = await axios.get(getApiUrl(`/users`));
             const regularUsers = response.data.filter(user => user.userType !== 'admin');
             setAllUsers(regularUsers);
         } catch (error) {
@@ -72,7 +73,7 @@ const AdminDashboard = () => {
 
     const fetchAllBookings = async () => {
         try {
-            const response = await axios.get(`http://localhost:4000/bookings`);
+            const response = await axios.get(getApiUrl(`/bookings`));
             setAllBookings(response.data);
         } catch (error) {
             console.error('Error fetching bookings:', error);
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
 
     const fetchAllHotels = async () => {
         try {
-            const response = await axios.get(`http://localhost:4000/hotels`);
+            const response = await axios.get(getApiUrl(`/hotels`));
             setAllHotels(response.data);
         } catch (error) {
             console.error("Error fetching hotels", error);
@@ -91,9 +92,8 @@ const AdminDashboard = () => {
     const fetchAdminCodeRequests = async (forceRefresh = false) => {
         try {
             const timeStamp = Date.now();
-            const url = forceRefresh ? `http://localhost:4000/admin-code-requests?_t=${timeStamp}&_nocache=true` :
-                `http://localhost:4000/admin-code-requests?_t=${timeStamp}`
-            console.log('url: ', url);
+            const url = forceRefresh ? getApiUrl(`/admin-code-requests?_t=${timeStamp}&_nocache=true`) :
+                getApiUrl(`admin-code-requests?_t=${timeStamp}`)
             const response = await axios.get(url, {
                 headers: {
                     'Cache-control': 'no-cache',
@@ -103,7 +103,6 @@ const AdminDashboard = () => {
             setAdminCodeRequests(response.data || [])
         } catch (error) {
             console.error("Error fetching admin code request:", error);
-            console.error("Error details:", error.response?.data || error.message);
             setAdminCodeRequests([]);
         }
     };
@@ -155,7 +154,7 @@ const AdminDashboard = () => {
                 registeredUserId: null
             };
             console.log(`updating request in dataBase...`, updatedRequest);
-            const updateResponse = await axios.put(`http://localhost:4000/admin-code-requests/${request.id}`, updatedRequest);
+            const updateResponse = await axios.put(getApiUrl(`/admin-code-requests/${request.id}`), updatedRequest);
             console.log("Request updated Successfully", updateResponse.data);
 
             const adminCodeEntry = {
@@ -167,7 +166,7 @@ const AdminDashboard = () => {
                 requestId: request.id
             }
 
-            const codeResponse = await axios.post(`http://localhost:4000/admin-codes`, adminCodeEntry)
+            const codeResponse = await axios.post(getApiUrl(`/admin-codes`), adminCodeEntry)
             console.log('codeResponse: ', codeResponse.data);
 
             console.log(" Sending sms... ");
@@ -217,7 +216,7 @@ const AdminDashboard = () => {
                 rejectedDate: new Date().toISOString(),
                 rejectionReason: reason
             };
-            await axios.put(`http://localhost:4000/admin-code-requests/${request.id}`, updatedRequest);
+            await axios.put(getApiUrl(`/admin-code-requests/${request.id}`), updatedRequest);
             const emailContent = AdminCodeUtils.formatApprovalEmails(request.name, reason);
 
             const emailResult = await sendEmail(request.email, emailContent.subject, emailContent.message);

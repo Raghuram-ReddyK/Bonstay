@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Typography, Box, Alert, CircularProgress } from "@mui/material";
 import axios from "axios";
+import { getApiUrl } from '../config/apiConfig'
 
 const PaymentPage = () => {
   const { bookingId } = useParams(); // Get the booking ID from the URL
@@ -18,7 +19,7 @@ const PaymentPage = () => {
       setTimeout(() => {
         // Simulate a request to a mock payment endpoint (could be your JSON Server here)
         axios
-          .post("http://localhost:4000/payments", {
+          .post(getApiUrl("/payments"), {
             bookingId,
             amount: 1, // 1 Rupee
             method: "Google Pay", // Simulate Google Pay (you can mock PhonePe, Credit/Debit Card as well)

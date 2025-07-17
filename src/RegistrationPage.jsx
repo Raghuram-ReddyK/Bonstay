@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 
 import RegistrationFormSections from './RegistrationFormSection';
+import { getApiUrl } from './config/apiConfig';
 
 const RegistrationPage = () => {
     // STATE MANAGEMENT
@@ -59,7 +60,7 @@ const RegistrationPage = () => {
             console.log('Validating admin code:', adminCode, 'for email:', email);
 
             // First, check if this email is already registered
-            const usersResponse = await fetch(`http://localhost:4000/users`);
+            const usersResponse = await fetch(getApiUrl(`/users`));
             const users = await usersResponse.json();
             const existingUser = users.find(user =>
                 user.email && email && user.email.toLowerCase().trim() === email.toLowerCase().trim()
@@ -71,7 +72,7 @@ const RegistrationPage = () => {
             }
 
             // Fetch admin code requests to check if the code belongs to this email
-            const response = await fetch(`http://localhost:4000/admin-code-requests`);
+            const response = await fetch(getApiUrl(`/admin-code-requests`));
             const adminRequests = await response.json();
 
             console.log('All admin requests:', adminRequests);
@@ -114,7 +115,7 @@ const RegistrationPage = () => {
     const markAdminCodeAsUsed = async (adminCode, email, userId) => {
         try {
             // update admin-code-requests to mark code as used
-            const requestsResponse = await fetch(`http://localhost:4000/admin-code-requests`);
+            const requestsResponse = await fetch(getApiUrl(`/admin-code-requests`));
             const adminRequests = await requestsResponse.json();
 
             const requestToUpdate = adminRequests.find(request =>
@@ -124,7 +125,7 @@ const RegistrationPage = () => {
             );
 
             if (requestToUpdate) {
-                await fetch(`http://localhost:4000/admin-code-requests/${requestToUpdate.id}`, {
+                await fetch(getApiUrl(`/admin-code-requests/${requestToUpdate.id}`), {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -138,13 +139,13 @@ const RegistrationPage = () => {
             }
 
             // Also update admin-codes table if it exists
-            const codesResponse = await fetch('http://localhost:4000/admin-codes');
+            const codesResponse = await fetch(getApiUrl('/admin-codes'));
             const adminCodes = await codesResponse.json();
 
             const codeToUpdate = adminCodes.find(code => code.code === adminCode);
 
             if (codeToUpdate) {
-                await fetch(`http://localhost:4000/admin-codes/${codeToUpdate.id}`, {
+                await fetch(getApiUrl(`/admin-codes/${codeToUpdate.id}`), {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -187,7 +188,7 @@ const RegistrationPage = () => {
             } else {
                 // check for duplicate email
                 try {
-                    const response = await fetch(`http://localhost:4000/users`);
+                    const response = await fetch(getApiUrl`/users`);
                     const users = await response.json();
                     const emailExists = users.some(user =>
                         user.email && value &&
@@ -253,7 +254,7 @@ const RegistrationPage = () => {
         } else {
             // check for duplicate email
             try {
-                const response = await fetch(`http://localhost:4000/users`);
+                const response = await fetch(getApiUrl(`/users`));
                 const users = await response.json();
                 const emailExists = users.some(user =>
                     user.email && state.email &&

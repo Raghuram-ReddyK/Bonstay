@@ -1,7 +1,8 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { TextField, Button, Typography, Alert } from '@mui/material';
+import { getApiUrl } from '../config/apiConfig'
 
 const ReSchedule = () => {
     const { id } = useParams();
@@ -15,7 +16,7 @@ const ReSchedule = () => {
     useEffect(() => {
         const fetchBooking = async () => {
             try {
-                const response = await axios.get(`http://localhost:4000/bookings/${id}`);
+                const response = await axios.get(getApiUrl(`/bookings/${id}`));
                 setBookingData(response.data);
                 const startDateValue = response.data.checkIn || response.data.startDate;
                 const endDateValue = response.data.checkOut || response.data.endDate;
@@ -78,9 +79,7 @@ const ReSchedule = () => {
                     updatedBooking.endDate = endDate.toISOString().split('T')[0];
                 }
 
-                const response = await axios.put(`http://localhost:4000/bookings/${id}`, updatedBooking);
-                console.log(response);
-
+                const response = await axios.put(getApiUrl(`/bookings/${id}`, updatedBooking))
                 if (response.status === 200) {
                     setError(''); // Clear the general error
                     setErrorMessage(''); // Clear the specific error

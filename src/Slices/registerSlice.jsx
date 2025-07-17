@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { getApiUrl } from "../config/apiConfig";
 
 
 export const registerUser = createAsyncThunk(
@@ -7,7 +8,7 @@ export const registerUser = createAsyncThunk(
     async (userData, { rejectWithValue }) => {
         try {
             // check if the email already exists in the fake JSON server
-            const response = await axios.get(`http://localhost:4000/users`);
+            const response = await axios.get(getApiUrl(`/users`));
             const existingUser = response.data.find(user => user.email === userData.email);
 
             if (existingUser) {
@@ -15,7 +16,7 @@ export const registerUser = createAsyncThunk(
                 return rejectWithValue('Email is already registered');
             }
             // If email is unique, proceed with registration (POST request)
-            const registerResponse = await axios.post(`http://localhost:4000/users`, userData);
+            const registerResponse = await axios.post(getApiUrl(`users`, userData));
             return registerResponse.data; // registered user's data
         }
         catch (error) {

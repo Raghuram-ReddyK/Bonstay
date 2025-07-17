@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Button, Typography } from '@mui/material';
+import { getApiUrl } from '../config/apiConfig';
 
 const Hotels = () => {
   const [hotels, setHotels] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://localhost:4000/hotels/')
+    axios.get(getApiUrl('/hotels/'))
       .then((response) => {
         setHotels(response.data);
       })

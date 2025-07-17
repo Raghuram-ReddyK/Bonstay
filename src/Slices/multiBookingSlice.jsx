@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { getApiUrl } from "../config/apiConfig";
 
 // Async thunk for creating multiple bookings
 export const createMultipleBookings = createAsyncThunk(
@@ -10,7 +11,7 @@ export const createMultipleBookings = createAsyncThunk(
 
             for (const booking of bookingsData) {
                 try {
-                    const response = await axios.post('http://localhost:4000/bookings', booking);
+                    const response = await axios.post(getApiUrl('/bookings', booking));
                     results.push({ success: true, data: response.data, booking });
                 } catch (error) {
                     results.push({
@@ -32,7 +33,7 @@ export const fetchUsers = createAsyncThunk(
     'multiBooking/fetchUsers',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('http://localhost:4000/users');
+            const response = await axios.get(getApiUrl('/users'));
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -45,7 +46,7 @@ export const fetchHotels = createAsyncThunk(
     'multiBooking/fetchHotels',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('http://localhost:4000/hotels');
+            const response = await axios.get(getApiUrl('/hotels'));
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
