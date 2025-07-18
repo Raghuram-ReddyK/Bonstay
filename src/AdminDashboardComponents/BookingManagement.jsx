@@ -1,17 +1,20 @@
 import { useState } from 'react';
-import { 
-    Chip, 
-    Button, 
-    Dialog, 
-    DialogActions, 
-    DialogContent, 
-    DialogTitle, 
-    Typography, 
+import {
+    Chip,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Typography,
     Alert,
     Box
-} from '@mui/material'; 
+} from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
-import axios from 'axios'; 
+import { FileDownload as ExportIcon } from '@mui/icons-material'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
+import axios from 'axios';
 import CustomDataGrid from '../CommonComponents/CustomDataGrid';
 import { getApiUrl } from '../config/apiConfig';
 
@@ -34,16 +37,54 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
     const [cancelError, setCancelError] = useState('');
     const [cancelling, setCancelling] = useState(false);
 
+    // Export to Excel function
+    /**
+     * Handles exporting booking data to an Excel file.
+     * It transforms the raw booking data into a structured format suitable for an Excel sheet,
+     * then uses the `xlsx` library to create and populate a workbook, and finally `file-saver`
+     * to download the generated Excel file.
+     */
+    const handleExportToExcel = () => {
+        const exportData = allBookings.map(booking => ({
+            'Booking ID': booking.id,
+            'User ID': booking.userId,
+            'Hotel Name': getHotelName(booking),
+            'Check-in Date': booking.checkIn || booking.startDate || 'N/A',
+            'Check-out Date': booking.checkOut || booking.endDate || 'N/A',
+            'Number of Guests': booking.guests || booking.noOfPersons || 1,
+            'Number of Rooms': getRoomsCount(booking),
+            'Room Type': booking.roomType || booking.typeOfRoom || 'N/A',
+            'Status': booking.status || 'confirmed',
+            'Booking Date': booking.bookingDate || booking.createdAt || 'N/A',
+            'Created By': booking.createdBy || 'user'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Bookings');
+
+        const colWidths = [];
+        Object.keys(exportData[0] || {}).forEach(key => {
+            colWidths.push({ wch: Math.max(key.length, 15) });
+        });
+        ws['!cols'] = colWidths;
+
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(data, `Bookings_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+
     /**
      * Opens the booking cancellation confirmation dialog.
      * Sets the selected booking, clears previous success/error messages, and opens the dialog.
      * @param {Object} booking - The booking object to be cancelled.
      */
     const openCancelDialog = (booking) => {
-        setSelectedBooking(booking); 
-        setCancelDialog(true);       
-        setCancelSuccess('');        
-        setCancelError('');     
+        setSelectedBooking(booking);
+        setCancelDialog(true);
+        setCancelSuccess('');
+        setCancelError('');
     };
 
     /**
@@ -85,36 +126,36 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
     };
 
     const columns = [
-        { 
-            field: 'id', 
-            headerName: 'Booking ID', 
+        {
+            field: 'id',
+            headerName: 'Booking ID',
             width: 130,
-            sortable: true 
+            sortable: true
         },
-        { 
-            field: 'userId', 
-            headerName: 'User ID', 
+        {
+            field: 'userId',
+            headerName: 'User ID',
             width: 120,
-            sortable: true 
+            sortable: true
         },
-        { 
-            field: 'hotelName', 
-            headerName: 'Hotel', 
+        {
+            field: 'hotelName',
+            headerName: 'Hotel',
             width: 200,
             sortable: true,
             // valueGetter uses the `getHotelName` prop to display the correct hotel name.
             valueGetter: ({ row }) => getHotelName(row)
         },
-        { 
-            field: 'checkIn', 
-            headerName: 'Check In', 
+        {
+            field: 'checkIn',
+            headerName: 'Check In',
             width: 130,
             sortable: true,
             // valueGetter for display: formats ISO date strings to local date.
             valueGetter: ({ row }) => {
                 const dateValue = row.checkIn || row.startDate; // Prioritize checkIn, then startDate
                 if (!dateValue) return 'N/A';
-                
+
                 try {
                     // Check if it's an ISO string (contains 'T' for time part) and format it.
                     if (typeof dateValue === 'string' && dateValue.includes('T')) {
@@ -131,21 +172,21 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                 return dateValue || ''; // Return empty string if no date for consistent sorting
             }
         },
-        { 
-            field: 'checkOut', 
-            headerName: 'Check Out', 
+        {
+            field: 'checkOut',
+            headerName: 'Check Out',
             width: 130,
             sortable: true,
             // valueGetter for display: formats ISO date strings to local date.
             valueGetter: ({ row }) => {
                 const dateValue = row.checkOut || row.endDate;
                 if (!dateValue) return 'N/A';
-                
+
                 try {
                     if (typeof dateValue === 'string' && dateValue.includes('T')) {
                         return new Date(dateValue).toLocaleDateString();
                     }
-                    return dateValue; 
+                    return dateValue;
                 } catch (error) {
                     return dateValue; // Fallback in case of parsing error
                 }
@@ -156,9 +197,9 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                 return dateValue || ''; // Return empty string if no date for consistent sorting
             }
         },
-        { 
-            field: 'guests', 
-            headerName: 'Guests', 
+        {
+            field: 'guests',
+            headerName: 'Guests',
             width: 100,
             sortable: true,
             // valueGetter: uses `guests` or `noOfPersons`, defaults to 1.
@@ -166,9 +207,9 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
             // sortValueGetter: ensures numerical sorting.
             sortValueGetter: ({ row }) => Number(row.guests || row.noOfPersons || 1)
         },
-        { 
-            field: 'rooms', 
-            headerName: 'Rooms', 
+        {
+            field: 'rooms',
+            headerName: 'Rooms',
             width: 100,
             sortable: true,
             // valueGetter: uses the `getRoomsCount` prop.
@@ -184,8 +225,8 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
             // renderCell: displays status as a Material-UI Chip with dynamic color.
             renderCell: ({ row }) => (
                 <Chip
-                    label={row.status || 'confirmed'} 
-                    color={row.status === 'confirmed' ? 'success' : 'default'} 
+                    label={row.status || 'confirmed'}
+                    color={row.status === 'confirmed' ? 'success' : 'default'}
                     size="small"
                 />
             )
@@ -194,15 +235,15 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
             field: 'actions',
             headerName: 'Actions',
             width: 130,
-            sortable: false, 
+            sortable: false,
             renderCell: ({ row }) => (
                 <Button
                     variant="outlined"
-                    color="error" 
+                    color="error"
                     size="small"
                     startIcon={<DeleteIcon />}
                     onClick={() => openCancelDialog(row)}
-                    sx={{ 
+                    sx={{
                         minWidth: 100, // Minimum width for the button
                         fontSize: '0.75rem' // Smaller font size for compactness
                     }}
@@ -229,13 +270,24 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
 
             {/* Custom Data Grid for displaying bookings */}
             <CustomDataGrid
-                rows={allBookings} 
-                columns={columns} 
-                pageSize={5} 
-                pageSizeOptions={[5, 10, 25]} 
+                rows={allBookings}
+                columns={columns}
+                pageSize={5}
+                pageSizeOptions={[5, 10, 25]}
                 loading={isLoading}
-                title="Booking Management" 
+                title="Booking Management"
                 subtitle="View and manage all hotel bookings. Admins can cancel any booking. Sort by any column and use pagination to navigate through bookings."
+                actions={
+                    <Button
+                        variant='outlined'
+                        startIcon={<ExportIcon />}
+                        onClick={handleExportToExcel}
+                        color='primary'
+                        sx={{ minWidth: 160 }}
+                    >
+                        Export to Excel
+                    </Button>
+                }
             />
 
             {/* Cancel Confirmation Dialog */}
@@ -256,14 +308,14 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                             <Typography variant="body2"><strong>Hotel:</strong> {getHotelName(selectedBooking)}</Typography>
                             <Typography variant="body2">
                                 <strong>Check-in:</strong> {
-                                    selectedBooking.checkIn || selectedBooking.startDate 
+                                    selectedBooking.checkIn || selectedBooking.startDate
                                         ? new Date(selectedBooking.checkIn || selectedBooking.startDate).toLocaleDateString()
                                         : 'N/A'
                                 }
                             </Typography>
                             <Typography variant="body2">
                                 <strong>Check-out:</strong> {
-                                    selectedBooking.checkOut || selectedBooking.endDate 
+                                    selectedBooking.checkOut || selectedBooking.endDate
                                         ? new Date(selectedBooking.checkOut || selectedBooking.endDate).toLocaleDateString()
                                         : 'N/A'
                                 }

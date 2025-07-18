@@ -1,11 +1,11 @@
-import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Link as MuiLink, CircularProgress, Alert } from '@mui/material'; // Importing Material-UI components for UI elements
-import axios from 'axios'; // Importing Axios for making HTTP requests
-import React, { useState } from 'react'; // Importing React and useState hook for component state
-import { useNavigate } from 'react-router-dom'; // Importing useNavigate hook for programmatic navigation
-import * as XLSX from 'xlsx'; // Importing xlsx library for Excel file generation
-import { saveAs } from 'file-saver'; // Importing file-saver for saving files
-import { getApiUrl } from '../config/apiConfig'; // Importing a utility to get the base API URL
-import { useUserBookings, useHotels } from '../hooks/useSWRData'; // Importing custom SWR hooks for data fetching
+import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Link as MuiLink, CircularProgress, Alert } from '@mui/material'; 
+import axios from 'axios'; 
+import React, { useState } from 'react'; 
+import { useNavigate } from 'react-router-dom'; 
+import * as XLSX from 'xlsx'; 
+import { saveAs } from 'file-saver'; 
+import { getApiUrl } from '../config/apiConfig';
+import { useUserBookings, useHotels } from '../hooks/useSWRData'; 
 
 /**
  * Bookings Component
@@ -75,12 +75,12 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
      */
     const handleCancelBooking = async (bookingId) => {
         try {
-            await axios.delete(getApiUrl(`/bookings/${bookingId}`)); // API call to delete the booking
-            mutateBookings(); // Trigger SWR to re-fetch and update the bookings list
-            setCancelSuccess(`Booking cancelled successfully! with ${bookingId}`); // Set success message
-            setDialogOpen(false); // Close the confirmation dialog
+            await axios.delete(getApiUrl(`/bookings/${bookingId}`));
+            mutateBookings();
+            setCancelSuccess(`Booking cancelled successfully! with ${bookingId}`);
+            setDialogOpen(false);
         } catch (error) {
-            setCancelError('Error canceling booking. Please try again later.'); // Set error message
+            setCancelError('Error canceling booking. Please try again later.');
         }
     };
 

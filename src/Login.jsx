@@ -81,6 +81,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     setError('Error loading user data. Please try again.')
                     return;
                 }
+                userData = emailUser
             }
             else {
                 if (idLoading) {
