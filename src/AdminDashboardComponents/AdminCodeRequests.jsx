@@ -6,10 +6,8 @@ import {
     Tooltip,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { FileDownload as ExportIcon } from '@mui/icons-material'
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
 import CustomDataGrid from '../CommonComponents/CustomDataGrid'
+import ExcelExport from '../CommonComponents/ExcelExport';
 
 const AdminCodeRequests = ({
     adminCodeRequests,
@@ -18,45 +16,66 @@ const AdminCodeRequests = ({
     setRequestDialogOpen,
 }) => {
 
-    const handleExportToExcel = () => {
-        // Map the adminCodeRequests array to a new array of objects
-        // where keys are user-friendly column headers and values are formatted data.
-        const exportData = adminCodeRequests.map(request => ({
-            'Request Date': new Date(request.requestDate).toLocaleDateString(), // Format date
-            'Name': request.name,
-            'Email': request.email,
-            'Phone': request.phoneNo,
-            'Organization': request.organization,
-            'Status': request.status,
-            'Reason': request.reason || 'N/A',
-            'Admin Code': request.adminCode || 'N/A',
-            'Approved By': request.approvedBy || 'N/A',
-            'Approved Date': request.approvedDate ? new Date(request.approvedDate).toLocaleDateString() : 'N/A',
-            'Rejected By': request.rejectedBy || 'N/A',
-            'Rejected Date': request.rejectedDate ? new Date(request.rejectedDate).toLocaleDateString() : 'N/A',
-            'Rejection Reason': request.rejectionReason || 'N/A'
-        }));
+    // Excel export headers configuration for Admin Code Requests
+    // This array defines the columns and their properties for exporting admin code request data to an Excel file.
+    // Each object in the array represents a column in the Excel sheet.
+    const adminCodeRequestsExportHeaders = [
+        {
+            key: 'requestDate', // The key in the data object that holds the request date.
+            label: 'Request Date', // The header text for this column in the Excel file.
+            // A transform function to format the date value.
+            // It converts the date string to a localized date string (e.g., "M/D/YYYY").
+            transform: (value) => new Date(value).toLocaleDateString()
+        },
+        { key: 'name', label: 'Name' }, // Maps 'name' from data to 'Name' column.
+        { key: 'email', label: 'Email' }, // Maps 'email' from data to 'Email' column.
+        { key: 'phoneNo', label: 'Phone' }, // Maps 'phoneNo' from data to 'Phone' column.
+        { key: 'organization', label: 'Organization' }, // Maps 'organization' from data to 'Organization' column.
+        { key: 'status', label: 'Status' }, // Maps 'status' from data to 'Status' column.
+        {
+            key: 'reason',
+            label: 'Reason',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'adminCode',
+            label: 'Admin Code',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'approvedBy',
+            label: 'Approved By',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'approvedDate',
+            label: 'Approved Date',
+            // Transforms the value: if a date exists, it formats it to a localized date string; otherwise, 'N/A'.
+            transform: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+        },
+        {
+            key: 'rejectedBy',
+            label: 'Rejected By',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'rejectedDate',
+            label: 'Rejected Date',
+            // Transforms the value: if a date exists, it formats it to a localized date string; otherwise, 'N/A'.
+            transform: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+        },
+        {
+            key: 'rejectionReason',
+            label: 'Rejection Reason',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        }
+    ];
 
-        const ws = XLSX.utils.json_to_sheet(exportData); // Convert JSON data to a worksheet
-        const wb = XLSX.utils.book_new(); // Create a new workbook
-        XLSX.utils.book_append_sheet(wb, ws, 'Admin Code Requests'); // Append the worksheet to the workbook with a sheet name
-
-        // Auto-size columns based on content length.
-        // It iterates through the keys of the first data row (or an empty object if no data)
-        // and sets a minimum column width of 15 or the length of the header, whichever is greater.
-        const colWidths = [];
-        Object.keys(exportData[0] || {}).forEach(key => {
-            colWidths.push({ wch: Math.max(key.length, 15) });
-        });
-        ws['!cols'] = colWidths; // Apply column widths to the worksheet
-
-        // Write the workbook to an array buffer.
-        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        // Create a Blob from the array buffer with the correct MIME type for Excel files.
-        const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        // Save the Blob as an Excel file using file-saver, with a dynamic filename including the current date.
-        saveAs(data, `Admin_Code_Requests_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
-    };
 
     const adminCodeHeaders = [
         {
@@ -156,15 +175,14 @@ const AdminCodeRequests = ({
                 subtitle="Manage admin code requests and approval process"
                 actions={
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                            variant='outlined'
-                            startIcon={<ExportIcon />}
-                            onClick={handleExportToExcel}
-                            color='primary'
-                            sx={{ minWidth: 160 }}
-                        >
-                            Export to Excel
-                        </Button>
+                        <ExcelExport
+                            data={adminCodeRequests}
+                            headers={adminCodeRequestsExportHeaders}
+                            filename='Admin_Code_Requests_Export'
+                            sheetName='Admin Code Requests'
+                            buttonText='Export to Excel'
+                            onExport={(info) => console.log('Exported', info)}
+                        />
 
                         <Tooltip title="Refresh Requests">
                             <Button variant='outlined' onClick={fetchAdminCodeRequests} sx={{ ml: 2 }}>

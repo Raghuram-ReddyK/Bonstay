@@ -11,12 +11,10 @@ import {
     Box
 } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
-import { FileDownload as ExportIcon } from '@mui/icons-material'
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
 import axios from 'axios';
 import CustomDataGrid from '../CommonComponents/CustomDataGrid';
 import { getApiUrl } from '../config/apiConfig';
+import ExcelExport from '../CommonComponents/ExcelExport';
 
 /**
  * BookingManagement Component
@@ -37,42 +35,65 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
     const [cancelError, setCancelError] = useState('');
     const [cancelling, setCancelling] = useState(false);
 
-    // Export to Excel function
-    /**
-     * Handles exporting booking data to an Excel file.
-     * It transforms the raw booking data into a structured format suitable for an Excel sheet,
-     * then uses the `xlsx` library to create and populate a workbook, and finally `file-saver`
-     * to download the generated Excel file.
-     */
-    const handleExportToExcel = () => {
-        const exportData = allBookings.map(booking => ({
-            'Booking ID': booking.id,
-            'User ID': booking.userId,
-            'Hotel Name': getHotelName(booking),
-            'Check-in Date': booking.checkIn || booking.startDate || 'N/A',
-            'Check-out Date': booking.checkOut || booking.endDate || 'N/A',
-            'Number of Guests': booking.guests || booking.noOfPersons || 1,
-            'Number of Rooms': getRoomsCount(booking),
-            'Room Type': booking.roomType || booking.typeOfRoom || 'N/A',
-            'Status': booking.status || 'confirmed',
-            'Booking Date': booking.bookingDate || booking.createdAt || 'N/A',
-            'Created By': booking.createdBy || 'user'
-        }));
+    // Excel export headers configuration
+    // This array defines the columns for the Excel export, including:
+    // - 'key': The property name in the raw data object.
+    // - 'label': The header text that will appear in the Excel file.
+    // - 'transform' (optional): A function to format or derive the value for the Excel cell.
+    const bookingExportHeaders = [
+        { key: 'id', label: 'Booking ID' },
+        { key: 'userId', label: 'User ID' },
+        {
+            key: 'hotelName',
+            label: 'Hotel Name',
+            transform: (_value, item) => getHotelName(item)
+        },
+        {
+            key: 'checkIn',
+            label: 'Check-in Date',
+            transform: (_value, item) => item.checkIn || item.startDate || 'N/A'
+        },
+        {
+            key: 'checkOut',
+            label: 'Check-out Date',
+            transform: (_value, item) => item.checkOut || item.endDate || 'N/A'
+        },
+        {
+            key: 'guests',
+            label: 'Number of Guests',
+            transform: (_value, item) => item.guests || item.noOfPersons || 1
+        },
+        {
+            key: 'rooms',
+            label: 'Number of Rooms',
+            transform: (_value, item) => getRoomsCount(item)
+        },
+        {
+            key: 'roomType',
+            label: 'Room Type',
+            transform: (_value, item) => item.roomType || item.typeOfRoom || 'N/A'
+        },
+        {
+            key: 'status',
+            label: 'Status',
+            // Transforms the value to use `status`, defaulting to 'confirmed' if not provided.
+            transform: (_value, item) => item.status || 'confirmed'
+        },
+        {
+            key: 'bookingDate',
+            label: 'Booking Date',
+            // Transforms the value to use either `bookingDate` or `createdAt`,
+            // providing 'N/A' if neither is available.
+            transform: (_value, item) => item.bookingDate || item.createdAt || 'N/A'
+        },
+        {
+            key: 'createdBy',
+            label: 'Created By',
+            // Transforms the value to use `createdBy`, defaulting to 'user' if not provided.
+            transform: (_value, item) => item.createdBy || 'user'
+        }
+    ];
 
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Bookings');
-
-        const colWidths = [];
-        Object.keys(exportData[0] || {}).forEach(key => {
-            colWidths.push({ wch: Math.max(key.length, 15) });
-        });
-        ws['!cols'] = colWidths;
-
-        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(data, `Bookings_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
-    };
 
 
     /**
@@ -278,15 +299,13 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                 title="Booking Management"
                 subtitle="View and manage all hotel bookings. Admins can cancel any booking. Sort by any column and use pagination to navigate through bookings."
                 actions={
-                    <Button
-                        variant='outlined'
-                        startIcon={<ExportIcon />}
-                        onClick={handleExportToExcel}
-                        color='primary'
-                        sx={{ minWidth: 160 }}
-                    >
-                        Export to Excel
-                    </Button>
+                    <ExcelExport
+                        data={allBookings}
+                        headers={bookingExportHeaders}
+                        filename='Bookings_Export'
+                        sheetName='Bookings'
+                        buttonText='Export to Excel'
+                    />
                 }
             />
 

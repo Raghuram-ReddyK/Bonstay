@@ -8,10 +8,8 @@ import {
     Typography
 } from '@mui/material'
 import ClearIcon from '@mui/icons-material/Clear'
-import { FileDownload as ExportIcon } from '@mui/icons-material'
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
 import CustomDataGrid from '../CommonComponents/CustomDataGrid'
+import ExcelExport from '../CommonComponents/ExcelExport'
 
 
 const UserManagement = ({
@@ -24,38 +22,44 @@ const UserManagement = ({
     getUserBookings,
     handleViewUserDetails
 }) => {
-    // Export to Excel functionality
-    const handleExportToExcel = () => {
-        const exportData = filteredUsers.map(user => ({
-            'User Id': user.id,
-            'Name': user.name,
-            'Email': user.email,
-            'Phone': user.phoneNo,
-            'Address': user.address,
-            'Date of Birth': user.dataOfBirth || 'N/A',
-            'Gender': user.gender || 'N/A',
-            'Occupation': user.occupation || 'N/A',
-            'User Type': user.userType,
-            'Total Bookings': getUserBookings(user.id).length,
-            'Registration Date': user.registrationDate || 'N/A'
-        }));
+    const userExportHeaders = [
+        { key: 'id', label: 'User ID' },
+        { key: 'name', label: 'Name' },
+        { key: 'email', label: 'Email' },
+        { key: 'phoneNo', label: 'Phone' },
+        { key: 'address', label: 'Address' },
+        {
+            key: 'dateOfBirth',
+            label: 'Date of Birth',
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'gender',
+            label: 'Gender',
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'occupation',
+            label: 'Occupation',
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'userType',
+            label: 'User Type',
+            transform: (value) => value || 'user'
+        },
+        {
+            key: 'bookingsCount',
+            label: 'Total Bookings',
+            transform: (_value, item) => getUserBookings(item.id).length
+        },
+        {
+            key: 'registrationDate',
+            label: 'Registration Date',
+            transform: (value) => value || 'N/A'
+        }
+    ];
 
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Users Data');
-
-        // Auto-Size Columns
-        const colWidths = [];
-        Object.keys(exportData[0] || {}).forEach(key => {
-            colWidths.push({ wch: Math.max(key.length, 15) });
-        });
-        ws['!cols'] = colWidths;
-
-        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(data, `Users_Data_Export_${new Date().toISOString().split('T')[0]}.xlsx`)
-
-    }
 
     const userManagementHeaders = [
         {
@@ -159,15 +163,13 @@ const UserManagement = ({
                 title="User Management"
                 subtitle="Manage all registered users and view their booking history"
                 actions={
-                    <Button
-                        variant='outlined'
-                        startIcon={<ExportIcon />}
-                        onClick={handleExportToExcel}
-                        color='primary'
-                        sx={{ minWidth: 160 }}
-                    >
-                        Export to Excel
-                    </Button>
+                    <ExcelExport
+                        data={filteredUsers}
+                        headers={userExportHeaders}
+                        filename='Users_Export'
+                        sheetName='Users'
+                        buttonText='Export to Export'
+                    />
                 }
             />
         </>
