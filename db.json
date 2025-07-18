@@ -181,13 +181,13 @@
     },
     {
       "id": "342a",
-      "bookingId": "60e5",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
       "id": "2924",
-      "bookingId": "e3cd",
+      "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
@@ -304,24 +304,6 @@
     }
   ],
   "bookings": [
-    {
-      "id": "60e5",
-      "startDate": "2024-12-14T00:00:00.000Z",
-      "endDate": "2024-12-16T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "single with A/c",
-      "hotelId": "2"
-    },
-    {
-      "id": "e3cd",
-      "startDate": "2024-12-21T00:00:00.000Z",
-      "endDate": "2024-12-25T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "double with A/c",
-      "hotelId": "3"
-    },
     {
       "id": "632b",
       "startDate": "2025-07-06T00:00:00.000Z",

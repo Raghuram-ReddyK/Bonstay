@@ -352,6 +352,7 @@ const AdminDashboard = () => {
                     isLoading={isLoading}
                     getHotelName={getHotelName}
                     getRoomsCount={getRoomsCount}
+                    onBookingCancelled={mutateBookings}
                 />
             </TabPanel>
 
