@@ -30,7 +30,10 @@
       "userType": "user",
       "dateOfBirth": "1995-05-15",
       "gender": "female",
-      "occupation": "SE"
+      "occupation": "SE",
+      "failedLoginAttempts": 3,
+      "isLocked": true,
+      "lockoutTime": "2025-07-18T13:38:03.690Z"
     },
     {
       "id": "05fb",
@@ -110,9 +113,9 @@
       "dateOfBirth": "2025-07-11",
       "gender": "male",
       "occupation": "Tester",
-      "failedLoginAttempts": 0,
-      "isLocked": false,
-      "lockoutTime": null
+      "failedLoginAttempts": 3,
+      "isLocked": true,
+      "lockoutTime": "2025-07-18T14:06:16.880Z"
     },
     {
       "id": "e390",
@@ -621,7 +624,7 @@
       "adminNotes": "Approved"
     },
     {
-      "id": "INC-1752841222443",
+      "id": "INC-1752847578707",
       "userId": "32aa",
       "userName": "Tester",
       "userEmail": "ri6041@gmail.com",
@@ -629,12 +632,28 @@
       "status": "rejected",
       "description": "Account locked due to multiple failed login attempts",
       "failedAttempts": 3,
-      "lockoutTime": "2025-07-18T12:20:22.443Z",
-      "createdAt": "2025-07-18T12:20:22.443Z",
-      "updatedAt": "2025-07-18T12:22:03.820Z",
+      "lockoutTime": "2025-07-18T14:06:18.707Z",
+      "createdAt": "2025-07-18T14:06:18.707Z",
+      "updatedAt": "2025-07-18T14:07:01.775Z",
       "resolvedBy": "admin01",
-      "resolvedAt": "2025-07-18T12:22:03.820Z",
+      "resolvedAt": "2025-07-18T14:07:01.775Z",
       "adminNotes": "Rejected due to Invalid IP Address"
+    },
+    {
+      "id": "INC-1752847687134",
+      "userId": "32aa",
+      "userName": "Tester",
+      "userEmail": "ri6041@gmail.com",
+      "type": "account_unlock",
+      "status": "pending",
+      "description": "Account locked due to multiple failed login attempts",
+      "failedAttempts": 3,
+      "lockoutTime": "2025-07-18T14:08:07.134Z",
+      "createdAt": "2025-07-18T14:08:07.134Z",
+      "updatedAt": "2025-07-18T14:08:07.134Z",
+      "resolvedBy": null,
+      "resolvedAt": null,
+      "adminNotes": ""
     }
   ]
 }

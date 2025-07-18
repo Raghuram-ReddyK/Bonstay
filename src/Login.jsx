@@ -26,19 +26,21 @@ import {
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
     const navigate = useNavigate();
-
     const [userIdOrEmail, setUserIdOrEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [userType, setUserType] = useState('user');
+    const [userType, setUserType] = useState('user'); // Track login type
     const [rememberMe, setRememberMe] = useState(false);
-    const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+    const [acceptPrivacy, setAcceptPrivacy] = useState(false); // State to track Privacy checkbox
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Account lockout states
     const [incidentDialogOpen, setIncidentDialogOpen] = useState(false);
     const [lockedUser, setLockedUser] = useState(null);
+    const [existingTicketStatus, setExistingTicketStatus] = useState(null);
 
+    // SWR hooks for user data fetching
     const isEmail = userIdOrEmail.includes('@');
     const { data: emailUser, error: emailError, isLoading: emailLoading } = useUserByEmail(
         userIdOrEmail,
@@ -56,8 +58,10 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const [forgotPasswordError, setForgotPasswordError] = useState('');
     const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
 
+    // State for Privacy Policy Dialog
     const [privacyPolicyDialogOpen, setPrivacyPolicyDialogOpen] = useState(false);
 
+    // Helper functions for account lockout
     const updateUserFailedAttempts = async (userId, attempts, isLocked = false, lockoutTime = null) => {
         try {
             const response = await axios.get(getApiUrl(`/users/${userId}`));
@@ -107,15 +111,46 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const handleIncidentTicketSubmit = async () => {
         if (!lockedUser) return;
 
-        const incidentId = await createIncidentTicket(lockedUser);
-        if (incidentId) {
-            setSuccess(`Incident ticket ${incidentId} created successfully. An admin will review your request.`);
-        } else {
+        try {
+            // Check if there's already a ticket for this user
+            const response = await axios.get(getApiUrl('/incidentTickets'));
+            const existingTickets = response.data.filter(ticket =>
+                ticket.userId === lockedUser.id &&
+                ticket.type === 'account_unlock'
+            );
+
+            const latestTicket = existingTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+            if (latestTicket) {
+                if (latestTicket.status === 'pending') {
+                    setSuccess(`You already have a pending incident ticket (${latestTicket.id}). Please wait for admin approval.`);
+                    setIncidentDialogOpen(false);
+                    setLockedUser(null);
+                    return;
+                } else if (latestTicket.status === 'rejected') {
+                    // Allow creating a new ticket if the previous one was rejected
+                    // Continue with creating new ticket
+                } else if (latestTicket.status === 'approved') {
+                    setSuccess(`Your previous incident ticket (${latestTicket.id}) was approved. Please try logging in again.`);
+                    setIncidentDialogOpen(false);
+                    setLockedUser(null);
+                    return;
+                }
+            }
+
+            const incidentId = await createIncidentTicket(lockedUser);
+            if (incidentId) {
+                setSuccess(`Incident ticket ${incidentId} created successfully. An admin will review your request.`);
+            } else {
+                setError('Failed to create incident ticket. Please try again or contact support.');
+            }
+
+            setIncidentDialogOpen(false);
+            setLockedUser(null);
+        } catch (error) {
+            console.error('Error checking existing tickets:', error);
             setError('Failed to create incident ticket. Please try again or contact support.');
         }
-
-        setIncidentDialogOpen(false);
-        setLockedUser(null);
     };
 
     const handleSubmit = async (event) => {
@@ -138,20 +173,24 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     setError('Loading user data...');
                     return;
                 }
+
                 if (emailError) {
                     setError('Error loading user data. Please try again.');
                     return;
                 }
+
                 userData = emailUser;
             } else {
                 if (idLoading) {
                     setError('Loading user data...');
                     return;
                 }
+
                 if (idError) {
                     setError('User not found. Please check your UserID.');
                     return;
                 }
+
                 userData = idUser;
             }
 
@@ -160,45 +199,132 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 return;
             }
 
+            // Check if account is locked
             if (userData.isLocked) {
-                setError('Your account has been locked due to multiple failed login attempts.');
+                // Check for existing tickets to show proper message
+                try {
+                    const response = await axios.get(getApiUrl('/incidentTickets'));
+                    const userTickets = response.data.filter(ticket =>
+                        ticket.userId === userData.id &&
+                        ticket.type === 'account_unlock'
+                    );
+                    const latestTicket = userTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+                    setExistingTicketStatus(latestTicket);
+                } catch (error) {
+                    console.error('Error fetching ticket status:', error);
+                }
+
+                setError('Your account has been locked due to multiple failed login attempts. Please create an incident ticket to unlock your account.');
                 setLockedUser(userData);
                 setIncidentDialogOpen(true);
                 return;
             }
 
+            // Check user type
             if (userData.userType !== userType) {
                 setError(`Invalid login type. This account is registered as ${userData.userType === 'admin' ? 'Administrator' : 'Normal User'}`);
                 return;
             }
 
+            // For non-admin users, check lockout status and incident tickets
+            if (userData.userType !== 'admin' && userData.failedLoginAttempts >= 3) {
+                // Check if there's any incident ticket for this user
+                const response = await axios.get(getApiUrl('/incidentTickets'));
+                const userTickets = response.data.filter(ticket =>
+                    ticket.userId === userData.id &&
+                    ticket.type === 'account_unlock'
+                );
+
+                const latestTicket = userTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+                // If no ticket exists, or latest ticket is not approved, deny login
+                if (!latestTicket || latestTicket.status !== 'approved') {
+                    // Force lock the account if not already locked
+                    if (!userData.isLocked) {
+                        await updateUserFailedAttempts(userData.id, userData.failedLoginAttempts, true, userData.lockoutTime || new Date().toISOString());
+                    }
+
+                    let errorMessage = 'Your account has been locked due to multiple failed login attempts.';
+                    if (latestTicket) {
+                        if (latestTicket.status === 'pending') {
+                            errorMessage = `Your account is locked. Your incident ticket ${latestTicket.id} is pending admin approval.`;
+                        } else if (latestTicket.status === 'rejected') {
+                            errorMessage = `Your account is locked. Your incident ticket ${latestTicket.id} was rejected. Please create a new incident ticket.`;
+                        }
+                    } else {
+                        errorMessage += ' Please create an incident ticket to unlock your account.';
+                    }
+
+                    setError(errorMessage);
+                    setExistingTicketStatus(latestTicket);
+                    setLockedUser({ ...userData, isLocked: true });
+                    setIncidentDialogOpen(true);
+                    return;
+                }
+
+                // If latest ticket is approved, allow login (reset lockout status)
+                if (latestTicket.status === 'approved' && userData.isLocked) {
+                    await updateUserFailedAttempts(userData.id, 0, false, null);
+                    userData = { ...userData, isLocked: false, failedLoginAttempts: 0 };
+                }
+            }
+
+            // Block login if there's a pending or rejected ticket, even if account appears unlocked
+            if (userData.failedLoginAttempts >= 3) {
+                try {
+                    const response = await axios.get(getApiUrl('/incidentTickets'));
+                    const userTickets = response.data.filter(ticket =>
+                        ticket.userId === userData.id &&
+                        ticket.type === 'account_unlock'
+                    );
+
+                    const latestTicket = userTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+                    if (latestTicket && (latestTicket.status === 'pending' || latestTicket.status === 'rejected')) {
+                        setError(`Your account is locked. Incident ticket ${latestTicket.id} is currently ${latestTicket.status}.`);
+                        setExistingTicketStatus(latestTicket);
+                        setLockedUser(userData);
+                        setIncidentDialogOpen(true);
+                        setIsLoading(false);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error checking incident ticket before login:', error);
+                }
+            }
+
+
+            // Check password
             if (userData.password !== password) {
                 const currentAttempts = (userData.failedLoginAttempts || 0) + 1;
 
                 if (currentAttempts >= 3) {
+                    // Lock the account
                     await updateUserFailedAttempts(userData.id, currentAttempts, true, new Date().toISOString());
                     setError('Account locked due to multiple failed login attempts.');
+                    setExistingTicketStatus(null); // No existing ticket yet for a new lockout
                     setLockedUser({ ...userData, failedLoginAttempts: currentAttempts });
                     setIncidentDialogOpen(true);
                 } else {
+                    // Update failed attempts
                     await updateUserFailedAttempts(userData.id, currentAttempts);
                     setError(`Invalid password. ${3 - currentAttempts} attempts remaining before account lockout.`);
                 }
                 return;
             }
 
-            // Successful login: Reset failed attempts if any were recorded
+            // Successful login - reset failed attempts
             if (userData.failedLoginAttempts > 0) {
                 await updateUserFailedAttempts(userData.id, 0, false, null);
             }
 
-            // Store user session information
             sessionStorage.setItem('id', userData.id);
-            sessionStorage.setItem('userType', userData.userType);
+            sessionStorage.setItem('userType', userData.userType); // Store user type
             setIsLoggedIn(true);
-            setUserId(userData.id);
+            setUserId(userData.id); // Set the userId in the state immediately
             setSuccess('Login successful!');
 
+            // Navigate based on user type
             if (userData.userType === 'admin') {
                 navigate(`/admin-dashboard/${userData.id}`);
             } else {
@@ -221,6 +347,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
         setForgotPasswordSuccess('');
 
         try {
+            // Call the API to request password reset email with UserID and Email
             await axios.post(getApiUrl('/forgot-password'), {
                 userId: forgotPasswordUserId,
                 email: forgotPasswordEmail,
@@ -234,8 +361,8 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     };
 
     const handlePrivacyPolicyAccept = () => {
-        setAcceptPrivacy(true);
-        setPrivacyPolicyDialogOpen(false);
+        setAcceptPrivacy(true); // Enable the checkbox after accepting
+        setPrivacyPolicyDialogOpen(false); // Close the privacy policy dialog
     };
 
     return (
@@ -245,7 +372,6 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     Login Form
                 </Typography>
                 {(isLoading || emailLoading || idLoading) && <CircularProgress sx={{ mx: 'auto', mb: 2 }} />}
-
                 {error && <Alert severity="error">{error}</Alert>}
                 {success && <Alert severity="success">{success}</Alert>}
 
@@ -262,7 +388,6 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     </Select>
                 </FormControl>
 
-                {/* UserID or Email Input Field */}
                 <TextField
                     label="UserID or Email"
                     margin="normal"
@@ -277,7 +402,6 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     InputLabelProps={{ style: { color: 'white' } }}
                     InputProps={{ style: { color: 'white' } }}
                 />
-                {/* Password Input Field */}
                 <TextField
                     label="Password"
                     margin="normal"
@@ -287,25 +411,25 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    error={Boolean(error)} // Show error styling if there's an error
+                    error={Boolean(error)}
                     helperText={error === 'Invalid Username/Email/Password' ? 'UserID/Email or password is incorrect.' : ''}
                     sx={{ color: 'white' }}
                     InputLabelProps={{ style: { color: 'white' } }}
                     InputProps={{ style: { color: 'white' } }}
                 />
-                {/* Remember Me Checkbox */}
                 <FormControlLabel
                     control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} sx={{ color: 'white' }} />}
                     label="Remember me"
                     sx={{ color: 'white' }}
                 />
 
-                {/* Privacy Policy Checkbox and Link */}
+                {/* Privacy Policy Checkbox */}
                 <FormControlLabel
                     control={
                         <Checkbox
                             checked={acceptPrivacy}
                             onChange={(e) => setAcceptPrivacy(e.target.checked)}
+                            disabled={!privacyPolicyDialogOpen} // Disable until user accepts the policy
                             sx={{ color: 'white' }}
                         />
                     }
@@ -313,8 +437,9 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                         <span>
                             I have read and agree to the{' '}
                             <MuiLink
+                                // href="/privacy-policy"
                                 onClick={() => setPrivacyPolicyDialogOpen(true)}
-                                underline="hover"
+                                underline="true"
                                 color="white"
                                 sx={{ cursor: 'pointer' }}
                             >
@@ -325,25 +450,23 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     sx={{ color: 'white' }}
                 />
 
-                {/* Login Button */}
                 <Button
                     type="submit"
                     variant="contained"
                     color="primary"
                     fullWidth
                     sx={{ mt: 3 }}
-                    disabled={!acceptPrivacy || isLoading || emailLoading || idLoading}
+                    disabled={!acceptPrivacy || isLoading || emailLoading || idLoading} // Disable during SWR loading
                 >
                     Login
                 </Button>
-                {/* Sign Up Link */}
                 <MuiLink href="/Register" underline="hover" color="white" sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     Don't have an account? Sign Up
                 </MuiLink>
 
                 {/* Forgot Password Link */}
                 <MuiLink
-                    onClick={() => setForgotPasswordOpen(true)} // Open forgot password dialog on click
+                    onClick={() => setForgotPasswordOpen(true)}
                     underline="hover"
                     color="white"
                     sx={{ mt: 2, display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
@@ -468,10 +591,13 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 </DialogActions>
             </Dialog>
 
-
+            {/* Account Lockout - Incident Ticket Dialog */}
             <Dialog
                 open={incidentDialogOpen}
-                onClose={() => setIncidentDialogOpen(false)}
+                onClose={() => {
+                    setIncidentDialogOpen(false);
+                    setExistingTicketStatus(null); // Clear status when dialog closes
+                }}
                 maxWidth="md"
                 fullWidth
             >
@@ -489,26 +615,76 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                         Failed Attempts: {lockedUser?.failedLoginAttempts || 3}<br />
                         Lockout Time: {new Date().toLocaleString()}<br /><br />
 
-                        To unlock your account, click "Create Incident Ticket" below.
-                        An administrator will review your request and unlock your account if appropriate.
-                        You will receive a confirmation message with your incident ticket ID.
+                        {existingTicketStatus ? (
+                            <>
+                                <strong>Existing Incident Ticket:</strong><br />
+                                Ticket ID: {existingTicketStatus.id}<br />
+                                Status: <span style={{
+                                    color: existingTicketStatus.status === 'pending' ? '#ff9800' :
+                                        existingTicketStatus.status === 'approved' ? '#4caf50' : '#f44336',
+                                    fontWeight: 'bold'
+                                }}>
+                                    {existingTicketStatus.status.toUpperCase()}
+                                </span><br />
+                                Created: {new Date(existingTicketStatus.createdAt).toLocaleString()}<br />
+                                {existingTicketStatus.adminNotes && (
+                                    <>Admin Notes: {existingTicketStatus.adminNotes}<br /></>
+                                )}
+                                <br />
+
+                                {existingTicketStatus.status === 'pending' && (
+                                    "Your ticket is being reviewed by an administrator. Please wait for approval."
+                                )}
+                                {existingTicketStatus.status === 'rejected' && (
+                                    "Your previous ticket was rejected. You can create a new incident ticket below."
+                                )}
+                                {existingTicketStatus.status === 'approved' && (
+                                    "Your ticket was approved. Please try logging in again."
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                To unlock your account, click "Create Incident Ticket" below.
+                                An administrator will review your request and unlock your account if appropriate.
+                                You will receive a confirmation message with your incident ticket ID.
+                            </>
+                        )}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button
-                        onClick={() => setIncidentDialogOpen(false)}
+                        onClick={() => {
+                            setIncidentDialogOpen(false);
+                            setExistingTicketStatus(null);
+                        }}
                         color="secondary"
                     >
-                        Cancel
+                        Close
                     </Button>
-                    <Button
-                        onClick={handleIncidentTicketSubmit}
-                        variant="contained"
-                        color="primary"
-                        startIcon={<></>}
-                    >
-                        Create Incident Ticket
-                    </Button>
+                    {(!existingTicketStatus || existingTicketStatus.status === 'rejected') && (
+                        <Button
+                            onClick={handleIncidentTicketSubmit}
+                            variant="contained"
+                            color="primary"
+                        >
+                            {existingTicketStatus?.status === 'rejected' ? 'Create New Incident Ticket' : 'Create Incident Ticket'}
+                        </Button>
+                    )}
+                    {existingTicketStatus?.status === 'approved' && (
+                        <Button
+                            onClick={() => {
+                                setIncidentDialogOpen(false);
+                                setExistingTicketStatus(null);
+                                // Clear the form to allow re-login
+                                setError('');
+                                setSuccess('Your account has been unlocked. Please try logging in again.');
+                            }}
+                            variant="contained"
+                            color="success"
+                        >
+                            Try Login Again
+                        </Button>
+                    )}
                 </DialogActions>
             </Dialog>
         </Container>
