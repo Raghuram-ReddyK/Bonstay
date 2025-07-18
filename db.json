@@ -42,7 +42,10 @@
       "userType": "user",
       "dateOfBirth": "1995-05-10",
       "gender": "male",
-      "occupation": "SE"
+      "occupation": "SE",
+      "isLocked": false,
+      "failedLoginAttempts": 0,
+      "lockoutTime": null
     },
     {
       "id": "2b33",
@@ -106,7 +109,10 @@
       "department": "",
       "dateOfBirth": "2025-07-11",
       "gender": "male",
-      "occupation": "Tester"
+      "occupation": "Tester",
+      "failedLoginAttempts": 0,
+      "isLocked": false,
+      "lockoutTime": null
     },
     {
       "id": "e390",
@@ -579,6 +585,56 @@
       "createdAt": "2025-07-11T09:34:50.841Z",
       "approvedBy": "admin01",
       "requestId": "1752226040159"
+    }
+  ],
+  "incidentTickets": [
+    {
+      "id": "INC-001",
+      "userId": "1e6c",
+      "userName": "Sruthi Jodu",
+      "userEmail": "jodi@outlook.com",
+      "type": "account_unlock",
+      "status": "pending",
+      "description": "Account locked due to multiple failed login attempts",
+      "failedAttempts": 3,
+      "lockoutTime": "2024-01-15T10:30:00.000Z",
+      "createdAt": "2024-01-15T10:35:00.000Z",
+      "updatedAt": "2024-01-15T10:35:00.000Z",
+      "resolvedBy": null,
+      "resolvedAt": null,
+      "adminNotes": ""
+    },
+    {
+      "id": "INC-1752838121887",
+      "userId": "05fb",
+      "userName": "Raghurami Reddy k",
+      "userEmail": "raghu@gmail.com",
+      "type": "account_unlock",
+      "status": "approved",
+      "description": "Account locked due to multiple failed login attempts",
+      "failedAttempts": 3,
+      "lockoutTime": "2025-07-18T11:28:41.887Z",
+      "createdAt": "2025-07-18T11:28:41.887Z",
+      "updatedAt": "2025-07-18T12:40:24.736Z",
+      "resolvedBy": "admin01",
+      "resolvedAt": "2025-07-18T12:40:24.736Z",
+      "adminNotes": "Approved"
+    },
+    {
+      "id": "INC-1752841222443",
+      "userId": "32aa",
+      "userName": "Tester",
+      "userEmail": "ri6041@gmail.com",
+      "type": "account_unlock",
+      "status": "rejected",
+      "description": "Account locked due to multiple failed login attempts",
+      "failedAttempts": 3,
+      "lockoutTime": "2025-07-18T12:20:22.443Z",
+      "createdAt": "2025-07-18T12:20:22.443Z",
+      "updatedAt": "2025-07-18T12:22:03.820Z",
+      "resolvedBy": "admin01",
+      "resolvedAt": "2025-07-18T12:22:03.820Z",
+      "adminNotes": "Rejected due to Invalid IP Address"
     }
   ]
 }

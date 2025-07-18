@@ -23,6 +23,7 @@ import AdminActivityLogs from '../AdminDashboardComponents/AdminActivityLogs';
 import AdminNotificationCenter from '../AdminDashboardComponents/AdminNotificationCenter';
 import { getApiUrl } from '../config/apiConfig';
 import { useAdminCodeRequests, useBookings, useHotels, useUser, useUsers } from '../hooks/useSWRData';
+import IncidentTickets from './IncidentTickets';
 
 const AdminDashboard = () => {
     const [tabValue, setTabValue] = useState(0);
@@ -208,7 +209,7 @@ const AdminDashboard = () => {
 
     const handleTabChange = (_event, newValue) => {
         setTabValue(newValue);
-        if (newValue === 5) {
+        if (newValue === 6) {
             fetchAdminCodeRequests(true)
         }
     };
@@ -303,6 +304,7 @@ const AdminDashboard = () => {
                     <Tab label="Booking Management" />
                     <Tab label="Create Booking" />
                     <Tab label="Admin Code Requests" />
+                    <Tab label="Incident Tickets" />
                     <Tab label="System Monitoring " />
                     <Tab label="Activity Logs" />
                     <Tab label="Notifications" />
@@ -370,14 +372,18 @@ const AdminDashboard = () => {
             </TabPanel>
 
             <TabPanel value={tabValue} index={6}>
-                <AdminSystemMonitoring />
+                <IncidentTickets />
             </TabPanel>
 
             <TabPanel value={tabValue} index={7}>
-                <AdminActivityLogs />
+                <AdminSystemMonitoring />
             </TabPanel>
 
             <TabPanel value={tabValue} index={8}>
+                <AdminActivityLogs />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={9}>
                 <AdminNotificationCenter />
             </TabPanel>
 

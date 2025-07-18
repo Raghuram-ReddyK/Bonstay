@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from './config/apiConfig';
+import { useUser, useUserByEmail } from './hooks/useSWRData';
 import {
     TextField,
     Button,
@@ -21,26 +23,27 @@ import {
     Select,
     MenuItem,
 } from '@mui/material';
-import { getApiUrl } from './config/apiConfig';
-import { useUser, useUserByEmail } from './hooks/useSWRData';
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
     const navigate = useNavigate();
+
     const [userIdOrEmail, setUserIdOrEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [userType, setUserType] = useState('user') // Track Login Type
+    const [userType, setUserType] = useState('user');
     const [rememberMe, setRememberMe] = useState(false);
     const [acceptPrivacy, setAcceptPrivacy] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    const [incidentDialogOpen, setIncidentDialogOpen] = useState(false);
+    const [lockedUser, setLockedUser] = useState(null);
+
     const isEmail = userIdOrEmail.includes('@');
     const { data: emailUser, error: emailError, isLoading: emailLoading } = useUserByEmail(
         userIdOrEmail,
         isEmail && userIdOrEmail.length > 0
     );
-
     const { data: idUser, error: idError, isLoading: idLoading } = useUser(
         userIdOrEmail,
         !isEmail && userIdOrEmail.length > 0
@@ -53,66 +56,153 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const [forgotPasswordError, setForgotPasswordError] = useState('');
     const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
 
-    // State for Privacy Policy Dialog
     const [privacyPolicyDialogOpen, setPrivacyPolicyDialogOpen] = useState(false);
+
+    const updateUserFailedAttempts = async (userId, attempts, isLocked = false, lockoutTime = null) => {
+        try {
+            const response = await axios.get(getApiUrl(`/users/${userId}`));
+            const userToUpdate = response.data;
+
+            const updatedUser = {
+                ...userToUpdate,
+                failedLoginAttempts: attempts,
+                isLocked: isLocked,
+                lockoutTime: lockoutTime
+            };
+
+            await axios.put(getApiUrl(`/users/${userId}`), updatedUser);
+        } catch (error) {
+            console.error('Error updating user failed attempts:', error);
+        }
+    };
+
+    const createIncidentTicket = async (user) => {
+        try {
+            const incidentId = `INC-${Date.now()}`;
+            const incident = {
+                id: incidentId,
+                userId: user.id,
+                userName: user.name,
+                userEmail: user.email,
+                type: 'account_unlock',
+                status: 'pending',
+                description: 'Account locked due to multiple failed login attempts',
+                failedAttempts: 3,
+                lockoutTime: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                resolvedBy: null,
+                resolvedAt: null,
+                adminNotes: ''
+            };
+
+            await axios.post(getApiUrl('/incidentTickets'), incident);
+            return incidentId;
+        } catch (error) {
+            console.error('Error creating incident ticket:', error);
+            return null;
+        }
+    };
+
+    const handleIncidentTicketSubmit = async () => {
+        if (!lockedUser) return;
+
+        const incidentId = await createIncidentTicket(lockedUser);
+        if (incidentId) {
+            setSuccess(`Incident ticket ${incidentId} created successfully. An admin will review your request.`);
+        } else {
+            setError('Failed to create incident ticket. Please try again or contact support.');
+        }
+
+        setIncidentDialogOpen(false);
+        setLockedUser(null);
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         if (!acceptPrivacy) {
             setError('Please read and accept the privacy policy before logging in.');
-            return; // Prevent login if privacy policy is not accepted
+            return;
         }
 
         setIsLoading(true);
-        setError('')
-        setSuccess('')
+        setError('');
+        setSuccess('');
 
         try {
-            let userData = null
-            const isEmail = userIdOrEmail.includes('@');
+            let userData = null;
+
             if (isEmail) {
                 if (emailLoading) {
                     setError('Loading user data...');
                     return;
                 }
-
                 if (emailError) {
-                    setError('Error loading user data. Please try again.')
+                    setError('Error loading user data. Please try again.');
                     return;
                 }
-                userData = emailUser
-            }
-            else {
+                userData = emailUser;
+            } else {
                 if (idLoading) {
                     setError('Loading user data...');
                     return;
                 }
                 if (idError) {
-                    setError('User not found. Please check your UserId')
+                    setError('User not found. Please check your UserID.');
+                    return;
                 }
-
                 userData = idUser;
             }
 
-            if (userData && userData.password === password) {
-                if (userData.userType !== userType) {
-                    setError(`Invalid login type. This account is registered as ${userData.userType === 'admin' ? 'Administrator' : 'Normal User'}`)
-                    return;
-                }
-                sessionStorage.setItem('id', userData.id);
-                sessionStorage.setItem('userType', userData.userType);
-                setIsLoggedIn(true);
-                setUserId(userData.id); // Set the userId in the state immediately
-                setSuccess('Login successful!');
+            if (!userData) {
+                setError('User not found. Please check your credentials.');
+                return;
+            }
 
-                if (userData.userType === 'admin') {
-                    navigate(`/admin-dashboard/${userData.id}`)
+            if (userData.isLocked) {
+                setError('Your account has been locked due to multiple failed login attempts.');
+                setLockedUser(userData);
+                setIncidentDialogOpen(true);
+                return;
+            }
+
+            if (userData.userType !== userType) {
+                setError(`Invalid login type. This account is registered as ${userData.userType === 'admin' ? 'Administrator' : 'Normal User'}`);
+                return;
+            }
+
+            if (userData.password !== password) {
+                const currentAttempts = (userData.failedLoginAttempts || 0) + 1;
+
+                if (currentAttempts >= 3) {
+                    await updateUserFailedAttempts(userData.id, currentAttempts, true, new Date().toISOString());
+                    setError('Account locked due to multiple failed login attempts.');
+                    setLockedUser({ ...userData, failedLoginAttempts: currentAttempts });
+                    setIncidentDialogOpen(true);
                 } else {
-                    navigate(`/dashboard/${userData.id}`);
+                    await updateUserFailedAttempts(userData.id, currentAttempts);
+                    setError(`Invalid password. ${3 - currentAttempts} attempts remaining before account lockout.`);
                 }
+                return;
+            }
+
+            // Successful login: Reset failed attempts if any were recorded
+            if (userData.failedLoginAttempts > 0) {
+                await updateUserFailedAttempts(userData.id, 0, false, null);
+            }
+
+            // Store user session information
+            sessionStorage.setItem('id', userData.id);
+            sessionStorage.setItem('userType', userData.userType);
+            setIsLoggedIn(true);
+            setUserId(userData.id);
+            setSuccess('Login successful!');
+
+            if (userData.userType === 'admin') {
+                navigate(`/admin-dashboard/${userData.id}`);
             } else {
-                setError('Invalid Username/Email/Password');
+                navigate(`/dashboard/${userData.id}`);
             }
         } catch (error) {
             console.error(error);
@@ -131,7 +221,6 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
         setForgotPasswordSuccess('');
 
         try {
-            // Call the API to request password reset email with UserID and Email
             await axios.post(getApiUrl('/forgot-password'), {
                 userId: forgotPasswordUserId,
                 email: forgotPasswordEmail,
@@ -145,8 +234,8 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     };
 
     const handlePrivacyPolicyAccept = () => {
-        setAcceptPrivacy(true); // Enable the checkbox after accepting
-        setPrivacyPolicyDialogOpen(false); // Close the privacy policy dialog
+        setAcceptPrivacy(true);
+        setPrivacyPolicyDialogOpen(false);
     };
 
     return (
@@ -156,19 +245,24 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     Login Form
                 </Typography>
                 {(isLoading || emailLoading || idLoading) && <CircularProgress sx={{ mx: 'auto', mb: 2 }} />}
+
                 {error && <Alert severity="error">{error}</Alert>}
                 {success && <Alert severity="success">{success}</Alert>}
+
                 <FormControl fullWidth margin="normal">
-                    <InputLabel sx={{ color: 'white' }}> Login As </InputLabel>
+                    <InputLabel sx={{ color: 'white' }}>Login As</InputLabel>
                     <Select
                         value={userType}
                         onChange={(e) => setUserType(e.target.value)}
                         label="Login As"
-                        sx={{ color: "white", '& .MuiOutlinedInput-notchedOutline': { borderColor: 'white' } }} >
-                        <MenuItem value="user"> Normal User </MenuItem>
-                        <MenuItem value="admin"> Administrator </MenuItem>
+                        sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'white' } }}
+                    >
+                        <MenuItem value="user">Normal User</MenuItem>
+                        <MenuItem value="admin">Administrator</MenuItem>
                     </Select>
                 </FormControl>
+
+                {/* UserID or Email Input Field */}
                 <TextField
                     label="UserID or Email"
                     margin="normal"
@@ -180,7 +274,10 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     error={Boolean(error)}
                     helperText={error === 'Invalid Username/Email/Password' ? 'UserID/Email or password is incorrect.' : ''}
                     sx={{ color: 'white' }}
+                    InputLabelProps={{ style: { color: 'white' } }}
+                    InputProps={{ style: { color: 'white' } }}
                 />
+                {/* Password Input Field */}
                 <TextField
                     label="Password"
                     margin="normal"
@@ -190,32 +287,34 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    error={Boolean(error)}
+                    error={Boolean(error)} // Show error styling if there's an error
                     helperText={error === 'Invalid Username/Email/Password' ? 'UserID/Email or password is incorrect.' : ''}
                     sx={{ color: 'white' }}
+                    InputLabelProps={{ style: { color: 'white' } }}
+                    InputProps={{ style: { color: 'white' } }}
                 />
+                {/* Remember Me Checkbox */}
                 <FormControlLabel
-                    control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />}
+                    control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} sx={{ color: 'white' }} />}
                     label="Remember me"
                     sx={{ color: 'white' }}
                 />
 
-                {/* Privacy Policy Checkbox */}
+                {/* Privacy Policy Checkbox and Link */}
                 <FormControlLabel
                     control={
                         <Checkbox
                             checked={acceptPrivacy}
                             onChange={(e) => setAcceptPrivacy(e.target.checked)}
-                            disabled={!privacyPolicyDialogOpen} // Disable until user accepts the policy
+                            sx={{ color: 'white' }}
                         />
                     }
                     label={
                         <span>
                             I have read and agree to the{' '}
                             <MuiLink
-                                // href="/privacy-policy"
                                 onClick={() => setPrivacyPolicyDialogOpen(true)}
-                                underline="true"
+                                underline="hover"
                                 color="white"
                                 sx={{ cursor: 'pointer' }}
                             >
@@ -226,23 +325,25 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     sx={{ color: 'white' }}
                 />
 
+                {/* Login Button */}
                 <Button
                     type="submit"
                     variant="contained"
                     color="primary"
                     fullWidth
                     sx={{ mt: 3 }}
-                    disabled={!acceptPrivacy || isLoading || emailLoading || idLoading} // Disable login button until checkbox is checked
+                    disabled={!acceptPrivacy || isLoading || emailLoading || idLoading}
                 >
                     Login
                 </Button>
+                {/* Sign Up Link */}
                 <MuiLink href="/Register" underline="hover" color="white" sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     Don't have an account? Sign Up
                 </MuiLink>
 
                 {/* Forgot Password Link */}
                 <MuiLink
-                    onClick={() => setForgotPasswordOpen(true)}
+                    onClick={() => setForgotPasswordOpen(true)} // Open forgot password dialog on click
                     underline="hover"
                     color="white"
                     sx={{ mt: 2, display: 'flex', justifyContent: 'center', cursor: 'pointer' }}
@@ -355,7 +456,6 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                             <li><strong>Phone:</strong> [+91-3485933941]</li>
                             <li><strong>Address:</strong> [SRT-121, Oppo to Cure Hospital, Gachibowli, Hyderabad]</li>
                         </ul>
-                        {/* Add other sections of the privacy policy */}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
@@ -364,6 +464,50 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                     </Button>
                     <Button onClick={handlePrivacyPolicyAccept} variant="contained" color="primary">
                         I Accept
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+
+            <Dialog
+                open={incidentDialogOpen}
+                onClose={() => setIncidentDialogOpen(false)}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle sx={{ backgroundColor: '#f44336', color: 'white' }}>
+                    Account Locked - Create Incident Ticket
+                </DialogTitle>
+                <DialogContent sx={{ mt: 2 }}>
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        Your account has been locked due to multiple failed login attempts.
+                    </Alert>
+                    <DialogContentText>
+                        <strong>Account Details:</strong><br />
+                        Name: {lockedUser?.name}<br />
+                        Email: {lockedUser?.email}<br />
+                        Failed Attempts: {lockedUser?.failedLoginAttempts || 3}<br />
+                        Lockout Time: {new Date().toLocaleString()}<br /><br />
+
+                        To unlock your account, click "Create Incident Ticket" below.
+                        An administrator will review your request and unlock your account if appropriate.
+                        You will receive a confirmation message with your incident ticket ID.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => setIncidentDialogOpen(false)}
+                        color="secondary"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleIncidentTicketSubmit}
+                        variant="contained"
+                        color="primary"
+                        startIcon={<></>}
+                    >
+                        Create Incident Ticket
                     </Button>
                 </DialogActions>
             </Dialog>
