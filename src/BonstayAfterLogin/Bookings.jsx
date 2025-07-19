@@ -1,49 +1,35 @@
-import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Link as MuiLink, CircularProgress, Alert } from '@mui/material'; 
-import axios from 'axios'; 
-import React, { useState } from 'react'; 
-import { useNavigate } from 'react-router-dom'; 
-import * as XLSX from 'xlsx'; 
-import { saveAs } from 'file-saver'; 
+import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Link as MuiLink, CircularProgress, Alert } from '@mui/material';
+import axios from 'axios';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 import { getApiUrl } from '../config/apiConfig';
-import { useUserBookings, useHotels } from '../hooks/useSWRData'; 
+import { useUserBookings, useHotels } from '../hooks/useSWRData';
 
-/**
- * Bookings Component
- * This component displays a user's hotel bookings, allows them to reschedule or cancel bookings,
- * and provides options to export booking data to Excel or print the list.
- * It uses SWR hooks for efficient data fetching and caching.
- * @param {Object} props - Component props
- * @param {string} props.userId - The ID of the user whose bookings are to be displayed.
- */
 const Bookings = ({ userId }) => { // Destructure userId prop here
-    // useState hooks for managing component-specific state
     const [cancelSuccess, setCancelSuccess] = useState('');
-    const [cancelError, setCancelError] = useState('');     
-    const [dialogOpen, setDialogOpen] = useState(false);  
-    const [selectedBookingId, setSelectedBookingId] = useState(null); 
-    const navigate = useNavigate(); 
+    const [cancelError, setCancelError] = useState('');
+    const [dialogOpen, setDialogOpen] = useState(false); // State for confirmation dialog
+    const [selectedBookingId, setSelectedBookingId] = useState(null); // Store the ID of the selected booking to be canceled
+    const navigate = useNavigate();
 
-    // Use SWR hooks for data fetching:
-    // useUserBookings fetches bookings specific to the provided userId.
-    // useHotels fetches all hotel data, which is needed to map hotel IDs to names.
+    // Use SWR hooks for data fetching
     const { data: bookings, error: bookingsError, isLoading: bookingsLoading, mutate: mutateBookings } = useUserBookings(userId);
     const { data: hotels, error: hotelsError, isLoading: hotelsLoading } = useHotels();
 
-    // React.useMemo to create a map of hotel IDs to hotel names.
-    // This memoized value prevents re-calculation on every render unless 'hotels' data changes.
-    // It's crucial to define this before any early returns to ensure it's always available if data is loaded.
+    // Create a map of hotel IDs to hotel names for easy lookup (must be called before any early returns)
     const hotelMap = React.useMemo(() => {
-        if (!hotels) return {}; // Return empty map if hotels data is not yet available
+        if (!hotels) return {};
         const map = {};
         hotels.forEach((hotel) => {
-            // console.log(`Mapping hotel ID: ${hotel.id} => Hotel Name: ${hotel.hotelName}`); // Debugging log
-            map[String(hotel.id)] = hotel.hotelName; // Populate map, ensuring hotel ID is treated as a string for consistent keys
+            // console.log(`Mapping hotel ID: ${hotel.id} => Hotel Name: ${hotel.hotelName}`);
+            map[String(hotel.id)] = hotel.hotelName; // Ensure hotelId is treated as a string
         });
         return map;
-    }, [hotels]); // Dependency array: Recalculate `hotelMap` only when `hotels` data changes
+    }, [hotels]);
 
-    // Conditional rendering for loading state:
-    // Display a circular progress indicator and a loading message while data is being fetched.
+    // Check for loading states
     if (bookingsLoading || hotelsLoading) {
         return (
             <Container sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -53,98 +39,78 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
         );
     }
 
-    // Conditional rendering for error state:
-    // Display an alert with an error message if there was an issue fetching data.
+    // Check for errors
     if (bookingsError || hotelsError) {
         return (
             <Container sx={{ mt: 4 }}>
                 <Alert severity="error">
-                    Error loading data: {bookingsError?.message || hotelsError?.message} {/* Display specific error message */}
+                    Error loading data: {bookingsError?.message || hotelsError?.message}
                 </Alert>
             </Container>
         );
     }
 
-    // Log the number of bookings found for the current user (for debugging/info)
     console.log(`Found ${bookings?.length || 0} bookings for user ${userId}`);
 
-    /**
-     * Handles the cancellation of a booking.
-     * Makes an API call to delete the booking and then refreshes the booking list.
-     * @param {string} bookingId - The ID of the booking to cancel.
-     */
     const handleCancelBooking = async (bookingId) => {
         try {
             await axios.delete(getApiUrl(`/bookings/${bookingId}`));
+            // Refresh bookings data after cancellation
             mutateBookings();
             setCancelSuccess(`Booking cancelled successfully! with ${bookingId}`);
-            setDialogOpen(false);
+            setDialogOpen(false); // Close the confirmation dialog
         } catch (error) {
             setCancelError('Error canceling booking. Please try again later.');
         }
     };
 
-    /**
-     * Opens the confirmation dialog for booking cancellation.
-     * Stores the ID of the booking to be canceled.
-     * @param {string} bookingId - The ID of the booking to be canceled.
-     */
+    // Open the confirmation dialog
     const openConfirmationDialog = (bookingId) => {
-        setSelectedBookingId(bookingId); // Store the booking ID
-        setDialogOpen(true); // Open the dialog
+        setSelectedBookingId(bookingId);
+        setDialogOpen(true);
     };
 
-    /**
-     * Closes the confirmation dialog and clears the selected booking ID.
-     */
+    // Close the confirmation dialog
     const closeConfirmationDialog = () => {
-        setDialogOpen(false); // Close the dialog
-        setSelectedBookingId(null); // Clear the selected booking ID
+        setDialogOpen(false);
+        setSelectedBookingId(null);
     };
 
-    /**
-     * Handles exporting the current user's bookings to an Excel file.
-     * It transforms the booking data into a format suitable for Excel and then saves the file.
-     */
+    // Export to Excel
     const handleExportExcel = () => {
-        // Map booking data to a flat structure suitable for Excel, using hotelMap for hotel names
         const data = bookings.map((booking) => ({
             'Booking ID': booking.id,
-            'Hotel Name': hotelMap[String(booking.hotelId)] || 'Unknown Hotel', // Get hotel name from map, fallback if not found
-            'Check-In Date': booking.checkIn || booking.startDate, // Use checkIn or startDate
-            'Check-Out Date': booking.checkOut || booking.endDate,   // Use checkOut or endDate
-            'Number of Persons': booking.guests || booking.noOfPersons, // Use guests or noOfPersons
+            'Hotel Name': hotelMap[String(booking.hotelId)] || 'Unknown Hotel', // Using hotelMap for hotel name
+            'Check-In Date': booking.checkIn || booking.startDate,
+            'Check-Out Date': booking.checkOut || booking.endDate,
+            'Number of Persons': booking.guests || booking.noOfPersons,
             'Number of Rooms': booking.noOfRooms,
-            'Type of Room': booking.roomType || booking.typeOfRoom, // Use roomType or typeOfRoom
+            'Type of Room': booking.roomType || booking.typeOfRoom,
         }));
 
-        const ws = XLSX.utils.json_to_sheet(data); // Convert JSON data to a worksheet
-        const wb = XLSX.utils.book_new(); // Create a new workbook
-        XLSX.utils.book_append_sheet(wb, ws, 'Bookings'); // Append the worksheet to the workbook with a sheet name
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Bookings');
 
-        // Generate and save the Excel file
+        // Save as Excel file
         const excelFile = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        saveAs(new Blob([excelFile], { type: 'application/octet-stream' }), 'bookings.xlsx'); // Save the file using file-saver
+        saveAs(new Blob([excelFile], { type: 'application/octet-stream' }), 'bookings.xlsx');
     };
 
-    /**
-     * Handles printing the current page content.
-     * It opens a new window, writes the content of the 'printable-bookings' div, and triggers the print dialog.
-     */
+    // Print the page
     const handlePrint = () => {
-        const printContent = document.getElementById('printable-bookings'); // Get the element to be printed
-        const printWindow = window.open('', '', 'height=600,width=800'); // Open a new blank window
-        printWindow.document.write(printContent.innerHTML); // Write the inner HTML of the printable area to the new window
-        printWindow.document.close(); // Close the document stream
-        printWindow.print(); // Trigger the print dialog
+        const printContent = document.getElementById('printable-bookings');
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write(printContent.innerHTML);
+        printWindow.document.close();
+        printWindow.print();
     };
 
     return (
-        <Container className="text-center"> {/* Main container for the bookings page */}
+        <Container className="text-center">
             <Typography variant="h3" color="blue">
-                --- Bookings --- {/* Page title */}
+                --- Bookings ---
             </Typography>
-            {/* Display success or error alerts */}
             {cancelSuccess && <div className="alert alert-success">{cancelSuccess}</div>}
             {cancelError && <div className="alert alert-danger">{cancelError}</div>}
 
@@ -156,42 +122,109 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                 Print Bookings
             </Button>
 
-            {/* Conditional rendering based on whether bookings are found */}
             {bookings.length > 0 ? (
-                // Display bookings in a grid layout if bookings exist
-                <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 g-4"> {/* ID for printing functionality */}
+                <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 g-4">
                     {bookings.map((booking) => {
+                        // Get hotel name from the new data structure
+                        const hotelName = booking.hotelName || hotelMap[String(booking.hotelId)] || 'Unknown Hotel';
+                        const isEnhancedBooking = booking.bookingReference; // Check if it's new format
+
                         return (
-                            <div key={booking.id} className="col"> {/* Unique key for each booking card */}
-                                <div className="card h-100 shadow-sm"> {/* Card styling */}
+                            <div key={booking.id} className="col">
+                                <div className="card h-100 shadow-sm">
                                     <div className="card-body">
-                                        <h5 className="card-title">
-                                            {hotelMap[String(booking.hotelId)] || 'Unknown Hotel'} {/* Display hotel name from map */}
-                                        </h5>
-                                        <p><b>Booking Id:</b> {booking.id}</p>
-                                        <p><b>Check-In Date:</b> {booking.checkIn || booking.startDate}</p>
-                                        <p><b>Check-Out Date:</b> {booking.checkOut || booking.endDate}</p>
-                                        <p><b>Number of Persons:</b> {booking.guests || booking.noOfPersons}</p>
-                                        <p><b>Number of Rooms:</b> {booking.noOfRooms}</p>
-                                        <p><b>Type of Room:</b> {booking.roomType || booking.typeOfRoom}</p>
+                                        <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 className="card-title mb-0">{hotelName}</h5>
+                                            {isEnhancedBooking && (
+                                                <span className="badge bg-primary">{booking.bookingStatus || 'confirmed'}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Enhanced booking display */}
+                                        {isEnhancedBooking ? (
+                                            <>
+                                                <p className="text-muted mb-2">
+                                                    <small>Booking Reference: {booking.bookingReference}</small>
+                                                </p>
+                                                <div className="row">
+                                                    <div className="col-6">
+                                                        <p><b>Check-in:</b><br />{new Date(booking.checkIn).toLocaleDateString()}</p>
+                                                        <p><b>Check-out:</b><br />{new Date(booking.checkOut).toLocaleDateString()}</p>
+                                                        <p><b>Guests:</b> {booking.guests}</p>
+                                                    </div>
+                                                    <div className="col-6">
+                                                        <p><b>Nights:</b> {booking.nights}</p>
+                                                        <p><b>Rooms:</b> {booking.rooms}</p>
+                                                        <p><b>Room Type:</b><br />{booking.roomTypeName}</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Pricing Information */}
+                                                <div className="mt-3 p-2 bg-light rounded">
+                                                    <div className="d-flex justify-content-between">
+                                                        <span>Room Cost:</span>
+                                                        <span>₹{booking.totalRoomCost?.toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between">
+                                                        <span>Taxes:</span>
+                                                        <span>₹{booking.taxes?.toLocaleString()}</span>
+                                                    </div>
+                                                    <hr className="my-1" />
+                                                    <div className="d-flex justify-content-between fw-bold">
+                                                        <span>Total Amount:</span>
+                                                        <span className="text-success">₹{booking.totalAmount?.toLocaleString()}</span>
+                                                    </div>
+                                                    {booking.paymentStatus && (
+                                                        <div className="text-center mt-2">
+                                                            <span className={`badge ${booking.paymentStatus === 'paid' ? 'bg-success' :
+                                                                    booking.paymentStatus === 'partial' ? 'bg-warning' : 'bg-danger'
+                                                                }`}>
+                                                                Payment: {booking.paymentStatus}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Special Requests */}
+                                                {booking.specialRequests && (
+                                                    <div className="mt-2">
+                                                        <small className="text-muted">
+                                                            <b>Special Requests:</b> {booking.specialRequests}
+                                                        </small>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            /* Legacy booking display */
+                                            <>
+                                                <p><b>Booking Id:</b> {booking.id}</p>
+                                                <p><b>Check-In Date:</b> {booking.checkIn || booking.startDate}</p>
+                                                <p><b>Check-Out Date:</b> {booking.checkOut || booking.endDate}</p>
+                                                <p><b>Number of Persons:</b> {booking.guests || booking.noOfPersons}</p>
+                                                <p><b>Number of Rooms:</b> {booking.noOfRooms}</p>
+                                                <p><b>Type of Room:</b> {booking.roomType || booking.typeOfRoom}</p>
+                                            </>
+                                        )}
                                     </div>
                                     <div className="card-footer">
-                                        {/* Reschedule Button */}
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={() => navigate(`/reschedule/${booking.id}`)} // Navigate to reschedule page
-                                        >
-                                            Reschedule Booking
-                                        </Button>
-                                        {/* Cancel Button - opens confirmation dialog */}
-                                        <Button
-                                            variant="contained"
-                                            color="secondary"
-                                            onClick={() => openConfirmationDialog(booking.id)} // Open dialog with current booking ID
-                                        >
-                                            Cancel Booking
-                                        </Button>
+                                        <div className="d-grid gap-2">
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                size="small"
+                                                onClick={() => navigate(`/reschedule/${booking.id}`)}
+                                            >
+                                                Reschedule Booking
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                size="small"
+                                                onClick={() => openConfirmationDialog(booking.id)}
+                                            >
+                                                Cancel Booking
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -199,16 +232,15 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                     })}
                 </div>
             ) : (
-                // Display message if no bookings are found
                 <Typography variant="h4" color="red">
                     No bookings found. Please try to book the hotels....
-                    <MuiLink href="/hotels" underline="true"> {/* Link to hotels page */}
+                    <MuiLink href="/hotels" underline="true">
                         Click here
                     </MuiLink>
                 </Typography>
             )}
 
-            {/* Confirmation Dialog for Cancellation */}
+            {/* Confirmation Dialog */}
             <Dialog open={dialogOpen} onClose={closeConfirmationDialog}>
                 <DialogTitle>Confirm Cancellation</DialogTitle>
                 <DialogContent>
@@ -219,7 +251,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                         No
                     </Button>
                     <Button
-                        onClick={() => handleCancelBooking(selectedBookingId)} // Call cancellation handler with stored ID
+                        onClick={() => handleCancelBooking(selectedBookingId)}
                         color="secondary"
                     >
                         Yes

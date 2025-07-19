@@ -1,106 +1,253 @@
-import { useEffect, useState } from 'react';
+// src/components/Review.js
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { addHotelReview } from '../Slices/reviewSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { addHotelReview, fetchHotelReviews, clearMessages } from '../Slices/reviewSlice';
 import {
   Container,
   Typography,
   TextField,
   Button,
   CircularProgress,
-  Alert
+  Alert,
+  Card,
+  CardContent,
+  Box,
+  Rating,
+  Chip,
+  Grid,
+  Avatar
 } from '@mui/material';
-import axios from 'axios';
-import { getApiUrl } from '../config/apiConfig';
+import {
+  Star,
+  Person,
+  LocationOn,
+  Phone
+} from '@mui/icons-material';
 
 const Review = () => {
-  const { hotelId } = useParams(); // Get the hotelId from the URL
-  const [reviewText, setReviewText] = useState(""); // Text for the review
-  const [hotelName, setHotelName] = useState("")
-  const [fetchingHotel, setFetchingHotel] = useState(true)
-  const [loading, setLoading] = useState(false); // To handle loading state
-  const [error, setError] = useState(""); // To handle error state
-  const navigate = useNavigate(); // For navigation after submitting
-  const dispatch = useDispatch(); // For dispatching actions
+  const { hotelId } = useParams();
+  const [reviewText, setReviewText] = useState("");
+  const [rating, setRating] = useState(0);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
+  // Redux state
+  const {
+    hotel,
+    loading,
+    submitting,
+    error,
+    successMessage
+  } = useSelector((state) => state.reviews);
+
+  // Get user info from session
+  const userId = sessionStorage.getItem('id');
+  const userName = sessionStorage.getItem('name') || 'Anonymous User';
+  const userEmail = sessionStorage.getItem('email') || '';
+
+  // Fetch hotel details on component mount
   useEffect(() => {
-    const fetchHotelDetails = async () => {
-      try {
-        setFetchingHotel(true);
-        const response = await axios.get(getApiUrl(`/hotels/${hotelId}`));
-        setHotelName(response.data.hotelName || response.data.name || "Unknown Hotel")
-      } catch (err) {
-        setError("Error fetching reviews. Please try again later.");
-      } finally {
-        setFetchingHotel(false)
-      }
-    };
-
     if (hotelId) {
-      fetchHotelDetails();
+      dispatch(fetchHotelReviews(hotelId));
     }
-  }, [hotelId]);
+  }, [hotelId, dispatch]);
+
+  // Clear messages when component unmounts or hotelId changes
+  useEffect(() => {
+    return () => {
+      dispatch(clearMessages());
+    };
+  }, [dispatch, hotelId]);
+
+  // Navigate to reviews after successful submission
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        navigate(`/viewReview/${hotelId}`);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, navigate, hotelId]);
 
   // Handle review submission
   const handleSubmitReview = async () => {
     if (!reviewText.trim()) {
-      setError("Review cannot be empty.");
+      dispatch(clearMessages());
+      // We'll use a simple alert for validation since we're using Redux for async errors
+      alert("Please write a review.");
       return;
     }
 
-    setLoading(true);
-    setError("");
-
-    try {
-      // Dispatch the action to add the review
-      dispatch(addHotelReview({ hotelId, review: reviewText }));
-      navigate(`/viewReview/${hotelId}`); // After successful submission, navigate to the ViewReviews page
-    } catch (err) {
-      setError("Failed to submit the review. Please try again later.");
-    } finally {
-      setLoading(false);
+    if (rating === 0) {
+      dispatch(clearMessages());
+      alert("Please select a rating.");
+      return;
     }
+
+    // Clear any previous messages
+    dispatch(clearMessages());
+
+    // Prepare review data
+    const reviewData = {
+      userId: userId,
+      userName: userName,
+      userEmail: userEmail,
+      rating: rating,
+      comment: reviewText,
+      roomType: "General" // Could be enhanced to ask which room type they stayed in
+    };
+
+    // Dispatch the addHotelReview action
+    dispatch(addHotelReview({ hotelId, reviewData }));
   };
 
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+          <CircularProgress size={60} />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (!hotel) {
+    return (
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Alert severity="error">Hotel not found. Please try again.</Alert>
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="sm">
-      <Typography variant="h4" gutterBottom>
-        Add Review for Hotel {hotelName || `Hotel ${hotelId}`}
-      </Typography>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      {/* Hotel Info Card */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={8}>
+              <Typography variant="h4" gutterBottom color="primary">
+                {hotel.hotelName}
+              </Typography>
+              <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                <LocationOn color="action" fontSize="small" />
+                <Typography variant="body2" color="text.secondary">
+                  {hotel.city}, {hotel.state}
+                </Typography>
+                <Chip label={hotel.category} size="small" color="primary" variant="outlined" />
+              </Box>
+              {hotel.rating && (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Rating value={hotel.rating} precision={0.1} readOnly size="small" />
+                  <Typography variant="body2">
+                    {hotel.rating} ({hotel.totalReviews || 0} reviews)
+                  </Typography>
+                </Box>
+              )}
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box display="flex" alignItems="center" gap={1}>
+                <Phone fontSize="small" color="action" />
+                <Typography variant="body2">{hotel.phoneNo}</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
 
-      {/* Display error message if any */}
-      {error && <Alert severity="error">{error}</Alert>}
+      {/* Review Form */}
+      <Card>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Share Your Experience
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Help other travelers by writing an honest review about your stay.
+          </Typography>
 
-      {fetchingHotel ? (
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-          <CircularProgress />
-        </div>
-      ) : (
-        <>
-          <TextField
-            label="Your Review"
-            multiline
-            rows={4}
-            fullWidth
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-            variant="outlined"
-            sx={{ mb: 2 }}
-          />
+          {/* User Info */}
+          <Box display="flex" alignItems="center" gap={2} sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+            <Avatar sx={{ bgcolor: 'primary.main' }}>
+              <Person />
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle1">{userName}</Typography>
+              <Typography variant="body2" color="text.secondary">{userEmail}</Typography>
+            </Box>
+          </Box>
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmitReview}
-            disabled={loading}
-            sx={{ width: '100%' }}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Submit Review'}
-          </Button>
-        </>
-      )}
+          {/* Messages */}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+
+          {/* Rating */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Overall Rating *
+            </Typography>
+            <Box display="flex" alignItems="center" gap={2}>
+              <Rating
+                value={rating}
+                onChange={(event, newValue) => setRating(newValue)}
+                size="large"
+                sx={{ fontSize: '2rem' }}
+              />
+              <Typography variant="body1" color="text.secondary">
+                {rating > 0 ? (
+                  rating === 5 ? 'Excellent!' :
+                    rating === 4 ? 'Very Good' :
+                      rating === 3 ? 'Good' :
+                        rating === 2 ? 'Fair' :
+                          'Poor'
+                ) : 'Select a rating'}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Review Text */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Write Your Review *
+            </Typography>
+            <TextField
+              label="Tell us about your experience..."
+              multiline
+              rows={6}
+              fullWidth
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              variant="outlined"
+              placeholder="What did you like most? What could be improved? Share details about the room, service, amenities, location, etc."
+              helperText={`${reviewText.length}/500 characters`}
+              inputProps={{ maxLength: 500 }}
+            />
+          </Box>
+
+          {/* Submit Button */}
+          <Box display="flex" gap={2} justifyContent="flex-end">
+            <Button
+              variant="outlined"
+              onClick={() => navigate(`/viewReview/${hotelId}`)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmitReview}
+              disabled={submitting || !reviewText.trim() || rating === 0}
+              startIcon={submitting ? <CircularProgress size={20} /> : <Star />}
+              size="large"
+            >
+              {submitting ? 'Submitting...' : 'Submit Review'}
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
     </Container>
   );
-};
+}
 
 export default Review;

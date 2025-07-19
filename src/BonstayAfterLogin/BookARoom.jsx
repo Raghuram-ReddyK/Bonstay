@@ -1,15 +1,34 @@
 import axios from 'axios';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { TextField, Button, Select, MenuItem, FormControl, InputLabel, Typography, Box, Alert } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Typography,
+  Box,
+  Alert,
+  Card,
+  CardContent,
+  Grid,
+  Chip,
+  Divider,
+  CircularProgress
+} from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { setStartDate, setEndDate, setNoOfPersons, setNoOfRooms, setTypeOfRoom, setErrorMessage, setSuccessMessage, setError } from '../Slices/bookingSlice';
 import { getApiUrl } from '../config/apiConfig';
 
 const BookARoom = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Use useNavigate hook for programmatic navigation
-  const { id, hotelName } = useParams(); // hotelName and hotelId come from the URL
+  const navigate = useNavigate();
+  const { id, hotelName } = useParams();
+  const [hotel, setHotel] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedRoomType, setSelectedRoomType] = useState(null);
 
   const {
     startDate,
@@ -37,7 +56,7 @@ const BookARoom = () => {
 
     if (!endDate) {
       isValid = false;
-      dispatch(setErrorMessage('End date is required.'));
+      dispatch(setErrorMessage('Check-Out date is required.'));
     } else if (endDate < startDate) {
       isValid = false;
       dispatch(setErrorMessage('Check-Out date must be after the Check-In date.'));
@@ -46,14 +65,14 @@ const BookARoom = () => {
       dispatch(setErrorMessage('Check-Out date must be in the future.'));
     }
 
-    if (!noOfPersons || noOfPersons <= 0 || noOfPersons > 5) {
+    if (!noOfPersons || noOfPersons <= 0 || noOfPersons > 6) {
       isValid = false;
-      dispatch(setErrorMessage('Number of persons must be between 1 and 5.'));
+      dispatch(setErrorMessage('Number of persons must be between 1 and 6.'));
     }
 
-    if (!noOfRooms || noOfRooms <= 0 || noOfRooms > 3) {
+    if (!noOfRooms || noOfRooms <= 0 || noOfRooms > 5) {
       isValid = false;
-      dispatch(setErrorMessage('Number of rooms must be between 1 and 3.'));
+      dispatch(setErrorMessage('Number of rooms must be between 1 and 5.'));
     }
 
     if (!typeOfRoom) {
@@ -68,22 +87,59 @@ const BookARoom = () => {
     event.preventDefault();
 
     if (validateForm()) {
-      const userId = sessionStorage.getItem('id')
+      const userId = sessionStorage.getItem('id');
+      const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      const roomCost = selectedRoomType ? selectedRoomType.pricePerNight * nights * noOfRooms : 0;
+      const taxes = Math.round(roomCost * 0.18); // 18% tax
+      const totalAmount = roomCost + taxes;
+
+      // Create enhanced booking object
+      const bookingData = {
+        // Legacy fields for compatibility
+        startDate,
+        endDate,
+        noOfPersons,
+        noOfRooms,
+        typeOfRoom,
+        hotelId: id,
+        userId: userId,
+
+        // Enhanced fields
+        bookingReference: `BNS${Date.now()}`,
+        userName: sessionStorage.getItem('name') || 'Guest',
+        userEmail: sessionStorage.getItem('email') || '',
+        userPhone: sessionStorage.getItem('phoneNo') || '',
+        hotelName: hotel?.hotelName || hotelName,
+        roomTypeId: selectedRoomType?.id,
+        roomTypeName: selectedRoomType?.name || typeOfRoom,
+        checkIn: startDate.toISOString().split('T')[0],
+        checkOut: endDate.toISOString().split('T')[0],
+        nights: nights,
+        guests: noOfPersons,
+        adults: noOfPersons,
+        children: 0,
+        rooms: noOfRooms,
+        pricePerNight: selectedRoomType?.pricePerNight || 0,
+        totalRoomCost: roomCost,
+        taxes: taxes,
+        totalAmount: totalAmount,
+        paymentStatus: 'pending',
+        bookingStatus: 'confirmed',
+        bookingDate: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        specialRequests: '',
+        cancellationPolicy: hotel?.policies?.cancellation || 'Standard cancellation policy',
+        createdBy: 'user',
+        paymentMethod: '',
+        confirmationSent: false,
+        reminderSent: false
+      };
+
       axios
-        .post(getApiUrl('/bookings'), {
-          startDate,
-          endDate,
-          noOfPersons,
-          noOfRooms,
-          typeOfRoom,
-          hotelId: id, // Include hotelId in the booking data
-          userId: userId,
-        })
+        .post(getApiUrl('/bookings'), bookingData)
         .then((response) => {
           dispatch(setSuccessMessage('Booked Successfully: ' + response.data.id));
-
-          // Redirect to the payment page with the booking ID as a query parameter
-          navigate(`/payment/${response.data.id}`); // Navigate to payment page
+          navigate(`/payment/${response.data.id}`);
         })
         .catch(() => {
           dispatch(setError('Error while booking'));
@@ -91,80 +147,246 @@ const BookARoom = () => {
     }
   };
 
+  const handleRoomTypeChange = (e) => {
+    const roomTypeId = e.target.value;
+    dispatch(setTypeOfRoom(roomTypeId));
+    const selected = hotel?.roomTypes?.find(room => room.id === roomTypeId);
+    setSelectedRoomType(selected);
+  };
+
   useEffect(() => {
-    // Fetch the hotel data (optional) if you need more details about the hotel during the booking process
+    // Fetch the hotel data to get room types
+    setLoading(true);
     axios
       .get(getApiUrl(`/hotels/${id}`))
       .then((result) => {
-        // Do something with the fetched hotel data if needed
+        setHotel(result.data);
+        setLoading(false);
       })
       .catch(() => {
-        // Handle errors appropriately
+        dispatch(setError('Error loading hotel information'));
+        setLoading(false);
       });
   }, [id]);
 
-  return (
-    <Box className="bookpage" sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Book Hotel: {hotelName} {/* Display the hotelName passed from the URL */}
-      </Typography>
-      <form onSubmit={handleSubmit}>
-        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-        {successMessage && <Alert severity="success">{successMessage}</Alert>}
-        {error && <Alert severity="error">{error}</Alert>}
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-        <TextField
-          label="Check-In Date"
-          type="date"
-          value={startDate.toISOString().substring(0, 10)}
-          onChange={(e) => dispatch(setStartDate(new Date(e.target.value)))}
-          InputLabelProps={{ shrink: true }}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Check-Out Date"
-          type="date"
-          value={endDate.toISOString().substring(0, 10)}
-          onChange={(e) => dispatch(setEndDate(new Date(e.target.value)))}
-          InputLabelProps={{ shrink: true }}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Number of Persons"
-          type="number"
-          value={noOfPersons}
-          onChange={(e) => dispatch(setNoOfPersons(Number(e.target.value)))}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Number of Rooms"
-          type="number"
-          value={noOfRooms}
-          onChange={(e) => dispatch(setNoOfRooms(Number(e.target.value)))}
-          fullWidth
-          margin="normal"
-        />
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Type of Room</InputLabel>
-          <Select
-            value={typeOfRoom}
-            onChange={(e) => dispatch(setTypeOfRoom(e.target.value))}
-          >
-            <MenuItem value="">
-              <em>Select</em>
-            </MenuItem>
-            <MenuItem value="single with A/c">Single with A/c</MenuItem>
-            <MenuItem value="double with A/c">Double with A/c</MenuItem>
-            <MenuItem value="suite with A/c">Suite with A/c</MenuItem>
-          </Select>
-        </FormControl>
-        <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-          Book Now
-        </Button>
-      </form>
+  if (!hotel) {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Alert severity="error">Hotel not found</Alert>
+      </Box>
+    );
+  }
+
+  const nights = startDate && endDate ? Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) : 0;
+  const roomCost = selectedRoomType && nights ? selectedRoomType.pricePerNight * nights * noOfRooms : 0;
+  const taxes = Math.round(roomCost * 0.18);
+  const totalAmount = roomCost + taxes;
+
+  return (
+    <Box className="bookpage" sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom color="primary">
+        Book Your Stay at {hotel.hotelName}
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        {hotel.description}
+      </Typography>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={8}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Booking Details
+              </Typography>
+
+              <form onSubmit={handleSubmit}>
+                {errorMessage && <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert>}
+                {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Check-In Date"
+                      type="date"
+                      value={startDate.toISOString().substring(0, 10)}
+                      onChange={(e) => dispatch(setStartDate(new Date(e.target.value)))}
+                      InputLabelProps={{ shrink: true }}
+                      fullWidth
+                      margin="normal"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Check-Out Date"
+                      type="date"
+                      value={endDate.toISOString().substring(0, 10)}
+                      onChange={(e) => dispatch(setEndDate(new Date(e.target.value)))}
+                      InputLabelProps={{ shrink: true }}
+                      fullWidth
+                      margin="normal"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Number of Guests"
+                      type="number"
+                      value={noOfPersons}
+                      onChange={(e) => dispatch(setNoOfPersons(Number(e.target.value)))}
+                      fullWidth
+                      margin="normal"
+                      inputProps={{ min: 1, max: 6 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Number of Rooms"
+                      type="number"
+                      value={noOfRooms}
+                      onChange={(e) => dispatch(setNoOfRooms(Number(e.target.value)))}
+                      fullWidth
+                      margin="normal"
+                      inputProps={{ min: 1, max: 5 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControl fullWidth margin="normal">
+                      <InputLabel>Select Room Type</InputLabel>
+                      <Select
+                        value={typeOfRoom}
+                        onChange={handleRoomTypeChange}
+                      >
+                        <MenuItem value="">
+                          <em>Select Room Type</em>
+                        </MenuItem>
+                        {hotel.roomTypes?.map((room) => (
+                          <MenuItem key={room.id} value={room.id}>
+                            {room.name} - ₹{room.pricePerNight}/night
+                            {room.discount > 0 && (
+                              <Chip
+                                label={`${room.discount}% OFF`}
+                                size="small"
+                                color="success"
+                                sx={{ ml: 1 }}
+                              />
+                            )}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  fullWidth
+                  sx={{ mt: 3 }}
+                  disabled={!selectedRoomType || !startDate || !endDate}
+                >
+                  Book Now
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          {/* Room Type Details */}
+          {selectedRoomType && (
+            <Card sx={{ mb: 2 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  {selectedRoomType.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {selectedRoomType.description}
+                </Typography>
+
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2">
+                    <strong>Capacity:</strong> {selectedRoomType.capacity} guests
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Size:</strong> {selectedRoomType.size}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Bed:</strong> {selectedRoomType.bedType}
+                  </Typography>
+                </Box>
+
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Amenities:</strong>
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={0.5}>
+                  {selectedRoomType.amenities?.map((amenity, index) => (
+                    <Chip key={index} label={amenity} size="small" variant="outlined" />
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pricing Summary */}
+          {selectedRoomType && startDate && endDate && (
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Booking Summary
+                </Typography>
+
+                <Box display="flex" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography>Room Rate:</Typography>
+                  <Typography>₹{selectedRoomType.pricePerNight}/night</Typography>
+                </Box>
+
+                <Box display="flex" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography>Nights:</Typography>
+                  <Typography>{nights}</Typography>
+                </Box>
+
+                <Box display="flex" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography>Rooms:</Typography>
+                  <Typography>{noOfRooms}</Typography>
+                </Box>
+
+                <Divider sx={{ my: 1 }} />
+
+                <Box display="flex" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography>Room Cost:</Typography>
+                  <Typography>₹{roomCost.toLocaleString()}</Typography>
+                </Box>
+
+                <Box display="flex" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography>Taxes (18%):</Typography>
+                  <Typography>₹{taxes.toLocaleString()}</Typography>
+                </Box>
+
+                <Divider sx={{ my: 1 }} />
+
+                <Box display="flex" justifyContent="space-between">
+                  <Typography variant="h6" color="primary">
+                    Total Amount:
+                  </Typography>
+                  <Typography variant="h6" color="primary">
+                    ₹{totalAmount.toLocaleString()}
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          )}
+        </Grid>
+      </Grid>
     </Box>
   );
 };

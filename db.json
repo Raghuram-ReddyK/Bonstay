@@ -135,128 +135,153 @@
   ],
   "payments": [
     {
-      "id": "f79f",
+      "id": "PAY001",
+      "bookingId": "BK001",
+      "bookingReference": "BNS2025071501",
+      "userId": "1e6c",
+      "hotelId": "2",
+      "amount": 25488,
+      "currency": "INR",
+      "paymentMethod": "credit_card",
+      "cardType": "Visa",
+      "cardLastFour": "4532",
+      "transactionId": "TXN_CC_001_789456",
+      "paymentGateway": "Razorpay",
+      "status": "completed",
+      "paymentDate": "2025-07-15T10:35:00.000Z",
+      "processedAt": "2025-07-15T10:35:23.000Z",
+      "breakdown": {
+        "roomCharges": 21600,
+        "taxes": 3888,
+        "serviceFee": 0,
+        "discount": 0
+      },
+      "refundable": true,
+      "refundAmount": 0,
+      "receiptUrl": "https://receipts.bonstay.com/PAY001.pdf"
+    },
+    {
+      "id": "PAY002",
+      "bookingId": "BK003",
+      "bookingReference": "BNS2025071503",
+      "userId": "a734",
+      "hotelId": "4",
+      "amount": 38704,
+      "currency": "INR",
+      "paymentMethod": "digital_wallet",
+      "walletType": "Google Pay",
+      "transactionId": "TXN_GP_002_456789",
+      "paymentGateway": "PhonePe",
+      "status": "completed",
+      "paymentDate": "2025-07-18T09:18:00.000Z",
+      "processedAt": "2025-07-18T09:18:12.000Z",
+      "breakdown": {
+        "roomCharges": 32800,
+        "taxes": 5904,
+        "serviceFee": 0,
+        "discount": 0
+      },
+      "refundable": true,
+      "refundAmount": 0,
+      "receiptUrl": "https://receipts.bonstay.com/PAY002.pdf"
+    },
+    {
+      "id": "PAY003",
+      "bookingId": "BK004",
+      "bookingReference": "BNS2025071504",
+      "userId": "d64b",
+      "hotelId": "5",
+      "amount": 24072,
+      "currency": "INR",
+      "paymentMethod": "credit_card",
+      "cardType": "Mastercard",
+      "cardLastFour": "8976",
+      "transactionId": "TXN_CC_003_321654",
+      "paymentGateway": "Stripe",
+      "status": "completed",
+      "paymentDate": "2025-07-17T16:50:00.000Z",
+      "processedAt": "2025-07-17T16:50:15.000Z",
+      "breakdown": {
+        "roomCharges": 20400,
+        "taxes": 3672,
+        "serviceFee": 0,
+        "discount": 0
+      },
+      "refundable": true,
+      "refundAmount": 0,
+      "receiptUrl": "https://receipts.bonstay.com/PAY003.pdf"
+    },
+    {
+      "id": "PAY004",
+      "bookingId": "BK005",
+      "bookingReference": "BNS2025071505",
+      "userId": "1e6c",
+      "hotelId": "2",
+      "amount": 30000,
+      "currency": "INR",
+      "paymentMethod": "credit_card",
+      "cardType": "Visa",
+      "cardLastFour": "4532",
+      "transactionId": "TXN_CC_004_987321",
+      "paymentGateway": "Razorpay",
+      "status": "completed",
+      "paymentDate": "2025-07-19T11:35:00.000Z",
+      "processedAt": "2025-07-19T11:35:18.000Z",
+      "paymentType": "advance",
+      "breakdown": {
+        "totalAmount": 88500,
+        "advancePayment": 30000,
+        "pendingAmount": 58500,
+        "roomCharges": 75000,
+        "taxes": 13500,
+        "serviceFee": 0,
+        "discount": 0
+      },
+      "refundable": true,
+      "refundAmount": 0,
+      "receiptUrl": "https://receipts.bonstay.com/PAY004.pdf"
+    },
+    {
+      "id": "PAY005",
+      "bookingId": "BK008",
+      "bookingReference": "BNS2025071508",
+      "userId": "d64b",
+      "hotelId": "4",
+      "amount": 91450,
+      "currency": "INR",
+      "paymentMethod": "credit_card",
+      "cardType": "American Express",
+      "cardLastFour": "1007",
+      "transactionId": "TXN_CC_005_654987",
+      "paymentGateway": "Razorpay",
+      "status": "completed",
+      "paymentDate": "2025-07-19T10:50:00.000Z",
+      "processedAt": "2025-07-19T10:50:25.000Z",
+      "breakdown": {
+        "roomCharges": 77500,
+        "taxes": 13950,
+        "serviceFee": 0,
+        "discount": 0
+      },
+      "refundable": true,
+      "refundAmount": 0,
+      "receiptUrl": "https://receipts.bonstay.com/PAY005.pdf"
+    },
+    {
+      "id": "aac1",
       "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
-      "id": "42ce",
+      "id": "26ca",
       "bookingId": null,
       "amount": 1,
       "method": "Google Pay"
     },
     {
-      "id": "4b01",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "69c5",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "7a4a",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "6ef2",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "6fd8",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "dd5d",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "603c",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "342a",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "2924",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "0602",
-      "bookingId": "632b",
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "4bb4",
-      "bookingId": "c8be",
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "5a43",
-      "bookingId": "484a",
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "d2a0",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "87a7",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "4d91",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "e4a1",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "53c4",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "464e",
-      "bookingId": null,
-      "amount": 1,
-      "method": "Google Pay"
-    },
-    {
-      "id": "6693",
-      "bookingId": null,
+      "id": "c0c1",
+      "bookingId": "d10f",
       "amount": 1,
       "method": "Google Pay"
     }
@@ -264,138 +289,1043 @@
   "hotels": [
     {
       "id": "2",
-      "hotelName": "Hill Palace",
-      "city": "Kerala",
-      "description": "A cool place to relax at Lake side",
-      "amenities": "Homely Food, Sea Food, Children's Park, Boating",
-      "phoneNo": 9191919191,
-      "address": "90/1A, Kochi, Kerala",
-      "imageUrl": "3.jpg",
+      "hotelName": "Hill Palace Resort & Spa",
+      "city": "Kochi",
+      "state": "Kerala",
+      "country": "India",
+      "category": "5-Star Resort",
+      "rating": 4.7,
+      "totalReviews": 3,
+      "description": "A luxurious lakeside resort offering breathtaking views and world-class hospitality. Experience serenity amidst nature's beauty with premium amenities and authentic Kerala cuisine.",
+      "amenities": [
+        "24/7 Room Service",
+        "Spa & Wellness Center",
+        "Infinity Pool",
+        "Multi-cuisine Restaurant",
+        "Bar & Lounge",
+        "Fitness Center",
+        "Children's Play Area",
+        "Lake Boating",
+        "Traditional Ayurvedic Treatments",
+        "Free WiFi",
+        "Valet Parking",
+        "Conference Halls",
+        "Wedding Venues",
+        "Airport Shuttle"
+      ],
+      "phoneNo": "91-484-2345678",
+      "email": "reservations@hillpalaceresort.com",
+      "website": "www.hillpalaceresort.com",
+      "address": "90/1A, Marine Drive, Kochi, Kerala 682031",
+      "coordinates": {
+        "latitude": 9.9312,
+        "longitude": 76.2673
+      },
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "imageUrl": "hill-palace-main.jpg",
+      "gallery": [
+        "hill-palace-lobby.jpg",
+        "hill-palace-pool.jpg",
+        "hill-palace-restaurant.jpg",
+        "hill-palace-spa.jpg",
+        "hill-palace-rooms.jpg"
+      ],
+      "roomTypes": [
+        {
+          "id": "hp_standard",
+          "name": "Standard Lake View",
+          "description": "Comfortable rooms with stunning lake views and modern amenities",
+          "capacity": 2,
+          "size": "280 sq ft",
+          "bedType": "King Size Bed",
+          "pricePerNight": 4500,
+          "originalPrice": 6000,
+          "discount": 25,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Mini Bar",
+            "Lake View",
+            "TV",
+            "Tea/Coffee Maker"
+          ],
+          "images": [
+            "standard-room-1.jpg",
+            "standard-room-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 25,
+          "availableRooms": 18
+        },
+        {
+          "id": "hp_deluxe",
+          "name": "Deluxe Garden Suite",
+          "description": "Spacious suites with private balcony overlooking lush gardens",
+          "capacity": 3,
+          "size": "420 sq ft",
+          "bedType": "King + Sofa Bed",
+          "pricePerNight": 7200,
+          "originalPrice": 9000,
+          "discount": 20,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Mini Bar",
+            "Garden View",
+            "Balcony",
+            "Jacuzzi",
+            "TV",
+            "Tea/Coffee Maker",
+            "Welcome Drinks"
+          ],
+          "images": [
+            "deluxe-suite-1.jpg",
+            "deluxe-suite-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 15,
+          "availableRooms": 12
+        },
+        {
+          "id": "hp_executive",
+          "name": "Executive Pool Villa",
+          "description": "Premium villas with private pool access and butler service",
+          "capacity": 4,
+          "size": "650 sq ft",
+          "bedType": "King + Twin Beds",
+          "pricePerNight": 12000,
+          "originalPrice": 15000,
+          "discount": 20,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Mini Bar",
+            "Pool Access",
+            "Butler Service",
+            "Jacuzzi",
+            "TV",
+            "Tea/Coffee Maker",
+            "Welcome Amenities",
+            "Complimentary Breakfast"
+          ],
+          "images": [
+            "executive-villa-1.jpg",
+            "executive-villa-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 8,
+          "availableRooms": 5
+        },
+        {
+          "id": "hp_presidential",
+          "name": "Presidential Suite",
+          "description": "Ultra-luxury suite with panoramic lake views and exclusive services",
+          "capacity": 6,
+          "size": "1200 sq ft",
+          "bedType": "Master King + 2 Queen Beds",
+          "pricePerNight": 25000,
+          "originalPrice": 30000,
+          "discount": 17,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Premium Mini Bar",
+            "Panoramic Lake View",
+            "Private Balcony",
+            "Personal Butler",
+            "Jacuzzi",
+            "Smart TV",
+            "Espresso Machine",
+            "Welcome Champagne",
+            "Complimentary Breakfast",
+            "Airport Transfer"
+          ],
+          "images": [
+            "presidential-suite-1.jpg",
+            "presidential-suite-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 3,
+          "availableRooms": 2
+        }
+      ],
+      "policies": {
+        "cancellation": "Free cancellation up to 24 hours before check-in",
+        "childPolicy": "Children under 12 stay free with existing bedding",
+        "petPolicy": "Pets allowed with prior approval (additional charges apply)",
+        "smokingPolicy": "Non-smoking property"
+      },
+      "nearbyAttractions": [
+        {
+          "name": "Chinese Fishing Nets",
+          "distance": "2.5 km"
+        },
+        {
+          "name": "Fort Kochi Beach",
+          "distance": "3.1 km"
+        },
+        {
+          "name": "Mattancherry Palace",
+          "distance": "4.2 km"
+        },
+        {
+          "name": "Kochi Airport",
+          "distance": "35 km"
+        }
+      ],
       "reviews": [
-        "Must visit place. The cuisine available here is so amazing.",
-        "My favorite place to relax on my vacations"
+        {
+          "id": "r1",
+          "userId": "1e6c",
+          "userName": "Sruthi Jodu",
+          "rating": 5,
+          "comment": "Absolutely stunning resort! The lake view from our room was breathtaking. The staff was incredibly helpful and the food was exceptional. Will definitely return!",
+          "date": "2025-07-15",
+          "helpful": 23,
+          "roomType": "Deluxe Garden Suite"
+        },
+        {
+          "id": "r2",
+          "userId": "05fb",
+          "userName": "Raghurami Reddy",
+          "rating": 4,
+          "comment": "Great location and beautiful property. The spa treatments were amazing. Only minor issue was the check-in wait time, but overall fantastic experience.",
+          "date": "2025-07-10",
+          "helpful": 18,
+          "roomType": "Standard Lake View"
+        },
+        {
+          "id": "r1752929127999",
+          "userId": "e702",
+          "userName": "Anonymous User",
+          "userEmail": "",
+          "rating": 5,
+          "comment": "Nice restaurant",
+          "date": "2025-07-19",
+          "helpful": 1,
+          "roomType": "General",
+          "verified": true,
+          "createdAt": "2025-07-19T12:45:27.999Z"
+        }
       ]
     },
     {
       "id": "3",
-      "hotelName": "Monsoon Stay",
+      "hotelName": "Monsoon Stay Business Hotel",
       "city": "Chennai",
-      "description": "A luxurious but affordable stay as in your home",
-      "amenities": "24 hr Homely Food, Security, Children's Park",
-      "phoneNo": 9292929292,
-      "address": "100/1A, Chennai, Tamil Nadu",
-      "imageUrl": "4.jpg",
-      "reviews": []
+      "state": "Tamil Nadu",
+      "country": "India",
+      "category": "4-Star Business Hotel",
+      "rating": 4.3,
+      "totalReviews": 892,
+      "description": "A modern business hotel in the heart of Chennai, offering contemporary comfort and convenience for both business and leisure travelers. Perfect blend of luxury and affordability.",
+      "amenities": [
+        "24/7 Room Service",
+        "Business Center",
+        "Rooftop Pool",
+        "Multi-cuisine Restaurant",
+        "Coffee Shop",
+        "Fitness Center",
+        "Kids Play Zone",
+        "Laundry Service",
+        "Free WiFi",
+        "Parking",
+        "Meeting Rooms",
+        "Concierge Service",
+        "Airport Shuttle"
+      ],
+      "phoneNo": "91-44-4567890",
+      "email": "bookings@monsoonstay.com",
+      "website": "www.monsoonstay.com",
+      "address": "100/1A, T. Nagar, Chennai, Tamil Nadu 600017",
+      "coordinates": {
+        "latitude": 13.0827,
+        "longitude": 80.2707
+      },
+      "checkInTime": "14:00",
+      "checkOutTime": "12:00",
+      "imageUrl": "monsoon-stay-main.jpg",
+      "gallery": [
+        "monsoon-lobby.jpg",
+        "monsoon-pool.jpg",
+        "monsoon-restaurant.jpg",
+        "monsoon-business.jpg",
+        "monsoon-rooms.jpg"
+      ],
+      "roomTypes": [
+        {
+          "id": "ms_standard",
+          "name": "Standard City View",
+          "description": "Modern rooms with city views and essential business amenities",
+          "capacity": 2,
+          "size": "250 sq ft",
+          "bedType": "Queen Size Bed",
+          "pricePerNight": 3200,
+          "originalPrice": 4000,
+          "discount": 20,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Work Desk",
+            "City View",
+            "TV",
+            "Tea/Coffee Maker",
+            "Safe"
+          ],
+          "images": [
+            "ms-standard-1.jpg",
+            "ms-standard-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 35,
+          "availableRooms": 28
+        },
+        {
+          "id": "ms_deluxe",
+          "name": "Deluxe Executive",
+          "description": "Upgraded rooms with enhanced amenities and club access",
+          "capacity": 3,
+          "size": "350 sq ft",
+          "bedType": "King + Sofa Bed",
+          "pricePerNight": 5400,
+          "originalPrice": 6500,
+          "discount": 17,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Work Desk",
+            "Club Access",
+            "Mini Bar",
+            "TV",
+            "Tea/Coffee Maker",
+            "Safe",
+            "Bathrobes"
+          ],
+          "images": [
+            "ms-deluxe-1.jpg",
+            "ms-deluxe-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 20,
+          "availableRooms": 15
+        },
+        {
+          "id": "ms_executive",
+          "name": "Executive Suite",
+          "description": "Spacious suites with separate living area and premium services",
+          "capacity": 4,
+          "size": "500 sq ft",
+          "bedType": "King + Twin Beds",
+          "pricePerNight": 8500,
+          "originalPrice": 10000,
+          "discount": 15,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Separate Living Area",
+            "Club Lounge Access",
+            "Mini Bar",
+            "TV",
+            "Espresso Machine",
+            "Safe",
+            "Bathrobes",
+            "Complimentary Breakfast"
+          ],
+          "images": [
+            "ms-executive-1.jpg",
+            "ms-executive-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 10,
+          "availableRooms": 7
+        }
+      ],
+      "policies": {
+        "cancellation": "Free cancellation up to 48 hours before check-in",
+        "childPolicy": "Children under 10 stay free with existing bedding",
+        "petPolicy": "Pets not allowed",
+        "smokingPolicy": "Designated smoking areas available"
+      },
+      "nearbyAttractions": [
+        {
+          "name": "T. Nagar Shopping District",
+          "distance": "0.5 km"
+        },
+        {
+          "name": "Marina Beach",
+          "distance": "8.2 km"
+        },
+        {
+          "name": "Kapaleeshwarar Temple",
+          "distance": "3.5 km"
+        },
+        {
+          "name": "Chennai Airport",
+          "distance": "18 km"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "r3",
+          "userId": "a734",
+          "userName": "Syamakuri Rajasekhar",
+          "rating": 4,
+          "comment": "Perfect for business trips. Great location in T.Nagar with easy access to shopping and business areas. Rooms are clean and comfortable.",
+          "date": "2025-07-12",
+          "helpful": 15,
+          "roomType": "Executive Suite"
+        },
+        "Good\n"
+      ]
     },
     {
       "id": "4",
-      "hotelName": "Galaxy Paradise",
+      "hotelName": "Galaxy Paradise Mumbai",
       "city": "Mumbai",
-      "description": "An affordable family stay spot at the 'City' heart",
-      "amenities": "24 hr Homely Food, Swimming Pool, Security",
-      "phoneNo": 9393939393,
-      "address": "190/1B, Mumbai, Maharastra",
-      "imageUrl": "5.jpg",
+      "state": "Maharashtra",
+      "country": "India",
+      "category": "4-Star Family Hotel",
+      "rating": 4.5,
+      "totalReviews": 1156,
+      "description": "A family-friendly hotel in the heart of Mumbai offering comfort, convenience and warm hospitality. Perfect for families visiting the financial capital of India.",
+      "amenities": [
+        "24/7 Room Service",
+        "Family Restaurant",
+        "Swimming Pool",
+        "Kids Club",
+        "Game Room",
+        "Fitness Center",
+        "Spa Services",
+        "Laundry Service",
+        "Free WiFi",
+        "Valet Parking",
+        "Tour Desk",
+        "Baby Sitting Service",
+        "Medical Assistance"
+      ],
+      "phoneNo": "91-22-6789012",
+      "email": "stay@galaxyparadise.com",
+      "website": "www.galaxyparadisemumbai.com",
+      "address": "190/1B, Bandra West, Mumbai, Maharashtra 400050",
+      "coordinates": {
+        "latitude": 19.076,
+        "longitude": 72.8777
+      },
+      "checkInTime": "14:00",
+      "checkOutTime": "11:00",
+      "imageUrl": "galaxy-paradise-main.jpg",
+      "gallery": [
+        "galaxy-lobby.jpg",
+        "galaxy-pool.jpg",
+        "galaxy-restaurant.jpg",
+        "galaxy-kids.jpg",
+        "galaxy-rooms.jpg"
+      ],
+      "roomTypes": [
+        {
+          "id": "gp_standard",
+          "name": "Standard Family Room",
+          "description": "Comfortable family rooms with modern amenities and city views",
+          "capacity": 3,
+          "size": "320 sq ft",
+          "bedType": "King + Single Bed",
+          "pricePerNight": 5500,
+          "originalPrice": 7000,
+          "discount": 21,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Family Setup",
+            "City View",
+            "TV",
+            "Mini Fridge",
+            "Tea/Coffee Maker"
+          ],
+          "images": [
+            "gp-standard-1.jpg",
+            "gp-standard-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 30,
+          "availableRooms": 22
+        },
+        {
+          "id": "gp_deluxe",
+          "name": "Deluxe Family Suite",
+          "description": "Spacious family suites with separate kids area and entertainment",
+          "capacity": 4,
+          "size": "450 sq ft",
+          "bedType": "King + Bunk Beds",
+          "pricePerNight": 8200,
+          "originalPrice": 10000,
+          "discount": 18,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Kids Area",
+            "Gaming Console",
+            "Mini Bar",
+            "TV",
+            "Tea/Coffee Maker",
+            "Welcome Toys"
+          ],
+          "images": [
+            "gp-deluxe-1.jpg",
+            "gp-deluxe-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 18,
+          "availableRooms": 14
+        },
+        {
+          "id": "gp_presidential",
+          "name": "Presidential Family Villa",
+          "description": "Luxury villa with multiple bedrooms and exclusive family services",
+          "capacity": 6,
+          "size": "800 sq ft",
+          "bedType": "Master King + 2 Queen Beds",
+          "pricePerNight": 15500,
+          "originalPrice": 18000,
+          "discount": 14,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Multiple Bedrooms",
+            "Kids Entertainment",
+            "Mini Bar",
+            "Smart TV",
+            "Kitchenette",
+            "Babysitting Service",
+            "Welcome Hamper"
+          ],
+          "images": [
+            "gp-presidential-1.jpg",
+            "gp-presidential-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 5,
+          "availableRooms": 3
+        }
+      ],
+      "policies": {
+        "cancellation": "Free cancellation up to 24 hours before check-in",
+        "childPolicy": "Children under 8 stay free, ages 8-12 get 50% discount",
+        "petPolicy": "Pets allowed in designated rooms (additional charges apply)",
+        "smokingPolicy": "Non-smoking property"
+      },
+      "nearbyAttractions": [
+        {
+          "name": "Bandra-Worli Sea Link",
+          "distance": "2.1 km"
+        },
+        {
+          "name": "Juhu Beach",
+          "distance": "4.5 km"
+        },
+        {
+          "name": "Gateway of India",
+          "distance": "18 km"
+        },
+        {
+          "name": "Mumbai Airport",
+          "distance": "8.5 km"
+        }
+      ],
       "reviews": [
-        "Must visit this hotel when your family visits mumbai. This hotel is very comfortable for family"
+        {
+          "id": "r4",
+          "userId": "d64b",
+          "userName": "Achaa",
+          "rating": 5,
+          "comment": "Amazing hotel for families! Kids loved the pool and play area. Staff was very helpful with our toddler. The family suite was spacious and well-equipped.",
+          "date": "2025-07-08",
+          "helpful": 31,
+          "roomType": "Deluxe Family Suite"
+        }
       ]
     },
     {
       "id": "5",
-      "hotelName": "Sunset Tower",
-      "city": "Vizag",
-      "description": "A luxurious but affordable stay as in your home & cool place to relax at Lake Side",
-      "amenities": "24 hr Homely Food, Security, Children's Park, swimming Pool",
-      "phoneNo": 9292929294,
-      "address": "109/1AF, Vizag, Andhra Pradesh",
-      "imageUrl": "6.jpg",
-      "reviews": []
+      "hotelName": "Sunset Tower Beach Resort",
+      "city": "Visakhapatnam",
+      "state": "Andhra Pradesh",
+      "country": "India",
+      "category": "5-Star Beach Resort",
+      "rating": 5,
+      "totalReviews": 1,
+      "description": "A stunning beachfront resort offering panoramic ocean views and luxury accommodations. Experience the perfect blend of relaxation and adventure at Vizag's premier destination.",
+      "amenities": [
+        "24/7 Room Service",
+        "Beachfront Location",
+        "Infinity Pool",
+        "Water Sports Center",
+        "Multiple Restaurants",
+        "Beach Bar",
+        "Spa & Wellness",
+        "Fitness Center",
+        "Tennis Court",
+        "Kids Club",
+        "Free WiFi",
+        "Valet Parking",
+        "Sunset Viewing Deck",
+        "Conference Facilities"
+      ],
+      "phoneNo": "91-891-2345670",
+      "email": "reservations@sunsettowerresort.com",
+      "website": "www.sunsettowerbeachresort.com",
+      "address": "109/1AF, RK Beach Road, Visakhapatnam, Andhra Pradesh 530003",
+      "coordinates": {
+        "latitude": 17.6868,
+        "longitude": 83.2185
+      },
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "imageUrl": "sunset-tower-main.jpg",
+      "gallery": [
+        "sunset-lobby.jpg",
+        "sunset-beach.jpg",
+        "sunset-pool.jpg",
+        "sunset-restaurant.jpg",
+        "sunset-rooms.jpg"
+      ],
+      "roomTypes": [
+        {
+          "id": "st_standard",
+          "name": "Standard Ocean View",
+          "description": "Comfortable rooms with direct ocean views and modern amenities",
+          "capacity": 2,
+          "size": "300 sq ft",
+          "bedType": "King Size Bed",
+          "pricePerNight": 6800,
+          "originalPrice": 8500,
+          "discount": 20,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Ocean View",
+            "Balcony",
+            "TV",
+            "Mini Bar",
+            "Tea/Coffee Maker"
+          ],
+          "images": [
+            "st-standard-1.jpg",
+            "st-standard-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 28,
+          "availableRooms": 21
+        },
+        {
+          "id": "st_deluxe",
+          "name": "Deluxe Beach Villa",
+          "description": "Spacious beachfront villas with private beach access",
+          "capacity": 4,
+          "size": "500 sq ft",
+          "bedType": "King + Twin Beds",
+          "pricePerNight": 11200,
+          "originalPrice": 14000,
+          "discount": 20,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Private Beach Access",
+            "Jacuzzi",
+            "Mini Bar",
+            "Smart TV",
+            "Espresso Machine",
+            "Beach Chairs"
+          ],
+          "images": [
+            "st-deluxe-1.jpg",
+            "st-deluxe-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 15,
+          "availableRooms": 11
+        },
+        {
+          "id": "st_presidential",
+          "name": "Presidential Ocean Suite",
+          "description": "Ultra-luxury suite with panoramic ocean views and exclusive services",
+          "capacity": 6,
+          "size": "1000 sq ft",
+          "bedType": "Master King + 2 Queen Beds",
+          "pricePerNight": 22000,
+          "originalPrice": 26000,
+          "discount": 15,
+          "amenities": [
+            "AC",
+            "Free WiFi",
+            "Panoramic Ocean View",
+            "Private Balcony",
+            "Personal Butler",
+            "Jacuzzi",
+            "Premium Mini Bar",
+            "Smart TV",
+            "Espresso Machine",
+            "Beach Cabana",
+            "Complimentary Breakfast"
+          ],
+          "images": [
+            "st-presidential-1.jpg",
+            "st-presidential-2.jpg"
+          ],
+          "available": true,
+          "totalRooms": 4,
+          "availableRooms": 3
+        }
+      ],
+      "policies": {
+        "cancellation": "Free cancellation up to 48 hours before check-in",
+        "childPolicy": "Children under 12 stay free with existing bedding",
+        "petPolicy": "Pets not allowed",
+        "smokingPolicy": "Designated smoking areas available"
+      },
+      "nearbyAttractions": [
+        {
+          "name": "RK Beach",
+          "distance": "0.1 km"
+        },
+        {
+          "name": "Submarine Museum",
+          "distance": "2.3 km"
+        },
+        {
+          "name": "Kailasagiri Hill Park",
+          "distance": "5.8 km"
+        },
+        {
+          "name": "Vizag Airport",
+          "distance": "12 km"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "r1752929886639",
+          "userId": "e702",
+          "userName": "Anonymous User",
+          "userEmail": "",
+          "rating": 5,
+          "comment": "Excellent ",
+          "date": "2025-07-19",
+          "helpful": 0,
+          "roomType": "General",
+          "verified": true,
+          "createdAt": "2025-07-19T12:58:06.639Z"
+        }
+      ]
     }
   ],
   "bookings": [
     {
-      "id": "632b",
-      "startDate": "2025-07-06T00:00:00.000Z",
-      "endDate": "2025-07-10T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "single with A/c",
+      "id": "BK001",
+      "bookingReference": "BNS2025071501",
+      "userId": "1e6c",
+      "userName": "Sruthi Jodu",
+      "userEmail": "jodi@outlook.com",
+      "userPhone": "8688842126",
       "hotelId": "2",
-      "userId": "1e6c"
-    },
-    {
-      "id": "c8be",
-      "startDate": "2025-07-07T00:00:00.000Z",
-      "endDate": "2025-07-18T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "double with A/c",
-      "hotelId": "3",
-      "userId": "1e6c"
-    },
-    {
-      "id": "484a",
-      "startDate": "2025-07-15T00:00:00.000Z",
-      "endDate": "2025-08-01T00:00:00.000Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRoom": "single with A/c",
-      "hotelId": "2",
-      "userId": "32aa"
-    },
-    {
-      "id": "1752067925999",
-      "userId": "3140",
-      "hotelName": "Galaxy Paradise",
-      "hotelId": "4",
-      "checkIn": "2025-07-09",
-      "checkOut": "2025-07-11",
-      "guests": 1,
-      "roomType": "Standard",
-      "status": "confirmed",
-      "bookingDate": "2025-07-09",
-      "createdBy": "admin01",
-      "createdAt": "2025-07-09T13:32:05.999Z"
-    },
-    {
-      "id": "1752212649213",
-      "userId": "3140",
-      "hotelName": "Monsoon Stay",
-      "hotelId": "3",
-      "checkIn": "2025-07-11",
-      "checkOut": "2025-07-12",
+      "hotelName": "Hill Palace Resort & Spa",
+      "roomTypeId": "hp_deluxe",
+      "roomTypeName": "Deluxe Garden Suite",
+      "checkIn": "2025-07-20",
+      "checkOut": "2025-07-23",
+      "nights": 3,
       "guests": 2,
-      "rooms": 4,
-      "roomType": "Executive",
-      "status": "confirmed",
-      "bookingDate": "2025-07-11",
-      "createdBy": "admin01",
-      "createdAt": "2025-07-11T05:44:09.213Z",
-      "noOfPersons": 2,
-      "noOfRooms": 4,
-      "typeOfRooms": "Executive",
-      "startDate": "2025-07-11",
-      "endDate": "2025-07-12"
+      "adults": 2,
+      "children": 0,
+      "rooms": 1,
+      "pricePerNight": 7200,
+      "totalRoomCost": 21600,
+      "taxes": 3888,
+      "totalAmount": 25488,
+      "paymentStatus": "paid",
+      "bookingStatus": "confirmed",
+      "bookingDate": "2025-07-15T10:30:00.000Z",
+      "lastModified": "2025-07-15T10:30:00.000Z",
+      "specialRequests": "Late check-in requested, anniversary celebration",
+      "cancellationPolicy": "Free cancellation up to 24 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "credit_card",
+      "confirmationSent": true,
+      "reminderSent": false
     },
     {
-      "id": "1752217694851",
+      "id": "BK002",
+      "bookingReference": "BNS2025071502",
       "userId": "05fb",
-      "hotelName": "Monsoon Stay",
+      "userName": "Raghurami Reddy k",
+      "userEmail": "raghu@gmail.com",
+      "userPhone": "7893859305",
       "hotelId": "3",
-      "checkIn": "2025-07-11",
-      "checkOut": "2025-07-13",
+      "hotelName": "Monsoon Stay Business Hotel",
+      "roomTypeId": "ms_executive",
+      "roomTypeName": "Executive Suite",
+      "checkIn": "2025-07-25",
+      "checkOut": "2025-07-28",
+      "nights": 3,
       "guests": 1,
+      "adults": 1,
+      "children": 0,
       "rooms": 1,
-      "roomType": "Standard",
-      "status": "confirmed",
-      "bookingDate": "2025-07-11",
-      "createdBy": "admin01",
-      "createdAt": "2025-07-11T07:08:14.851Z",
-      "noOfPersons": 1,
-      "noOfRooms": 1,
-      "typeOfRooms": "Standard",
-      "startDate": "2025-07-11",
-      "endDate": "2025-07-13"
+      "pricePerNight": 8500,
+      "totalRoomCost": 25500,
+      "taxes": 4590,
+      "totalAmount": 30090,
+      "paymentStatus": "pending",
+      "bookingStatus": "confirmed",
+      "bookingDate": "2025-07-16T14:20:00.000Z",
+      "lastModified": "2025-07-16T14:20:00.000Z",
+      "specialRequests": "Business meeting setup required, early breakfast",
+      "cancellationPolicy": "Free cancellation up to 48 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "bank_transfer",
+      "confirmationSent": true,
+      "reminderSent": false
+    },
+    {
+      "id": "BK003",
+      "bookingReference": "BNS2025071503",
+      "userId": "a734",
+      "userName": "Syamakuri Rajasekhar Reddy",
+      "userEmail": "syamakurirajasekharreddy@gmail.com",
+      "userPhone": "7013175757",
+      "hotelId": "4",
+      "hotelName": "Galaxy Paradise Mumbai",
+      "roomTypeId": "gp_deluxe",
+      "roomTypeName": "Deluxe Family Suite",
+      "checkIn": "2025-08-01",
+      "checkOut": "2025-08-05",
+      "nights": 4,
+      "guests": 4,
+      "adults": 2,
+      "children": 2,
+      "rooms": 1,
+      "pricePerNight": 8200,
+      "totalRoomCost": 32800,
+      "taxes": 5904,
+      "totalAmount": 38704,
+      "paymentStatus": "paid",
+      "bookingStatus": "confirmed",
+      "bookingDate": "2025-07-18T09:15:00.000Z",
+      "lastModified": "2025-07-18T09:15:00.000Z",
+      "specialRequests": "Family vacation, kids entertainment, high floor room",
+      "cancellationPolicy": "Free cancellation up to 24 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "digital_wallet",
+      "confirmationSent": true,
+      "reminderSent": false
+    },
+    {
+      "id": "BK004",
+      "bookingReference": "BNS2025071504",
+      "userId": "d64b",
+      "userName": "Achaa",
+      "userEmail": "Achaa@gmail.com",
+      "userPhone": "5454545454",
+      "hotelId": "5",
+      "hotelName": "Sunset Tower Beach Resort",
+      "roomTypeId": "st_standard",
+      "roomTypeName": "Standard Ocean View",
+      "checkIn": "2025-07-22",
+      "checkOut": "2025-07-25",
+      "nights": 3,
+      "guests": 2,
+      "adults": 2,
+      "children": 0,
+      "rooms": 1,
+      "pricePerNight": 6800,
+      "totalRoomCost": 20400,
+      "taxes": 3672,
+      "totalAmount": 24072,
+      "paymentStatus": "paid",
+      "bookingStatus": "confirmed",
+      "bookingDate": "2025-07-17T16:45:00.000Z",
+      "lastModified": "2025-07-17T16:45:00.000Z",
+      "specialRequests": "Honeymoon package, ocean view room, candlelight dinner",
+      "cancellationPolicy": "Free cancellation up to 48 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "credit_card",
+      "confirmationSent": true,
+      "reminderSent": false
+    },
+    {
+      "id": "BK005",
+      "bookingReference": "BNS2025071505",
+      "userId": "1e6c",
+      "userName": "Sruthi Jodu",
+      "userEmail": "jodi@outlook.com",
+      "userPhone": "8688842126",
+      "hotelId": "2",
+      "hotelName": "Hill Palace Resort & Spa",
+      "roomTypeId": "hp_presidential",
+      "roomTypeName": "Presidential Suite",
+      "checkIn": "2025-08-10",
+      "checkOut": "2025-08-13",
+      "nights": 3,
+      "guests": 4,
+      "adults": 2,
+      "children": 2,
+      "rooms": 1,
+      "pricePerNight": 25000,
+      "totalRoomCost": 75000,
+      "taxes": 13500,
+      "totalAmount": 88500,
+      "paymentStatus": "partial",
+      "bookingStatus": "confirmed",
+      "bookingDate": "2025-07-19T11:30:00.000Z",
+      "lastModified": "2025-07-19T11:30:00.000Z",
+      "specialRequests": "Family celebration, birthday decoration, spa appointment",
+      "cancellationPolicy": "Free cancellation up to 24 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "credit_card",
+      "confirmationSent": true,
+      "reminderSent": false,
+      "advancePayment": 30000,
+      "pendingAmount": 58500
+    },
+    {
+      "id": "BK006",
+      "bookingReference": "BNS2025071506",
+      "userId": "05fb",
+      "userName": "Raghurami Reddy k",
+      "userEmail": "raghu@gmail.com",
+      "userPhone": "7893859305",
+      "hotelId": "5",
+      "hotelName": "Sunset Tower Beach Resort",
+      "roomTypeId": "st_deluxe",
+      "roomTypeName": "Deluxe Beach Villa",
+      "checkIn": "2025-07-30",
+      "checkOut": "2025-08-02",
+      "nights": 3,
+      "guests": 3,
+      "adults": 2,
+      "children": 1,
+      "rooms": 1,
+      "pricePerNight": 11200,
+      "totalRoomCost": 33600,
+      "taxes": 6048,
+      "totalAmount": 39648,
+      "paymentStatus": "pending",
+      "bookingStatus": "pending_confirmation",
+      "bookingDate": "2025-07-19T08:20:00.000Z",
+      "lastModified": "2025-07-19T08:20:00.000Z",
+      "specialRequests": "Beach access, water sports package, child-friendly setup",
+      "cancellationPolicy": "Free cancellation up to 48 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "bank_transfer",
+      "confirmationSent": false,
+      "reminderSent": true
+    },
+    {
+      "id": "BK007",
+      "bookingReference": "BNS2025071507",
+      "userId": "a734",
+      "userName": "Syamakuri Rajasekhar Reddy",
+      "userEmail": "syamakurirajasekharreddy@gmail.com",
+      "userPhone": "7013175757",
+      "hotelId": "3",
+      "hotelName": "Monsoon Stay Business Hotel",
+      "roomTypeId": "ms_deluxe",
+      "roomTypeName": "Deluxe Executive",
+      "checkIn": "2025-07-28",
+      "checkOut": "2025-07-30",
+      "nights": 2,
+      "guests": 1,
+      "adults": 1,
+      "children": 0,
+      "rooms": 1,
+      "pricePerNight": 5400,
+      "totalRoomCost": 10800,
+      "taxes": 1944,
+      "totalAmount": 12744,
+      "paymentStatus": "cancelled",
+      "bookingStatus": "cancelled",
+      "bookingDate": "2025-07-14T13:10:00.000Z",
+      "lastModified": "2025-07-18T15:30:00.000Z",
+      "specialRequests": "Corporate booking, invoice required",
+      "cancellationPolicy": "Free cancellation up to 48 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "corporate_account",
+      "confirmationSent": false,
+      "reminderSent": false,
+      "cancellationReason": "Meeting postponed",
+      "cancellationDate": "2025-07-18T15:30:00.000Z",
+      "refundAmount": 0,
+      "refundStatus": "not_applicable"
+    },
+    {
+      "id": "BK008",
+      "bookingReference": "BNS2025071508",
+      "userId": "d64b",
+      "userName": "Achaa",
+      "userEmail": "Achaa@gmail.com",
+      "userPhone": "5454545454",
+      "hotelId": "4",
+      "hotelName": "Galaxy Paradise Mumbai",
+      "roomTypeId": "gp_presidential",
+      "roomTypeName": "Presidential Family Villa",
+      "checkIn": "2025-08-15",
+      "checkOut": "2025-08-20",
+      "nights": 5,
+      "guests": 6,
+      "adults": 4,
+      "children": 2,
+      "rooms": 1,
+      "pricePerNight": 15500,
+      "totalRoomCost": 77500,
+      "taxes": 13950,
+      "totalAmount": 91450,
+      "paymentStatus": "paid",
+      "bookingStatus": "confirmed",
+      "bookingDate": "2025-07-19T10:45:00.000Z",
+      "lastModified": "2025-07-19T10:45:00.000Z",
+      "specialRequests": "Extended family vacation, multiple connecting rooms if needed, airport transfer",
+      "cancellationPolicy": "Free cancellation up to 24 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "credit_card",
+      "confirmationSent": true,
+      "reminderSent": false
+    },
+    {
+      "id": "d10f",
+      "startDate": "2025-07-20T00:00:00.000Z",
+      "endDate": "2025-07-23T00:00:00.000Z",
+      "noOfPersons": 3,
+      "noOfRooms": 3,
+      "typeOfRoom": "hp_presidential",
+      "hotelId": "2",
+      "userId": "e702",
+      "bookingReference": "BNS1752927520113",
+      "userName": "Guest",
+      "userEmail": "",
+      "userPhone": "",
+      "hotelName": "Hill Palace Resort & Spa",
+      "roomTypeId": "hp_presidential",
+      "roomTypeName": "Presidential Suite",
+      "checkIn": "2025-07-20",
+      "checkOut": "2025-07-23",
+      "nights": 3,
+      "guests": 3,
+      "adults": 3,
+      "children": 0,
+      "rooms": 3,
+      "pricePerNight": 25000,
+      "totalRoomCost": 225000,
+      "taxes": 40500,
+      "totalAmount": 265500,
+      "paymentStatus": "pending",
+      "bookingStatus": "confirmed",
+      "bookingDate": "2025-07-19T12:18:40.113Z",
+      "lastModified": "2025-07-19T12:18:40.113Z",
+      "specialRequests": "",
+      "cancellationPolicy": "Free cancellation up to 24 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "",
+      "confirmationSent": false,
+      "reminderSent": false
     }
   ],
   "forgot-password": [

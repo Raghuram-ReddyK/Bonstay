@@ -1,98 +1,208 @@
-import { useNavigate } from 'react-router-dom'; // Importing useNavigate hook for programmatic navigation
-import { Container, Button, Typography, CircularProgress, Alert } from '@mui/material'; // Importing Material-UI components for UI elements
-import { useHotels } from '../hooks/useSWRData'; // Importing custom SWR hook to fetch hotel data
+import { useNavigate } from 'react-router-dom';
+import { 
+    Container, 
+    Button, 
+    Typography, 
+    CircularProgress, 
+    Alert, 
+    Card,
+    CardContent,
+    CardActions,
+    Grid,
+    Box,
+    Chip,
+    Rating,
+    Divider
+} from '@mui/material';
+import { 
+    LocationOn,
+    Phone,
+    Star,
+    Hotel as HotelIcon,
+    Wifi,
+    Pool,
+    Restaurant
+} from '@mui/icons-material';
+import { useHotels } from '../hooks/useSWRData';
 
-/**
- * Hotels Component
- * This component displays a list of available hotels.
- * It fetches hotel data using the `useHotels` SWR hook and provides options
- * to book a room, add a review, or view existing reviews for each hotel.
- */
 const Hotels = () => {
-  // useNavigate hook to get the navigation function for routing
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const { data: hotels, error, isLoading } = useHotels();
 
-  // useHotels SWR hook to fetch hotel data
-  // It provides `data` (the list of hotels), `error` (if fetching fails), and `isLoading` (fetching status).
-  const { data: hotels, error, isLoading } = useHotels();
+    if (isLoading) {
+        return (
+            <Container sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress />
+            </Container>
+        );
+    }
 
-  // Conditional rendering for loading state:
-  // Display a circular progress indicator while hotel data is being fetched.
-  if (isLoading) {
+    if (error) {
+        return (
+            <Container sx={{ mt: 4 }}>
+                <Alert severity="error">
+                    Error loading hotels: {error.message}
+                </Alert>
+            </Container>
+        );
+    }
+
     return (
-      <Container sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Typography variant="h3" align="center" gutterBottom color="primary">
+                Discover Amazing Hotels
+            </Typography>
+            <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 4 }}>
+                Book your perfect stay from our collection of premium hotels
+            </Typography>
+            
+            {hotels && hotels.length > 0 ? (
+                <Grid container spacing={3}>
+                    {hotels.map((hotel) => (
+                        <Grid item xs={12} md={6} lg={4} key={hotel.id}>
+                            <Card 
+                                sx={{ 
+                                    height: '100%', 
+                                    display: 'flex', 
+                                    flexDirection: 'column',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    '&:hover': {
+                                        transform: 'translateY(-4px)',
+                                        boxShadow: 6
+                                    }
+                                }}
+                            >
+                                <CardContent sx={{ flexGrow: 1 }}>
+                                    {/* Hotel Header */}
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="h5" component="h2" gutterBottom>
+                                            {hotel.hotelName}
+                                        </Typography>
+                                        <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                                            <LocationOn color="action" fontSize="small" />
+                                            <Typography variant="body2" color="text.secondary">
+                                                {hotel.city}, {hotel.state}
+                                            </Typography>
+                                            <Chip 
+                                                label={hotel.category || '4-Star'} 
+                                                size="small" 
+                                                color="primary" 
+                                                variant="outlined" 
+                                            />
+                                        </Box>
+                                        
+                                        {/* Rating */}
+                                        {hotel.rating && (
+                                            <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
+                                                <Rating value={hotel.rating} precision={0.1} readOnly size="small" />
+                                                <Typography variant="body2">
+                                                    {hotel.rating} ({hotel.totalReviews || 0} reviews)
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </Box>
 
-  // Conditional rendering for error state:
-  // Display an alert with an error message if there was an issue fetching hotels.
-  if (error) {
-    return (
-      <Container sx={{ mt: 4 }}>
-        <Alert severity="error">
-          Error loading hotels: {error.message} {/* Display the specific error message */}
-        </Alert>
-      </Container>
-    );
-  }
+                                    {/* Description */}
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                        {hotel.description?.substring(0, 120)}...
+                                    </Typography>
 
-  // Main component render
-  return (
-    <Container>
-      <Typography variant="h3" align="center">Hotels</Typography> {/* Page title */}
-      {/* Conditional rendering based on whether hotels data is available and not empty */}
-      {hotels && hotels.length > 0 ? (
-        // Display hotels in a responsive grid layout
-        <div className="row row-cols-1 row-cols-md-2 g-4">
-          {hotels.map((hotel) => (
-            <div key={hotel.id} className="col"> {/* Unique key for each hotel card */}
-              <div className="card h-100 shadow-sm"> {/* Card styling with shadow */}
-                <div className="card-body">
-                  <h5 className="card-title">{hotel.hotelName}</h5> {/* Hotel name */}
-                  <p>City: {hotel.city}</p>
-                  <p>Description: {hotel.description}...</p> {/* Hotel description (truncated) */}
-                  <p>Amenities: {hotel.amenities}</p> {/* Hotel amenities */}
-                  <p>Phone No: {hotel.phoneNo}</p> {/* Hotel phone number */}
-                  <p>Address: {hotel.address}</p> {/* Hotel address */}
-                </div>
-                <div className="card-footer">
-                  {/* Button to navigate to the "Book a Room" page for the specific hotel */}
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => navigate(`/bookroom/${hotel.id}/${hotel.hotelName}`)} // Pass hotel ID and name as URL parameters
-                  >
-                    Book a Room
-                  </Button>
-                  {/* Button to navigate to the "Add Review" page for the specific hotel */}
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => navigate(`/review/${hotel.id}`)} // Pass hotel ID for review
-                  >
-                    Add Review
-                  </Button>
-                  {/* Button to navigate to the "View Reviews" page for the specific hotel */}
-                  <Button
-                    variant="contained"
-                    color="info"
-                    onClick={() => navigate(`/viewReview/${hotel.id}`)} // Pass hotel ID to view reviews
-                  >
-                    View Reviews
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        // Display a message if no hotels are available
-        <Typography>No hotels available</Typography>
-      )}
-    </Container>
-  );
+                                    {/* Price Range */}
+                                    {hotel.roomTypes && hotel.roomTypes.length > 0 && (
+                                        <Box sx={{ mb: 2 }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Starting from
+                                            </Typography>
+                                            <Typography variant="h6" color="primary">
+                                                ₹{Math.min(...hotel.roomTypes.map(room => room.pricePerNight))}
+                                                <Typography component="span" variant="body2"> / night</Typography>
+                                            </Typography>
+                                        </Box>
+                                    )}
+
+                                    {/* Key Amenities */}
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="body2" fontWeight="medium" gutterBottom>
+                                            Key Amenities:
+                                        </Typography>
+                                        <Box display="flex" flexWrap="wrap" gap={0.5}>
+                                            {hotel.amenities?.slice(0, 4).map((amenity, index) => (
+                                                <Chip 
+                                                    key={index}
+                                                    label={amenity} 
+                                                    size="small" 
+                                                    variant="outlined"
+                                                    sx={{ fontSize: '0.7rem' }}
+                                                />
+                                            ))}
+                                            {hotel.amenities?.length > 4 && (
+                                                <Chip 
+                                                    label={`+${hotel.amenities.length - 4} more`} 
+                                                    size="small" 
+                                                    color="primary"
+                                                    sx={{ fontSize: '0.7rem' }}
+                                                />
+                                            )}
+                                        </Box>
+                                    </Box>
+
+                                    <Divider sx={{ my: 2 }} />
+
+                                    {/* Contact Info */}
+                                    <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                                        <Phone fontSize="small" color="action" />
+                                        <Typography variant="body2">{hotel.phoneNo}</Typography>
+                                    </Box>
+                                </CardContent>
+
+                                <CardActions sx={{ p: 2, pt: 0 }}>
+                                    <Grid container spacing={1}>
+                                        <Grid item xs={12}>
+                                            <Button
+                                                variant="contained"
+                                                fullWidth
+                                                size="large"
+                                                onClick={() => navigate(`/bookroom/${hotel.id}/${hotel.hotelName}`)}
+                                                sx={{ mb: 1 }}
+                                            >
+                                                Book Now
+                                            </Button>
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                fullWidth
+                                                onClick={() => navigate(`/review/${hotel.id}`)}
+                                            >
+                                                Add Review
+                                            </Button>
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                fullWidth
+                                                onClick={() => navigate(`/viewReview/${hotel.id}`)}
+                                            >
+                                                View Reviews
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </CardActions>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            ) : (
+                <Box textAlign="center" py={8}>
+                    <HotelIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                    <Typography variant="h5" gutterBottom>No hotels available</Typography>
+                    <Typography color="text.secondary">Please check back later for available hotels.</Typography>
+                </Box>
+            )}
+        </Container>
+    );
 };
 
 export default Hotels;
