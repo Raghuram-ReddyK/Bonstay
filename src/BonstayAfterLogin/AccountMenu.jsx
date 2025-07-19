@@ -1,42 +1,24 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import Avatar from '@mui/material/Avatar';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import PersonAdd from '@mui/icons-material/PersonAdd';
-import Settings from '@mui/icons-material/Settings';
-import Logout from '@mui/icons-material/Logout';
-import axios from 'axios';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Draggable from 'react-draggable';
-import { Paper, TextField } from '@mui/material';
-import ContactUs from './ContactUs'; // Import the ContactUs component
-import TermsAndConditions from './TermsAndConditions';
-import FAQs from './FAQs';
-import PrivacyPolicy from './PrivacyPolicy';
-import * as XLSX from 'xlsx';
-import { getApiUrl } from '../config/apiConfig';
-import AdminSettings from '../AdminDashboardComponents/AdminSettings';
+import {
+    Box,
+    Avatar,
+    Menu,
+    MenuItem,
+    ListItemIcon,
+    Divider,
+    IconButton,
+    Tooltip
+} from '@mui/material';
+import {
+    PersonAdd,
+    Settings,
+    Logout
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-// import { parse } from 'json2csv'; // Import json2csv
-
-const DraggableDialog = (props) => {
-    const { onClose, ...other } = props;
-
-    return (
-        <Draggable handle="#draggable-dialog-title">
-            <Paper {...other} />
-        </Draggable>
-    );
-};
+import axios from 'axios';
+import { getApiUrl } from '../config/apiConfig';
+import SettingsDialog from './Settings/SettingsDialog';
+import UserInfoDialog from './Settings/UserInfoDialog';
 
 const AccountMenu = ({ handleLogout }) => {
     const navigate = useNavigate();
@@ -45,39 +27,35 @@ const AccountMenu = ({ handleLogout }) => {
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
     const [dialogSize, setDialogSize] = React.useState({ width: 400, height: 'auto' });
+
+    // Profile settings state
     const [email, setEmail] = React.useState('');
     const [address, setAddress] = React.useState('');
     const [phoneNo, setPhoneNumber] = React.useState('');
-    const [selectedOption, setSelectedOption] = React.useState('userDetails');
-    const [userType, setUserType] = React.useState(null)
+    const [selectedOption, setSelectedOption] = React.useState('profile');
+    const [userType, setUserType] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
+    const [saveSuccess, setSaveSuccess] = React.useState(false);
+
+    // Other settings state
+    const [showPassword, setShowPassword] = React.useState(false);
+    const [notifications, setNotifications] = React.useState({
+        email: true,
+        sms: false,
+        push: true
+    });
+    const [theme, setTheme] = React.useState('light');
+    const [language, setLanguage] = React.useState('en');
+
     const open = Boolean(anchorEl);
 
-    React.useEffect(() => {
-        const storedUserType = sessionStorage.getItem('userType');
-        setUserType(storedUserType)
-    }, [])
-
+    // Event handlers
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
     const handleCloseMenu = () => {
         setAnchorEl(null);
-    };
-
-    const fetchUserInfo = async () => {
-        try {
-            const userId = sessionStorage.getItem('id');
-            const storedUserType = sessionStorage.getItem('userType');
-            setUserType(storedUserType)
-            const response = await axios.get(getApiUrl(`/users/${userId}`));
-            setUserInfo(response.data);
-            setEmail(response.data.email);
-            setAddress(response.data.address);
-            setPhoneNumber(response.data.phoneNo);
-        } catch (error) {
-            console.error('Error fetching user info:', error);
-        }
     };
 
     const handleOpenDialog = () => {
@@ -89,12 +67,12 @@ const AccountMenu = ({ handleLogout }) => {
     const handleOpenSettings = () => {
         if (userType === 'admin') {
             const userId = sessionStorage.getItem('id');
-            navigate(`/admin-settings/${userId}`)
+            navigate(`/admin-settings/${userId}`);
             handleCloseMenu();
         } else {
             fetchUserInfo();
             setSettingsOpen(true);
-            setSelectedOption('userDetails');
+            setSelectedOption('profile');
             handleCloseMenu();
         }
     };
@@ -107,7 +85,29 @@ const AccountMenu = ({ handleLogout }) => {
         setSettingsOpen(false);
     };
 
-    // Resize handler for the dialog window
+    // Initialize user type
+    React.useEffect(() => {
+        const storedUserType = sessionStorage.getItem('userType');
+        setUserType(storedUserType);
+    }, []);
+
+    // Fetch user information
+    const fetchUserInfo = async () => {
+        try {
+            const userId = sessionStorage.getItem('id');
+            const storedUserType = sessionStorage.getItem('userType');
+            setUserType(storedUserType);
+            const response = await axios.get(getApiUrl(`/users/${userId}`));
+            setUserInfo(response.data);
+            setEmail(response.data.email);
+            setAddress(response.data.address);
+            setPhoneNumber(response.data.phoneNo);
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+        }
+    };
+
+    // Dialog resize handlers
     const handleMouseDown = (e) => {
         e.preventDefault();
         document.addEventListener('mousemove', handleResize);
@@ -138,12 +138,13 @@ const AccountMenu = ({ handleLogout }) => {
         return re.test(phone);
     };
 
+    // Save settings
     const handleSaveSettings = async () => {
         if (!validateEmail(email)) {
             alert('Please enter a valid email address.');
             return;
         }
-        if (!address) {
+        if (!address.trim()) {
             alert('Address cannot be empty.');
             return;
         }
@@ -151,6 +152,9 @@ const AccountMenu = ({ handleLogout }) => {
             alert('Please enter a valid phone number (10 digits).');
             return;
         }
+
+        setLoading(true);
+        setSaveSuccess(false);
 
         try {
             const userId = sessionStorage.getItem('id');
@@ -160,95 +164,18 @@ const AccountMenu = ({ handleLogout }) => {
                 address,
                 phoneNo,
                 email,
-                password: userInfo.password
+                password: userInfo.password,
+                country: userInfo.country
             });
-            alert('User information updated successfully!');
-            handleCloseSettings();
+
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
             fetchUserInfo();
         } catch (error) {
             console.error('Error updating user info:', error);
             alert('Failed to update user information.');
-        }
-    };
-
-    // Export functions
-    // const handleExportCSV = () => {
-    //     if (userInfo) {
-    //         const csv = parse([userInfo]);
-    //         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    //         const link = document.createElement('a');
-    //         link.href = URL.createObjectURL(blob);
-    //         link.download = 'user_info.csv';
-    //         link.click();
-    //     }
-    // };
-
-    const handleExportExcel = () => {
-        if (userInfo) {
-            const ws = XLSX.utils.json_to_sheet([userInfo]);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'User Info');
-            XLSX.writeFile(wb, 'user_info.xlsx');
-        }
-    };
-
-    const handlePrint = () => {
-        if (userInfo) {
-            const printWindow = window.open('', '', 'height=600,width=800');
-            printWindow.document.write('<html><head><title>User Account Info</title></head><body>');
-            printWindow.document.write(`<h1>User Account Information</h1>`);
-            printWindow.document.write(`<strong>User ID:</strong> ${userInfo.id.toUpperCase()}<br />`);
-            printWindow.document.write(`<strong>User Name:</strong> ${userInfo.name.toUpperCase()}<br />`);
-            printWindow.document.write(`<strong>Email:</strong> ${userInfo.email.toUpperCase()}<br />`);
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
-            printWindow.print();
-        }
-    };
-
-    const renderSettingsContent = () => {
-        switch (selectedOption) {
-            case 'userDetails':
-                return (
-                    <>
-                        <TextField
-                            label="Email"
-                            variant="outlined"
-                            fullWidth
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            sx={{ mt: 1 }}
-                        />
-                        <TextField
-                            label="Address"
-                            variant="outlined"
-                            fullWidth
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                            sx={{ mt: 1 }}
-                        />
-                        <TextField
-                            label="Phone Number"
-                            variant="outlined"
-                            fullWidth
-                            value={phoneNo}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            sx={{ mt: 1 }}
-                        />
-                    </>
-                );
-            case 'contactUs':
-                return userInfo && <ContactUs userInfo={userInfo} />;
-            case 'faqs':
-                return <FAQs />
-            case 'terms':
-                return <TermsAndConditions />
-            case 'privacy':
-                return <PrivacyPolicy />
-            case 'adminSettings':
-                return <AdminSettings />
-            default:
-                return null;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -268,6 +195,8 @@ const AccountMenu = ({ handleLogout }) => {
                     </IconButton>
                 </Tooltip>
             </Box>
+
+            {/* Account Menu */}
             <Menu
                 anchorEl={anchorEl}
                 id="account-menu"
@@ -282,13 +211,13 @@ const AccountMenu = ({ handleLogout }) => {
                     <>
                         <MenuItem onClick={handleOpenSettings}>
                             <ListItemIcon>
-                                <Settings fontSize='small' />
+                                <Settings fontSize="small" />
                             </ListItemIcon>
                             Admin Settings
                         </MenuItem>
                         <MenuItem onClick={handleCloseMenu}>
                             <ListItemIcon>
-                                <Settings fontSize='small' />
+                                <PersonAdd fontSize="small" />
                             </ListItemIcon>
                             User Management
                         </MenuItem>
@@ -317,140 +246,41 @@ const AccountMenu = ({ handleLogout }) => {
                 </MenuItem>
             </Menu>
 
-            {/* User Account Information Dialog */}
-            <Dialog
+            {/* User Info Dialog */}
+            <UserInfoDialog
                 open={dialogOpen}
                 onClose={handleCloseDialog}
-                PaperComponent={DraggableDialog}
-                sx={{
-                    '& .MuiDialog-paper': {
-                        width: dialogSize.width,
-                        height: dialogSize.height,
-                    },
-                }}
-            >
-                <DialogTitle id="draggable-dialog-title" sx={{ cursor: 'move', position: 'relative' }}>
-                    User Account Information
-                    <div
-                        style={{
-                            cursor: 'nwse-resize',
-                            width: '20px',
-                            height: '20px',
-                            position: 'absolute',
-                            right: '10px',
-                            bottom: '10px',
-                            backgroundColor: 'gray',
-                        }}
-                        onMouseDown={handleMouseDown}
-                    />
-                </DialogTitle>
-                <DialogContent>
-                    {userInfo ? (
-                        <div>
-                            <strong>User ID:</strong> {userInfo.id.toUpperCase()}
-                            <br />
-                            <strong>User Name:</strong> {userInfo.name.toUpperCase()}
-                            <br />
-                            <strong>Email:</strong> {userInfo.email.toUpperCase()}
-                        </div>
-                    ) : (
-                        <div>Loading...</div>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDialog}>Close</Button>
-                    {/* <Button onClick={handleExportCSV}>Export as CSV</Button> */}
-                    <Button onClick={handleExportExcel}>Export as Excel</Button>
-                    <Button onClick={handlePrint}>Print</Button>
-                </DialogActions>
-            </Dialog>
+                userInfo={userInfo}
+                dialogSize={dialogSize}
+                onMouseDown={handleMouseDown}
+            />
 
             {/* Settings Dialog */}
-            <Dialog
+            <SettingsDialog
                 open={settingsOpen}
                 onClose={handleCloseSettings}
-                PaperComponent={DraggableDialog}
-                sx={{
-                    '& .MuiDialog-paper': {
-                        width: dialogSize.width,
-                        height: dialogSize.height,
-                    },
-                }}
-            >
-                <DialogTitle id="draggable-dialog-title" sx={{ cursor: 'move', position: 'relative' }}>
-                    Settings
-                    <div
-                        style={{
-                            cursor: 'nwse-resize',
-                            width: '20px',
-                            height: '20px',
-                            position: 'absolute',
-                            right: '10px',
-                            bottom: '10px',
-                            backgroundColor: 'gray',
-                        }}
-                        onMouseDown={handleMouseDown}
-                    />
-                </DialogTitle>
-                <DialogContent>
-                    <Box sx={{ maxHeight: '400px', overflowY: 'auto', mt: 2 }}>
-                        <Button
-                            variant="outlined"
-                            onClick={() => setSelectedOption('userDetails')}
-                            fullWidth
-                            sx={{ mb: 1 }}
-                        >
-                            User Details Edit
-                        </Button>
-                        {userType === 'admin' && (
-                            <Button
-                                variant="outlined"
-                                onClick={() => setSelectedOption('adminSettings')}
-                                fullWidth
-                                sx={{ mb: 1 }}
-                            >
-                                Admin Settings
-                            </Button>
-                        )}
-                        <Button
-                            variant="outlined"
-                            onClick={() => setSelectedOption('faqs')}
-                            fullWidth
-                            sx={{ mb: 1 }}
-                        >
-                            FAQs
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            onClick={() => setSelectedOption('terms')}
-                            fullWidth
-                            sx={{ mb: 1 }}
-                        >
-                            Terms & Conditions
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            onClick={() => setSelectedOption('privacy')}
-                            fullWidth
-                            sx={{ mb: 1 }}
-                        >
-                            Privacy Policy
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            onClick={() => setSelectedOption('contactUs')}
-                            fullWidth
-                        >
-                            Contact Us
-                        </Button>
-                    </Box>
-                    {renderSettingsContent()}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleSaveSettings} variant="contained">Save</Button>
-                    <Button onClick={handleCloseSettings}>Close</Button>
-                </DialogActions>
-            </Dialog>
+                userType={userType}
+                selectedOption={selectedOption}
+                setSelectedOption={setSelectedOption}
+                userInfo={userInfo}
+                email={email}
+                setEmail={setEmail}
+                phoneNo={phoneNo}
+                setPhoneNumber={setPhoneNumber}
+                address={address}
+                setAddress={setAddress}
+                saveSuccess={saveSuccess}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+                notifications={notifications}
+                setNotifications={setNotifications}
+                theme={theme}
+                setTheme={setTheme}
+                language={language}
+                setLanguage={setLanguage}
+                loading={loading}
+                onSave={handleSaveSettings}
+            />
         </React.Fragment>
     );
 };
