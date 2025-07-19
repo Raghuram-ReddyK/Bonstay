@@ -35,8 +35,6 @@ const SettingsDialog = ({
     setShowPassword,
     notifications,
     setNotifications,
-    theme,
-    setTheme,
     language,
     setLanguage,
     loading,
@@ -101,8 +99,6 @@ const SettingsDialog = ({
                             setShowPassword={setShowPassword}
                             notifications={notifications}
                             setNotifications={setNotifications}
-                            theme={theme}
-                            setTheme={setTheme}
                             language={language}
                             setLanguage={setLanguage}
                         />

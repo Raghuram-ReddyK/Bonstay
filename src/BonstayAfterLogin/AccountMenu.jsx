@@ -44,7 +44,6 @@ const AccountMenu = ({ handleLogout }) => {
         sms: false,
         push: true
     });
-    const [theme, setTheme] = React.useState('light');
     const [language, setLanguage] = React.useState('en');
 
     const open = Boolean(anchorEl);
@@ -273,8 +272,6 @@ const AccountMenu = ({ handleLogout }) => {
                 setShowPassword={setShowPassword}
                 notifications={notifications}
                 setNotifications={setNotifications}
-                theme={theme}
-                setTheme={setTheme}
                 language={language}
                 setLanguage={setLanguage}
                 loading={loading}

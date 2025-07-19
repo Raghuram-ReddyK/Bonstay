@@ -239,7 +239,6 @@ const App = () => {
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   {/* Left side: Navigation buttons */}
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <FormControlLabel control={<ThemeToggle />} />
                     <Button
                       color="inherit"
                       component={NavLink}

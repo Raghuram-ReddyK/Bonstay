@@ -23,8 +23,6 @@ const SettingsContent = ({
     setShowPassword,
     notifications,
     setNotifications,
-    theme,
-    setTheme,
     language,
     setLanguage
 }) => {
@@ -63,8 +61,6 @@ const SettingsContent = ({
         case 'preferences':
             return (
                 <PreferencesSettings
-                    theme={theme}
-                    setTheme={setTheme}
                     language={language}
                     setLanguage={setLanguage}
                 />

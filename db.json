@@ -94,7 +94,7 @@
       "dateOfBirth": "1995-05-15",
       "gender": "male",
       "occupation": "SE",
-      "failedLoginAttempts": 1,
+      "failedLoginAttempts": 0,
       "isLocked": false,
       "lockoutTime": null
     },
