@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 const Footer = () => {
   const navigate = useNavigate();  // Initialize the navigate function
@@ -15,11 +15,9 @@ const Footer = () => {
         padding: '20px',  // Increased padding for better spacing
         backgroundColor: '#2c3e50',  // Custom background color (dark blue-gray)
         color: 'white',  // Text color contrast
-        position: 'relative',
-        bottom: 0,
-        width: '100%',
         marginTop: 'auto',
         borderTop: '1px solid #ddd',
+        flexShrink: 0,
       }}
     >
       <Typography variant="body2" color="inherit">

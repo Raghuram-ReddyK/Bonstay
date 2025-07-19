@@ -217,7 +217,13 @@ const App = () => {
       }}
     >
       <ThemeProvider theme={appliedTheme}>
-        <Box sx={{ flexGrow: 1 }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          overflow: 'hidden'
+        }}
+        >
           <AppBar position="static">
             <Toolbar
               sx={{
@@ -311,250 +317,262 @@ const App = () => {
             removeAllNotifications={removeAllNotifications}
           />
 
-          <Routes>
-            <Route index path="/" element={<Home />} />
-            <Route path="/register" element={<RegistrationPage />} />
-            <Route path="/admin-code-request" element={<AdminCodeRequest />} />
-            <Route
-              path="/login"
-              element={
-                <Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />
-              }
-            />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-conditions" element={<TermsAndConditions />} />
+          <Box
+            component='main'
+            sx={{
+              flexGrow: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'auto',
+              minHeight: 0
+            }}
 
-            {isLoggedIn && (
-              <>
-                <Route
-                  path="/dashboard"
-                  element={
-                    <PrivateRoute
-                      element={<DashBoard />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                      requiredUserType="user"
-                    />
-                  }
-                />
-                <Route
-                  path="/dashboard/:id"
-                  element={
-                    <PrivateRoute
-                      element={<DashBoard />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                      requiredUserType="user"
-                    />
-                  }
-                />
-                <Route
-                  path="/admin-dashboard/:id"
-                  element={
-                    <PrivateRoute
-                      element={<AdminDashboard />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                      requiredUserType="admin"
-                    />
-                  }
-                />
-                <Route
-                  path="/admin-settings/:id"
-                  element={
-                    <PrivateRoute
-                      element={<AdminSettingsPage />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                      requiredUserType='admin'
-                    />
-                  }
-                />
-                <Route
-                  path="/admin-dashboard"
-                  element={
-                    <PrivateRoute
-                      element={<AdminDashboard />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                      requiredUserType="admin"
-                    />
-                  }
-                />
-                <Route
-                  path="/bookroom"
-                  element={
-                    <PrivateRoute
-                      element={<BookARoom />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/bookroom/:id"
-                  element={
-                    <PrivateRoute
-                      element={<BookARoom />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/bookings"
-                  element={
-                    <PrivateRoute
-                      element={<Bookings userId={userId} />}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/bookings/:id"
-                  element={
-                    <PrivateRoute
-                      element={<Bookings userId={userId} />}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/bookroom/:id/:hotelName"
-                  element={
-                    <PrivateRoute
-                      element={<BookARoom />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/hotels"
-                  element={
-                    <PrivateRoute
-                      element={<Hotels />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/hotels/:id"
-                  element={
-                    <PrivateRoute
-                      element={<Hotels />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/hotels/:id/:hotelName"
-                  element={
-                    <PrivateRoute
-                      element={<Hotels />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/review"
-                  element={
-                    <PrivateRoute
-                      element={<Review />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/review/:hotelId"
-                  element={
-                    <PrivateRoute
-                      element={<Review />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/viewReview/:hotelId"
-                  element={
-                    <PrivateRoute
-                      element={<ViewReviews />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/view"
-                  element={
-                    <PrivateRoute
-                      element={<View />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/view"
-                  element={
-                    <PrivateRoute
-                      element={<View handleLogout={handleLogout} />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/view/:id"
-                  element={
-                    <PrivateRoute
-                      element={<View handleLogout={handleLogout} userId={userId} />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/reschedule/:id"
-                  element={
-                    <PrivateRoute
-                      element={<ReSchedule />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/bookings"
-                  element={
-                    <PrivateRoute
-                      element={<Bookings />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route
-                  path="/bookings/:id"
-                  element={
-                    <PrivateRoute
-                      element={<Bookings />}
-                      userId={userId}
-                      loggedInUserId={userId}
-                    />
-                  }
-                />
-                <Route path="/payment/:bookingId" element={<PaymentPage />} />
-              </>
-            )}
+          >
+            <Routes>
+              <Route index path="/" element={<Home />} />
+              <Route path="/register" element={<RegistrationPage />} />
+              <Route path="/admin-code-request" element={<AdminCodeRequest />} />
+              <Route
+                path="/login"
+                element={
+                  <Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />
+                }
+              />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-conditions" element={<TermsAndConditions />} />
 
-            <Route path="*" element={<PageNotFound />} />
-          </Routes>
+              {isLoggedIn && (
+                <>
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <PrivateRoute
+                        element={<DashBoard />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                        requiredUserType="user"
+                      />
+                    }
+                  />
+                  <Route
+                    path="/dashboard/:id"
+                    element={
+                      <PrivateRoute
+                        element={<DashBoard />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                        requiredUserType="user"
+                      />
+                    }
+                  />
+                  <Route
+                    path="/admin-dashboard/:id"
+                    element={
+                      <PrivateRoute
+                        element={<AdminDashboard />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                        requiredUserType="admin"
+                      />
+                    }
+                  />
+                  <Route
+                    path="/admin-settings/:id"
+                    element={
+                      <PrivateRoute
+                        element={<AdminSettingsPage />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                        requiredUserType='admin'
+                      />
+                    }
+                  />
+                  <Route
+                    path="/admin-dashboard"
+                    element={
+                      <PrivateRoute
+                        element={<AdminDashboard />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                        requiredUserType="admin"
+                      />
+                    }
+                  />
+                  <Route
+                    path="/bookroom"
+                    element={
+                      <PrivateRoute
+                        element={<BookARoom />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/bookroom/:id"
+                    element={
+                      <PrivateRoute
+                        element={<BookARoom />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/bookings"
+                    element={
+                      <PrivateRoute
+                        element={<Bookings userId={userId} />}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/bookings/:id"
+                    element={
+                      <PrivateRoute
+                        element={<Bookings userId={userId} />}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/bookroom/:id/:hotelName"
+                    element={
+                      <PrivateRoute
+                        element={<BookARoom />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/hotels"
+                    element={
+                      <PrivateRoute
+                        element={<Hotels />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/hotels/:id"
+                    element={
+                      <PrivateRoute
+                        element={<Hotels />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/hotels/:id/:hotelName"
+                    element={
+                      <PrivateRoute
+                        element={<Hotels />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/review"
+                    element={
+                      <PrivateRoute
+                        element={<Review />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/review/:hotelId"
+                    element={
+                      <PrivateRoute
+                        element={<Review />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/viewReview/:hotelId"
+                    element={
+                      <PrivateRoute
+                        element={<ViewReviews />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/view"
+                    element={
+                      <PrivateRoute
+                        element={<View />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/view"
+                    element={
+                      <PrivateRoute
+                        element={<View handleLogout={handleLogout} />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/view/:id"
+                    element={
+                      <PrivateRoute
+                        element={<View handleLogout={handleLogout} userId={userId} />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/reschedule/:id"
+                    element={
+                      <PrivateRoute
+                        element={<ReSchedule />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/bookings"
+                    element={
+                      <PrivateRoute
+                        element={<Bookings />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/bookings/:id"
+                    element={
+                      <PrivateRoute
+                        element={<Bookings />}
+                        userId={userId}
+                        loggedInUserId={userId}
+                      />
+                    }
+                  />
+                  <Route path="/payment/:bookingId" element={<PaymentPage />} />
+                </>
+              )}
+
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
+          </Box>
           <Footer />
         </Box>
       </ThemeProvider>
