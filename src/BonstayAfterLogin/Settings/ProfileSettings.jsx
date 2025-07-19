@@ -28,6 +28,9 @@ const ProfileSettings = ({
             <Typography variant="h6" gutterBottom color="primary">
                 Profile Information
             </Typography>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+                You can edit your email, phone number, and address. Other fields are read-only.
+            </Typography>
             {saveSuccess && (
                 <Alert severity="success" sx={{ mb: 2 }}>
                     Profile updated successfully!
@@ -79,6 +82,14 @@ const ProfileSettings = ({
                         sx={{ mb: 2 }}
                     />
                     <TextField
+                        label="User Type"
+                        variant="outlined"
+                        fullWidth
+                        value={userInfo?.userType === 'admin' ? 'Administrator' : 'Normal User'}
+                        disabled
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
                         label="Country"
                         variant="outlined"
                         fullWidth
@@ -99,6 +110,66 @@ const ProfileSettings = ({
                         }}
                     />
                 </Grid>
+
+                {/* Additional Information Section */}
+                {(userInfo?.dateOfBirth || userInfo?.gender || userInfo?.occupation || userInfo?.department) && (
+                    <Grid item xs={12}>
+                        <Typography variant="h6" gutterBottom color="primary" sx={{ mt: 3, mb: 2 }}>
+                            Additional Information
+                        </Typography>
+                        <Grid container spacing={3}>
+                            {userInfo?.dateOfBirth && (
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        label="Date of Birth"
+                                        variant="outlined"
+                                        fullWidth
+                                        value={userInfo.dateOfBirth}
+                                        disabled
+                                        sx={{ mb: 2 }}
+                                    />
+                                </Grid>
+                            )}
+                            {userInfo?.gender && (
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        label="Gender"
+                                        variant="outlined"
+                                        fullWidth
+                                        value={userInfo.gender}
+                                        disabled
+                                        sx={{ mb: 2 }}
+                                    />
+                                </Grid>
+                            )}
+                            {userInfo?.occupation && (
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        label="Occupation"
+                                        variant="outlined"
+                                        fullWidth
+                                        value={userInfo.occupation}
+                                        disabled
+                                        sx={{ mb: 2 }}
+                                    />
+                                </Grid>
+                            )}
+                            {userInfo?.department && (
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        label="Department"
+                                        variant="outlined"
+                                        fullWidth
+                                        value={userInfo.department}
+                                        disabled
+                                        sx={{ mb: 2 }}
+                                    />
+                                </Grid>
+                            )}
+                        </Grid>
+                    </Grid>
+                )}
+
             </Grid>
         </Box>
     );

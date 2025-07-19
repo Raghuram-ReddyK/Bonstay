@@ -85,7 +85,7 @@
     {
       "id": "3140",
       "name": "SRIRAMISETTY SURESH",
-      "address": "",
+      "address": "Piduguralla",
       "country": "Australia",
       "phoneNo": "0000000000",
       "email": "ri604@gmail.com",
@@ -93,7 +93,10 @@
       "userType": "user",
       "dateOfBirth": "1995-05-15",
       "gender": "male",
-      "occupation": "SE"
+      "occupation": "SE",
+      "failedLoginAttempts": 1,
+      "isLocked": false,
+      "lockoutTime": null
     },
     {
       "id": "32aa",

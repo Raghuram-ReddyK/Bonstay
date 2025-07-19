@@ -158,15 +158,14 @@ const AccountMenu = ({ handleLogout }) => {
 
         try {
             const userId = sessionStorage.getItem('id');
-            await axios.put(getApiUrl(`/users/${userId}`), {
-                id: userInfo.id,
-                name: userInfo.name,
+            // Preserve all existing user data and only update the editable fields
+            const updatedUserData = {
+                ...userInfo,
                 address,
-                phoneNo,
-                email,
-                password: userInfo.password,
-                country: userInfo.country
-            });
+                email
+            };
+
+            await axios.put(getApiUrl(`/users/${userId}`), updatedUserData)
 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
