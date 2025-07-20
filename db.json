@@ -5,6 +5,7 @@
       "name": "Admin User",
       "address": "Admin Office, Bonstay HQ",
       "phoneNo": "9999999999",
+      "userType": "admin",
       "email": "admin@bonstay.com",
       "password": "Admin@123"
     },
