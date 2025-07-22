@@ -17,11 +17,7 @@ import {
 import { 
     LocationOn,
     Phone,
-    Star,
     Hotel as HotelIcon,
-    Wifi,
-    Pool,
-    Restaurant
 } from '@mui/icons-material';
 import { useHotels } from '../hooks/useSWRData';
 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import RegistrationFormSections from '../RegistrationFormSection';
 
 const RegistrationForm = ({ state, formErrors, error, handleChange }) => {
-    const [activeSection, setActiveSection] = useState(0);
+    const [activeSection] = useState(0);
 
     const formSections = RegistrationFormSections({
         state,

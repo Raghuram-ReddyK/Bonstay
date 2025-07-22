@@ -5,7 +5,6 @@ import {
   Button, 
   Box, 
   Card, 
-  CardContent, 
   Grid, 
   Container,
   Fade,
@@ -17,7 +16,6 @@ import {
 import MailIcon from '@mui/icons-material/Mail';
 import CallIcon from '@mui/icons-material/Call';
 import ChatIcon from '@mui/icons-material/Chat';
-import StarIcon from '@mui/icons-material/Star';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WifiIcon from '@mui/icons-material/Wifi';
 import LocalParkingIcon from '@mui/icons-material/LocalParking';
@@ -50,19 +48,16 @@ const Home = () => {
   const testimonials = [
     {
       name: 'Sarah Johnson',
-      avatar: '/logo192.png',
       rating: 5,
       review: 'Exceptional service and beautiful rooms. The staff went above and beyond to make our stay memorable.'
     },
     {
       name: 'Michael Chen',
-      avatar: '/logo192.png', 
       rating: 5,
       review: 'Perfect location and amazing amenities. Will definitely book again on my next visit.'
     },
     {
       name: 'Emma Williams',
-      avatar: '/logo192.png',
       rating: 4,
       review: 'Great value for money. Clean, comfortable, and the breakfast was fantastic.'
     }

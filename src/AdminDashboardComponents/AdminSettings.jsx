@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     Box, Typography, Card, CardContent, Grid, Switch, FormControlLabel,
-    TextField, Button, Divider, Alert, Chip, IconButton, Tooltip,
+    TextField, Button, Alert, Chip, IconButton, Tooltip,
     Select, MenuItem, FormControl, InputLabel, Slider, LinearProgress,
-    List, ListItem, ListItemText, ListItemIcon, Table, TableBody,
-    TableCell, TableContainer, TableHead, TableRow, Paper, Badge, // Added Badge
-    Avatar, Stepper, Step, StepLabel, CircularProgress // Added Avatar, Stepper, Step, StepLabel, CircularProgress
+    
+    Badge, // Added Badge
+    Avatar, CircularProgress // Added Avatar, Stepper, Step, StepLabel, CircularProgress
 } from '@mui/material'; // Importing Material-UI components for building the UI
 import {
-    Security, Notifications, Storage, Speed, Wifi, Refresh,
-    Save, Settings, Email, Sms, Warning, Info, CheckCircle,
-    Cloud, Shield, Key, Lock, Visibility, Dashboard, // Added Dashboard
-    Timeline, TrendingUp, Memory, NetworkCheck // Added Timeline, TrendingUp, Memory, NetworkCheck
+    Security, Notifications, Storage, Speed, Refresh,
+    Save, Settings, 
+    Dashboard, // Added Dashboard
+    Timeline, Memory, NetworkCheck // Added Timeline, TrendingUp, Memory, NetworkCheck
 } from '@mui/icons-material'; // Importing Material-UI icons
 
 // Importing Redux actions from the adminSlice
@@ -79,7 +79,7 @@ const AdminSettings = () => {
     // State to hold the current time, used for the real-time clock display in the header.
     const [currentTime, setCurrentTime] = useState(new Date());
     // State to store the interval ID for the auto-refresh, allowing it to be cleared.
-    const [refreshInterval, setRefreshInterval] = useState(null);
+    const [, setRefreshInterval] = useState(null);
 
     // useEffect hook for real-time clock update.
     // Sets up an interval to update `currentTime` every second.
