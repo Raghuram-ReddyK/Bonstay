@@ -24,6 +24,7 @@ import AdminNotificationCenter from '../AdminDashboardComponents/AdminNotificati
 import { getApiUrl } from '../config/apiConfig';
 import { useAdminCodeRequests, useBookings, useHotels, useUser, useUsers } from '../hooks/useSWRData';
 import IncidentTickets from './IncidentTickets';
+import { useSelector } from 'react-redux';
 
 const AdminDashboard = () => {
     const [tabValue, setTabValue] = useState(0);
@@ -36,6 +37,9 @@ const AdminDashboard = () => {
     const [selectedRequest, setSelectedRequest] = useState('');
     // Get admin Id from session storage
     const adminId = sessionStorage.getItem('id');
+
+    // Get admin preferences  from Redux
+    const { adminPreferences } = useSelector(state => state.admin)
 
     // use SWR hooks for data fetching
     const { data: admin, error: adminError, isLoading: adminLoading } = useUser(adminId);
@@ -319,6 +323,7 @@ const AdminDashboard = () => {
                     allUsers={allUsers}
                     allBookings={allBookings}
                     allHotels={allHotels}
+                    dashboardLayout={adminPreferences?.dashboardLayout || 'grid'}
                 />
             </TabPanel>
 
@@ -327,6 +332,10 @@ const AdminDashboard = () => {
                     allUsers={allUsers}
                     allBookings={allBookings}
                     allHotels={allHotels}
+                    chartType={adminPreferences?.chartType || 'line'}
+                    dateFormat={adminPreferences?.dateFormat || 'MM/DD/YYYY'}
+                    language={adminPreferences?.language || 'en'}
+                    timezone={adminPreferences?.timezone || 'UTC'}
                     onRefresh={() => {
                         fetchAllUsers();
                         fetchAllBookings();
