@@ -10,9 +10,23 @@ import {
     Alert,
     Box,
     TextField,
-    Grid
+    Grid,
+    Paper,
+    InputAdornment,
+    MenuItem,
+    InputLabel,
+    FormControl,
+    Select,
+    Tooltip,
+    IconButton
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import {
+    Delete as DeleteIcon,
+    Edit as EditIcon,
+    Search as SearchIcon,
+    Clear as ClearIcon,
+    Info as InfoIcon
+} from '@mui/icons-material';
 import axios from 'axios';
 import CustomDataGrid from '../CommonComponents/CustomDataGrid';
 import ExcelExport from '../CommonComponents/ExcelExport';
@@ -30,6 +44,45 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
     const [rescheduling, setRescheduling] = useState(false);
     const [newCheckIn, setNewCheckIn] = useState('');
     const [newCheckOut, setNewCheckOut] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+
+    // Debug: Log the bookings data
+    console.log('BookingManagement - All Bookings:', allBookings);
+    console.log('BookingManagement - Bookings Count:', allBookings?.length || 0);
+
+    // Filter bookings based on search and status
+    const filteredBookings = React.useMemo(() => {
+        if (!allBookings) return [];
+
+        return allBookings.filter(booking => {
+            // Status filter
+            if (statusFilter !== 'all') {
+                const bookingStatus = booking.bookingStatus || booking.status || 'confirmed';
+                if (statusFilter !== bookingStatus.toLowerCase()) return false;
+            }
+
+            // Search filter
+            if (searchTerm) {
+                const searchLower = searchTerm.toLowerCase();
+                const searchableFields = [
+                    booking.id,
+                    booking.bookingReference,
+                    booking.userId,
+                    booking.userName,
+                    booking.userEmail,
+                    getHotelName(booking),
+                    booking.roomTypeName,
+                    booking.bookingStatus || booking.status
+                ].filter(Boolean).map(field => String(field).toLowerCase());
+
+                return searchableFields.some(field => field.includes(searchLower));
+            }
+
+            return true;
+        });
+    }, [allBookings, searchTerm, statusFilter, getHotelName]);
+
 
     // Calculate new nights and costs preview
     const calculateNewBookingDetails = () => {
@@ -113,7 +166,7 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
         {
             key: 'status',
             label: 'Status',
-            transform: (value, item) => item.status || 'confirmed'
+            transform: (value, item) => item.bookingStatus || item.status || 'confirmed'
         },
         {
             key: 'bookingDate',
@@ -124,7 +177,41 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
             key: 'createdBy',
             label: 'Created By',
             transform: (value, item) => item.createdBy || 'user'
+        },
+        {
+            key: 'cancelledAt',
+            label: 'Cancellation Date',
+            transform: (value, item) => {
+                const status = item.bookingStatus || item.status || 'confirmed';
+                if (status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'canceled') {
+                    return item.cancelledAt || item.cancellationDate || 'N/A';
+                }
+                return '';
+            }
+        },
+        {
+            key: 'cancelledBy',
+            label: 'Cancelled By',
+            transform: (value, item) => {
+                const status = item.bookingStatus || item.status || 'confirmed';
+                if (status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'canceled') {
+                    return item.cancelledBy || 'N/A';
+                }
+                return '';
+            }
+        },
+        {
+            key: 'cancellationReason',
+            label: 'Cancellation Reason',
+            transform: (value, item) => {
+                const status = item.bookingStatus || item.status || 'confirmed';
+                if (status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'canceled') {
+                    return item.cancellationReason || 'N/A';
+                }
+                return '';
+            }
         }
+
     ];
 
     // Open cancel confirmation dialog
@@ -174,7 +261,18 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
 
         setCancelling(true);
         try {
-            await axios.delete(getApiUrl(`/bookings/${selectedBooking.id}`));
+            // Instead of deleting, update the booking status to cancelled
+            const updatedBooking = {
+                ...selectedBooking,
+                bookingStatus: 'cancelled',
+                cancelledAt: new Date().toISOString(),
+                cancelledBy: 'admin',
+                lastModified: new Date().toISOString(),
+                cancellationReason: 'Cancelled by admin'
+            };
+
+            await axios.put(getApiUrl(`/bookings/${selectedBooking.id}`), updatedBooking);
+
             setCancelSuccess(`Booking ${selectedBooking.id} cancelled successfully by admin!`);
             setCancelDialog(false);
             setSelectedBooking(null);
@@ -267,6 +365,15 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
     };
     return (
         <Box>
+            {/* Debug Information */}
+            {process.env.NODE_ENV === 'development' && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                    <strong>Debug Info:</strong> Total bookings in database: {allBookings?.length || 0},
+                    Filtered bookings: {filteredBookings.length},
+                    Loading: {isLoading ? 'Yes' : 'No'}
+                </Alert>
+            )}
+
             {/* Success/Error Messages */}
             {cancelSuccess && (
                 <Alert severity="success" sx={{ mb: 2 }} onClose={() => setCancelSuccess('')}>
@@ -289,8 +396,101 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                 </Alert>
             )}
 
+            {/* Search and Filter Controls */}
+            <Paper elevation={1} sx={{ p: 2, mb: 3 }}>
+                <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} md={6}>
+                        <TextField
+                            fullWidth
+                            placeholder="Search by Booking ID, User, Email, Hotel, or Status..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: searchTerm && (
+                                    <InputAdornment position="end">
+                                        <Button
+                                            size="small"
+                                            onClick={() => setSearchTerm('')}
+                                            sx={{ minWidth: 'auto', p: 0.5 }}
+                                        >
+                                            <ClearIcon fontSize="small" />
+                                        </Button>
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                        <FormControl fullWidth>
+                            <InputLabel>Status Filter</InputLabel>
+                            <Select
+                                value={statusFilter}
+                                label="Status Filter"
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                            >
+                                <MenuItem value="all">All Statuses</MenuItem>
+                                <MenuItem value="confirmed">Confirmed</MenuItem>
+                                <MenuItem value="pending">Pending</MenuItem>
+                                <MenuItem value="cancelled">Cancelled</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                        <Box sx={{ textAlign: 'right' }}>
+                            <Typography variant="body2" color="text.secondary">
+                                Showing {filteredBookings.length} of {allBookings?.length || 0} bookings
+                            </Typography>
+                            {(searchTerm || statusFilter !== 'all') && (
+                                <Button
+                                    size="small"
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setStatusFilter('all');
+                                    }}
+                                    sx={{ mt: 0.5 }}
+                                >
+                                    Clear Filters
+                                </Button>
+                            )}
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Paper>
+
+            {/* Empty State */}
+            {!isLoading && filteredBookings.length === 0 && (
+                <Paper elevation={1} sx={{ p: 4, textAlign: 'center', mb: 3 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                        {allBookings?.length === 0 ? 'No Bookings Found' : 'No Results Found'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {allBookings?.length === 0
+                            ? 'There are no bookings in the system yet.'
+                            : 'Try adjusting your search terms or filters to find bookings.'
+                        }
+                    </Typography>
+                    {(searchTerm || statusFilter !== 'all') && (
+                        <Button
+                            variant="outlined"
+                            onClick={() => {
+                                setSearchTerm('');
+                                setStatusFilter('all');
+                            }}
+                        >
+                            Clear All Filters
+                        </Button>
+                    )}
+                </Paper>
+            )}
+
+
             <CustomDataGrid
-                rows={allBookings}
+                rows={filteredBookings}
                 columns={[
                     {
                         field: 'id',
@@ -400,65 +600,115 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                         headerName: 'Status',
                         width: 120,
                         sortable: true,
-                        renderCell: ({ row }) => (
-                            <Chip
-                                label={row.status || 'confirmed'}
-                                color={row.status === 'confirmed' ? 'success' : 'default'}
-                                size="small"
-                            />
-                        )
+                        renderCell: ({ row }) => {
+                            const status = row.bookingStatus || row.status || 'confirmed';
+                            const getStatusColor = (status) => {
+                                switch (status.toLowerCase()) {
+                                    case 'confirmed': return 'success';
+                                    case 'pending': return 'warning';
+                                    case 'cancelled': return 'error';
+                                    case 'canceled': return 'error';
+                                    default: return 'default';
+                                }
+                            };
+
+                            return (
+                                <Chip
+                                    label={status.charAt(0).toUpperCase() + status.slice(1)}
+                                    color={getStatusColor(status)}
+                                    size="small"
+                                />
+                            );
+                        }
                     },
                     {
                         field: 'actions',
                         headerName: 'Actions',
                         width: 180,
                         sortable: false,
-                        renderCell: ({ row }) => (
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Button
-                                    variant="outlined"
-                                    color="primary"
-                                    size="small"
-                                    startIcon={<EditIcon />}
-                                    onClick={() => openRescheduleDialog(row)}
-                                    sx={{
-                                        minWidth: 80,
-                                        fontSize: '0.75rem'
-                                    }}
-                                >
-                                    Reschedule
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    color="error"
-                                    size="small"
-                                    startIcon={<DeleteIcon />}
-                                    onClick={() => openCancelDialog(row)}
-                                    sx={{
-                                        minWidth: 80,
-                                        fontSize: '0.75rem'
-                                    }}
-                                >
-                                    Cancel
-                                </Button>
-                            </Box>
-                        )
+                        renderCell: ({ row }) => {
+                            const bookingStatus = row.bookingStatus || row.status || 'confirmed';
+                            const isCancelled = bookingStatus.toLowerCase() === 'cancelled' || bookingStatus.toLowerCase() === 'canceled';
+
+                            if (isCancelled) {
+                                const cancellationDetails = [
+                                    row.cancelledAt && `Cancelled: ${new Date(row.cancelledAt).toLocaleDateString()}`,
+                                    row.cancellationDate && !row.cancelledAt && `Cancelled: ${new Date(row.cancellationDate).toLocaleDateString()}`,
+                                    row.cancelledBy && `By: ${row.cancelledBy}`,
+                                    row.cancellationReason && `Reason: ${row.cancellationReason}`
+                                ].filter(Boolean).join('\n');
+
+                                return (
+                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                        <Chip
+                                            label="Cancelled"
+                                            color="error"
+                                            size="small"
+                                            variant="outlined"
+                                        />
+                                        {cancellationDetails && (
+                                            <Tooltip title={cancellationDetails} arrow>
+                                                <IconButton size="small" color="info">
+                                                    <InfoIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                    </Box>
+                                );
+                            }
+
+                            return (
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        size="small"
+                                        startIcon={<EditIcon />}
+                                        onClick={() => openRescheduleDialog(row)}
+                                        sx={{
+                                            minWidth: 80,
+                                            fontSize: '0.75rem'
+                                        }}
+                                    >
+                                        Reschedule
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        color="error"
+                                        size="small"
+                                        startIcon={<DeleteIcon />}
+                                        onClick={() => openCancelDialog(row)}
+                                        sx={{
+                                            minWidth: 80,
+                                            fontSize: '0.75rem'
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Box>
+                            );
+                        }
                     }
                 ]}
                 pageSize={5}
                 pageSizeOptions={[5, 10, 25]}
                 loading={isLoading}
                 title="Booking Management"
-                subtitle="View and manage all hotel bookings. Admins can reschedule or cancel any booking. Sort by any column and use pagination to navigate through bookings."
+                subtitle={`View and manage all hotel bookings Use search and filters to find specific bookings. Total bookings: ${allBookings?.length || 0}. ${filteredBookings.length !== allBookings?.length ? `Showing ${filteredBookings.length} filtered bookings.` : ''}`}
                 actions={
-                    <ExcelExport
-                        data={allBookings}
-                        headers={bookingExportHeaders}
-                        filename="Bookings_Export"
-                        sheetName="Bookings"
-                        buttonText="Export to Excel"
-                        onExport={(info) => console.log('Exported:', info)}
-                    />
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">
+                            Total: {filteredBookings.length} bookings
+                        </Typography>
+                        <ExcelExport
+                            data={filteredBookings}
+                            headers={bookingExportHeaders}
+                            filename="Bookings_Export"
+                            sheetName="Bookings"
+                            buttonText="Export Filtered Data"
+                            onExport={(info) => console.log('Exported:', info)}
+                        />
+                    </Box>
                 }
             />
 
@@ -496,7 +746,7 @@ const BookingManagement = ({ allBookings, isLoading, getHotelName, getRoomsCount
                     )}
                     <Alert severity="warning" sx={{ mt: 2 }}>
                         <Typography variant="body2">
-                            <strong>Warning:</strong> This action cannot be undone. The booking will be permanently removed from the system.
+                            <strong>Note:</strong> This will mark the booking as cancelled. The booking record will be preserved for reference, but the user will no longer be able to use this booking
                         </Typography>
                     </Alert>
                 </DialogContent>
