@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import axios from 'axios';
 
 import {
@@ -25,6 +25,7 @@ import { getApiUrl } from '../config/apiConfig';
 import { useAdminCodeRequests, useBookings, useHotels, useUser, useUsers } from '../hooks/useSWRData';
 import IncidentTickets from './IncidentTickets';
 import { useSelector } from 'react-redux';
+import useDashboardProtection from '../hooks/useDashboardProtection';
 
 const AdminDashboard = () => {
     const [tabValue, setTabValue] = useState(0);
@@ -37,6 +38,25 @@ const AdminDashboard = () => {
     const [selectedRequest, setSelectedRequest] = useState('');
     // Get admin Id from session storage
     const adminId = sessionStorage.getItem('id');
+    const userType = sessionStorage.getItem('userType');
+    const isLoggedIn = Boolean(adminId);
+
+    // Initialize dashboard protection for admin
+    const { initializeDashboardLock } = useDashboardProtection(
+        isLoggedIn,
+        adminId,
+        userType
+    );
+
+    // Initialize dashboard protection after component mounts
+    useEffect(() => {
+        if (isLoggedIn && adminId) {
+            // small delay to ensure navigation is complete
+            setTimeout(() => {
+                initializeDashboardLock();
+            }, 1000)
+        }
+    }, [isLoggedIn, adminId, initializeDashboardLock])
 
     // Get admin preferences  from Redux
     const { adminPreferences } = useSelector(state => state.admin)

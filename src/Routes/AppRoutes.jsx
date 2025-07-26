@@ -20,6 +20,7 @@ import ViewReviews from "../BonstayAfterLogin/ViewReviews";
 import View from "../BonstayAfterLogin/View";
 import ReSchedule from "../BonstayAfterLogin/ReSchedule";
 import PaymentPage from "../BonstayAfterLogin/PaymentPage";
+import LoginGuard from "./LoginGuard";
 
 const AppRoutes = ({ isLoggedIn, userId, setIsLoggedIn, setUserId }) => {
     const handleLogout = () => {
@@ -31,12 +32,28 @@ const AppRoutes = ({ isLoggedIn, userId, setIsLoggedIn, setUserId }) => {
     return (
         <Routes>
             <Route index path="/" element={<Home />} />
-            <Route path="/register" element={<RegistrationPage />} />
-            <Route path="/admin-code-request" element={<AdminCodeRequest />} />
+            <Route
+                path="/register"
+                element={
+                    <LoginGuard isLoggedIn={isLoggedIn}>
+                        <RegistrationPage />
+                    </LoginGuard>
+                }
+            />
+            <Route
+                path="/admin-code-request"
+                element={
+                    <LoginGuard isLoggedIn={isLoggedIn}>
+                        <AdminCodeRequest />
+                    </LoginGuard>
+                }
+            />
             <Route
                 path="/login"
                 element={
-                    <Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />
+                    <LoginGuard isLoggedIn={isLoggedIn}>
+                        <Login setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />
+                    </LoginGuard>
                 }
             />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />

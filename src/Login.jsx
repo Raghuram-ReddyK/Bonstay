@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Grid } from '@mui/material';
 import { useUser, useUserByEmail } from './hooks/useSWRData';
@@ -12,6 +12,21 @@ import IncidentTicketDialog from './BonstayAfterLogin/Login/IncidentTicketDialog
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
     const navigate = useNavigate();
+    // Prevent logged-in users from accessing login page
+    useEffect(() => {
+        const storedUserId = sessionStorage.getItem('id');
+        const storedUserType = sessionStorage.getItem('userType');
+
+        if (storedUserId && storedUserType) {
+            // User is already logged in, redirect to appropriate dashboard
+            if (storedUserType === 'admin') {
+                navigate(`/admin-dashboard/${storedUserId}`, { replace: true });
+            } else {
+                navigate(`/dashboard/${storedUserId}`, { replace: true });
+            }
+        }
+    }, [navigate]);
+
     const { updateUserFailedAttempts, createIncidentTicket, checkExistingTickets } = useAccountLockout();
 
     // Form states
@@ -166,12 +181,35 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
             setUserId(userData.id);
             setSuccess('Login successful!');
 
-            // Navigate based on user type
+            // Clear any existing history and prepare for dashboard lock
+            window.history.replaceState(null, null, window.location.pathname);
+
+            // Navigate based on user type with replace to prevent back navigation
             if (userData.userType === 'admin') {
-                navigate(`/admin-dashboard/${userData.id}`);
+                navigate(`/admin-dashboard/${userData.id}`, { replace: true });
             } else {
-                navigate(`/dashboard/${userData.id}`);
+                navigate(`/dashboard/${userData.id}`, { replace: true });
             }
+
+            // Initialize dashboard lock after navigation
+            setTimeout(() => {
+                const dashboardPath = userData.userType === 'admin'
+                    ? `/admin-dashboard/${userData.id}`
+                    : `/dashboard/${userData.id}`;
+
+                // Replace history with dashboard and add barrier
+                window.history.replaceState(
+                    { locked: true, dashboard: true },
+                    'Dashboard',
+                    dashboardPath
+                );
+                window.history.pushState(
+                    { locked: true, dashboard: true },
+                    'Dashboard',
+                    dashboardPath
+                );
+            }, 500);
+
         } catch (error) {
             console.error(error);
             setError('Error while logging in.');

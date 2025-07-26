@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-    Container, 
-    Typography, 
-    CircularProgress, 
-    Box, 
-    Card, 
-    CardContent, 
-    Grid, 
+import {
+    Container,
+    Typography,
+    CircularProgress,
+    Box,
+    Card,
+    CardContent,
+    Grid,
     Button,
     Chip,
     Avatar,
@@ -18,7 +18,7 @@ import {
     ListItemIcon,
     ListItemText
 } from '@mui/material';
-import { 
+import {
     Hotel as HotelIcon,
     BookOnline as BookIcon,
     Phone as PhoneIcon,
@@ -29,10 +29,25 @@ import {
     Security as SecurityIcon
 } from '@mui/icons-material';
 import { getApiUrl } from '../config/apiConfig';
+import { useNavigate } from 'react-router-dom';
+import useDashboardProtection from '../hooks/useDashboardProtection';
 
 const DashBoard = () => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
+
+    // Get user info for dashboard protection
+    const userId = sessionStorage.getItem('id');
+    const userType = sessionStorage.getItem('userType');
+    const isLoggedIn = Boolean(userId);
+
+    // Initialize dashboard protection
+    const { initializeDashboardLock, lockToDashboard } = useDashboardProtection(
+        isLoggedIn,
+        userId,
+        userType
+    );
 
     useEffect(() => {
         const fetchData = async () => {
@@ -40,7 +55,7 @@ const DashBoard = () => {
             try {
                 const userId = sessionStorage.getItem('id');
                 if (userId) {
-                    const response = await axios.get(getApiUrl(`/users/${userId}`)); 
+                    const response = await axios.get(getApiUrl(`/users/${userId}`));
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                     setUser(response.data);
                 } else {
@@ -54,6 +69,16 @@ const DashBoard = () => {
         };
         fetchData();
     }, []);
+
+    // Initialize dashboard protection after component mounts
+    useEffect(() => {
+        if (isLoggedIn && userId) {
+            // small delay to ensure navigation is complete
+            setTimeout(() => {
+                initializeDashboardLock();
+            }, 1000)
+        }
+    }, [isLoggedIn, userId, initializeDashboardLock])
 
     const services = [
         { icon: <BookIcon />, title: 'Easy Booking', description: 'Book your stay in just a few clicks' },
@@ -72,21 +97,21 @@ const DashBoard = () => {
                 ) : (
                     <>
                         {/* Welcome Section */}
-                        <Paper 
-                            elevation={3} 
-                            sx={{ 
-                                p: 4, 
-                                mb: 4, 
+                        <Paper
+                            elevation={3}
+                            sx={{
+                                p: 4,
+                                mb: 4,
                                 background: 'rgba(255,255,255,0.95)',
                                 backdropFilter: 'blur(10px)',
                                 borderRadius: 3
                             }}
                         >
                             <Box display="flex" alignItems="center" mb={2}>
-                                <Avatar 
-                                    sx={{ 
-                                        width: 80, 
-                                        height: 80, 
+                                <Avatar
+                                    sx={{
+                                        width: 80,
+                                        height: 80,
                                         mr: 3,
                                         bgcolor: 'primary.main',
                                         fontSize: '2rem',
@@ -99,15 +124,15 @@ const DashBoard = () => {
                                     <Typography variant="h3" component="h1" color="primary" gutterBottom>
                                         Welcome back, {user?.name || 'User'}!
                                     </Typography>
-                                    <Chip 
-                                        label="Premium Member" 
-                                        color="primary" 
+                                    <Chip
+                                        label="Premium Member"
+                                        color="primary"
                                         variant="outlined"
                                         sx={{ fontSize: '0.9rem', px: 1 }}
                                     />
                                 </Box>
                             </Box>
-                            
+
                             <Typography variant="h6" color="text.secondary" sx={{ fontStyle: 'italic' }}>
                                 "Bonstay always provides you an amazing and pleasant stay with your friends and family at reasonable prices."
                             </Typography>
@@ -117,12 +142,12 @@ const DashBoard = () => {
                         <Typography variant="h4" component="h2" gutterBottom sx={{ color: 'white', textAlign: 'center', mb: 3 }}>
                             Our Premium Services
                         </Typography>
-                        
+
                         <Grid container spacing={3} mb={4}>
                             {services.map((service, index) => (
                                 <Grid item xs={12} sm={6} md={3} key={index}>
-                                    <Card 
-                                        sx={{ 
+                                    <Card
+                                        sx={{
                                             height: '100%',
                                             background: 'rgba(255,255,255,0.9)',
                                             backdropFilter: 'blur(10px)',
@@ -134,9 +159,9 @@ const DashBoard = () => {
                                         }}
                                     >
                                         <CardContent sx={{ textAlign: 'center', p: 3 }}>
-                                            <Box 
-                                                sx={{ 
-                                                    color: 'primary.main', 
+                                            <Box
+                                                sx={{
+                                                    color: 'primary.main',
                                                     mb: 2,
                                                     '& svg': { fontSize: '3rem' }
                                                 }}
@@ -156,10 +181,10 @@ const DashBoard = () => {
                         </Grid>
 
                         {/* About Section */}
-                        <Paper 
-                            elevation={3} 
-                            sx={{ 
-                                p: 4, 
+                        <Paper
+                            elevation={3}
+                            sx={{
+                                p: 4,
                                 mb: 4,
                                 background: 'rgba(255,255,255,0.95)',
                                 backdropFilter: 'blur(10px)',
@@ -170,10 +195,10 @@ const DashBoard = () => {
                                 Why Choose Bonstay?
                             </Typography>
                             <Typography variant="body1" paragraph sx={{ fontSize: '1.1rem', lineHeight: 1.8 }}>
-                                We provide well-designed spaces with modern amenities that ensure your comfort and satisfaction. 
+                                We provide well-designed spaces with modern amenities that ensure your comfort and satisfaction.
                                 Our efficient booking system allows you to reserve a room faster and easier than ever before.
                             </Typography>
-                            
+
                             <Grid container spacing={2} mt={2}>
                                 <Grid item xs={12} md={6}>
                                     <List>
@@ -181,8 +206,8 @@ const DashBoard = () => {
                                             <ListItemIcon>
                                                 <HotelIcon color="primary" />
                                             </ListItemIcon>
-                                            <ListItemText 
-                                                primary="Luxury Accommodations" 
+                                            <ListItemText
+                                                primary="Luxury Accommodations"
                                                 secondary="Premium rooms with modern facilities"
                                             />
                                         </ListItem>
@@ -190,8 +215,8 @@ const DashBoard = () => {
                                             <ListItemIcon>
                                                 <SecurityIcon color="primary" />
                                             </ListItemIcon>
-                                            <ListItemText 
-                                                primary="Secure Booking" 
+                                            <ListItemText
+                                                primary="Secure Booking"
                                                 secondary="Safe and encrypted payment processing"
                                             />
                                         </ListItem>
@@ -203,8 +228,8 @@ const DashBoard = () => {
                                             <ListItemIcon>
                                                 <StarIcon color="primary" />
                                             </ListItemIcon>
-                                            <ListItemText 
-                                                primary="5-Star Experience" 
+                                            <ListItemText
+                                                primary="5-Star Experience"
                                                 secondary="Exceptional service and hospitality"
                                             />
                                         </ListItem>
@@ -212,8 +237,8 @@ const DashBoard = () => {
                                             <ListItemIcon>
                                                 <LocationIcon color="primary" />
                                             </ListItemIcon>
-                                            <ListItemText 
-                                                primary="Prime Locations" 
+                                            <ListItemText
+                                                primary="Prime Locations"
                                                 secondary="Strategic locations across major cities"
                                             />
                                         </ListItem>
@@ -223,9 +248,9 @@ const DashBoard = () => {
                         </Paper>
 
                         {/* Contact Section */}
-                        <Paper 
-                            elevation={3} 
-                            sx={{ 
+                        <Paper
+                            elevation={3}
+                            sx={{
                                 p: 4,
                                 background: 'rgba(255,255,255,0.95)',
                                 backdropFilter: 'blur(10px)',
@@ -236,7 +261,7 @@ const DashBoard = () => {
                                 Get in Touch
                             </Typography>
                             <Divider sx={{ mb: 3 }} />
-                            
+
                             <Grid container spacing={3}>
                                 <Grid item xs={12} md={4}>
                                     <Box display="flex" alignItems="center" mb={2}>
@@ -251,7 +276,7 @@ const DashBoard = () => {
                                         </Box>
                                     </Box>
                                 </Grid>
-                                
+
                                 <Grid item xs={12} md={4}>
                                     <Box display="flex" alignItems="center" mb={2}>
                                         <PhoneIcon color="primary" sx={{ mr: 2 }} />
@@ -265,7 +290,7 @@ const DashBoard = () => {
                                         </Box>
                                     </Box>
                                 </Grid>
-                                
+
                                 <Grid item xs={12} md={4}>
                                     <Box display="flex" alignItems="center" mb={2}>
                                         <LocationIcon color="primary" sx={{ mr: 2 }} />
@@ -282,12 +307,13 @@ const DashBoard = () => {
                             </Grid>
 
                             <Box textAlign="center" mt={4}>
-                                <Button 
-                                    variant="contained" 
-                                    size="large" 
+                                <Button
+                                    variant="contained"
+                                    size="large"
                                     color="primary"
-                                    sx={{ 
-                                        px: 4, 
+                                    onClick={() => navigate('/hotels')}
+                                    sx={{
+                                        px: 4,
                                         py: 1.5,
                                         borderRadius: 3,
                                         textTransform: 'none',

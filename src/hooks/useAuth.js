@@ -23,7 +23,12 @@ const useAuth = () => {
     setUserId(null);
     setUserType(null);
     addNotification("Logged out successfully!");
-    navigate("/");
+    // Navigate to home with replace to prevent going back to protected routes
+    navigate("/", { replace: true });
+
+    // Optional: Clear history stack to prevent back navigation to protected pages
+    // This will replace the entire history with just the home page
+    window.history.replaceState(null, null, "/");
   };
 
   return {
