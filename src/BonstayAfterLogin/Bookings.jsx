@@ -1,4 +1,4 @@
-import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert, Tabs, Tab, Box, Chip, TextField } from '@mui/material';
+import { Button, Container, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Link as MuiLink, CircularProgress, Alert, Tabs, Tab, Box, Chip, TextField } from '@mui/material';
 import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -94,7 +94,6 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                     <Typography variant="h5">Loading your bookings...</Typography>
                 </Box>
             </Box>
-
         );
     }
 
@@ -119,7 +118,6 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                     </Alert>
                 </Container>
             </Box>
-
         );
     }
 
@@ -331,7 +329,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                                     {booking.paymentStatus && (
                                         <div className="text-center mt-2">
                                             <span className={`badge ${booking.paymentStatus === 'paid' ? 'bg-success' :
-                                                booking.paymentStatus === 'partial' ? 'bg-warning' : 'bg-danger'
+                                                    booking.paymentStatus === 'partial' ? 'bg-warning' : 'bg-danger'
                                                 }`}>
                                                 Payment: {booking.paymentStatus}
                                             </span>
@@ -426,11 +424,6 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                                     {booking.cancelledBy && (
                                         <Typography variant="caption" color="text.secondary" display="block">
                                             Cancelled by: {booking.cancelledBy}
-                                        </Typography>
-                                    )}
-                                    {booking.cancellationReason && (
-                                        <Typography variant="caption" color="text.secondary" display="block">
-                                            Reason: {booking.cancellationReason}
                                         </Typography>
                                     )}
                                 </Box>

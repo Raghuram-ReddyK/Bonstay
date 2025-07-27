@@ -36,18 +36,24 @@ const FinalizationTable = () => {
 
     // Finalize selected bookings
     const handleFinalizeBookings = async () => {
+        // Ensure there are bookings selected for finalization
         if (selectedForFinalization.length === 0 || selectedFinalizationBookings.length === 0) {
             dispatch(setErrors({ finalization: true }));
             return;
         }
 
+        // Filter to get only the bookings that are currently selected in the table
         const bookingsToFinalize = selectedForFinalization.filter(
             booking => selectedFinalizationBookings.includes(booking.tempId)
         );
 
+        // Map the selected bookings to the structure required for the API call
         const bookingsData = bookingsToFinalize.map(booking => ({
+            // Generate a unique ID for the new booking
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            userId: booking.userId,
+            // Crucially, ensure 'userId' is the ID of the customer for whom the booking is intended.
+            // This 'userId' should come from the initial "Add Booking" form where the admin specifies the user.
+            userId: booking.userId, 
             hotelId: booking.hotelId,
             hotelName: booking.hotelName,
             checkIn: booking.checkIn,
@@ -55,26 +61,29 @@ const FinalizationTable = () => {
             guests: booking.guests,
             rooms: booking.rooms,
             roomType: booking.roomType,
-            status: 'confirmed',
-            bookingDate: new Date().toISOString().split('T')[0],
-            createdBy: 'admin',
-            createdAt: new Date().toISOString(),
+            status: 'confirmed', // Set initial status to 'confirmed'
+            bookingDate: new Date().toISOString().split('T')[0], // Current date of booking creation
+            createdBy: 'admin', // Indicates that this booking was created by an admin
+            createdAt: new Date().toISOString(), // Timestamp of creation
+            // Include legacy fields for compatibility if needed by the backend or other components
             noOfPersons: booking.guests,
             noOfRooms: booking.rooms,
             typeOfRoom: booking.roomType,
             startDate: booking.checkIn,
             endDate: booking.checkOut,
-            tempId: booking.tempId
+            tempId: booking.tempId // Retain tempId for internal state management if necessary
         }));
 
+        // Dispatch the action to create multiple bookings via the Redux slice
         dispatch(createMultipleBookings(bookingsData));
     };
 
-    // Column definitions for finalization table
+    // Column definitions for the finalization table
     const finalizationColumns = [
         {
             headerName: 'User',
             width: 180,
+            // Displays userName if available, otherwise falls back to userId
             valueGetter: ({ row }) => row.userName || row.userId
         },
         {
@@ -88,7 +97,8 @@ const FinalizationTable = () => {
             width: 120
         },
         {
-            field: 'checkout',
+            // Corrected field name from 'checkout' to 'checkOut' to match data property
+            field: 'checkOut', 
             headerName: 'Check Out',
             width: 120
         },
@@ -113,6 +123,7 @@ const FinalizationTable = () => {
             field: 'duration',
             headerName: 'Duration',
             width: 100,
+            // Displays duration in a user-friendly format (e.g., "3 nights")
             valueGetter: ({ row }) =>
                 `${row.duration} night${row.duration > 1 ? 's' : ''}`
         },
@@ -120,7 +131,7 @@ const FinalizationTable = () => {
             field: 'status',
             headerName: 'Status',
             width: 100,
-            valueGetter: () => 'Ready'
+            valueGetter: () => 'Ready' // All bookings in this table are considered 'Ready' for finalization
         }
     ];
 
@@ -147,6 +158,7 @@ const FinalizationTable = () => {
                         size="large"
                         startIcon={<CheckCircleIcon />}
                         onClick={handleFinalizeBookings}
+                        // Disable button if no bookings are selected or if a creation process is ongoing
                         disabled={selectedFinalizationBookings.length === 0 || loading.creating}
                         sx={{ px: 3 }}
                     >
@@ -162,6 +174,7 @@ const FinalizationTable = () => {
                 </Box>
             </Box>
 
+            {/* Error alert for finalization */}
             {errors.finalization && (
                 <Alert severity="error" sx={{ mb: 2 }}>
                     {selectedForFinalization.length === 0
@@ -170,10 +183,12 @@ const FinalizationTable = () => {
                 </Alert>
             )}
 
+            {/* Info alert for user guidance */}
             <Alert severity="success" sx={{ mb: 2 }}>
                 Select bookings to finalize using checkboxes, then click "Finalize Selected" to create the bookings.
             </Alert>
 
+            {/* Custom DataGrid to display bookings selected for finalization */}
             <CustomDataGrid
                 rows={selectedForFinalization}
                 columns={finalizationColumns}
@@ -182,7 +197,7 @@ const FinalizationTable = () => {
                 checkboxSelection={true}
                 selectedRows={selectedFinalizationBookings}
                 onSelectionChange={(newSelection) => dispatch(setSelectedFinalizationBookings(newSelection))}
-                rowIdField="tempId"
+                rowIdField="tempId" // Use tempId as the unique identifier for rows
             />
         </Paper>
     );

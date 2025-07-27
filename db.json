@@ -296,6 +296,12 @@
       "bookingId": "2a93",
       "amount": 1,
       "method": "Google Pay"
+    },
+    {
+      "id": "b6f1",
+      "bookingId": "228b",
+      "amount": 1,
+      "method": "Google Pay"
     }
   ],
   "hotels": [
@@ -1426,6 +1432,116 @@
       "cancelledAt": "2025-07-25T19:45:05.767Z",
       "cancelledBy": "admin",
       "cancellationReason": "Cancelled by admin"
+    },
+    {
+      "id": "e4a8"
+    },
+    {
+      "id": "1b1b"
+    },
+    {
+      "id": "fbc6"
+    },
+    {
+      "id": "881f"
+    },
+    {
+      "id": "85c5"
+    },
+    {
+      "id": "857e"
+    },
+    {
+      "id": "6519"
+    },
+    {
+      "id": "600c"
+    },
+    {
+      "id": "adee"
+    },
+    {
+      "id": "70c1"
+    },
+    {
+      "id": "228b",
+      "startDate": "2025-07-28T00:00:00.000Z",
+      "endDate": "2025-07-30T00:00:00.000Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "hp_deluxe",
+      "hotelId": "2",
+      "userId": "2b33",
+      "bookingReference": "BNS1753617694518",
+      "userName": "Guest",
+      "userEmail": "",
+      "userPhone": "",
+      "hotelName": "Hill Palace Resort & Spa",
+      "roomTypeId": "hp_deluxe",
+      "roomTypeName": "Deluxe Garden Suite",
+      "checkIn": "2025-07-28",
+      "checkOut": "2025-07-30",
+      "nights": 2,
+      "guests": 1,
+      "adults": 1,
+      "children": 0,
+      "rooms": 1,
+      "pricePerNight": 7200,
+      "totalRoomCost": 14400,
+      "taxes": 2592,
+      "totalAmount": 16992,
+      "paymentStatus": "pending",
+      "bookingStatus": "confirmed",
+      "bookingDate": "2025-07-27T12:01:34.518Z",
+      "lastModified": "2025-07-27T12:01:34.518Z",
+      "specialRequests": "",
+      "cancellationPolicy": "Free cancellation up to 24 hours before check-in",
+      "createdBy": "user",
+      "paymentMethod": "",
+      "confirmationSent": false,
+      "reminderSent": false
+    },
+    {
+      "id": "1753617739595m4zhvbq6i",
+      "userId": "2b33",
+      "hotelId": "3",
+      "hotelName": "Monsoon Stay Business Hotel",
+      "checkIn": "2025-07-28",
+      "checkOut": "2025-07-31",
+      "guests": 1,
+      "rooms": 1,
+      "roomType": "Executive",
+      "status": "confirmed",
+      "bookingDate": "2025-07-27",
+      "createdBy": "admin",
+      "createdAt": "2025-07-27T12:02:19.595Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "Executive",
+      "startDate": "2025-07-28",
+      "endDate": "2025-07-31",
+      "tempId": "1753617731688"
+    },
+    {
+      "id": "17536177996137gm3tzom8",
+      "userId": "2b33",
+      "hotelId": "5",
+      "hotelName": "Sunset Tower Beach Resort",
+      "checkIn": "2025-07-31",
+      "checkOut": "2025-08-15",
+      "guests": 1,
+      "rooms": 1,
+      "roomType": "standard",
+      "status": "confirmed",
+      "bookingDate": "2025-07-27",
+      "createdBy": "admin",
+      "createdAt": "2025-07-27T12:03:19.613Z",
+      "noOfPersons": 1,
+      "noOfRooms": 1,
+      "typeOfRoom": "standard",
+      "startDate": "2025-07-31",
+      "endDate": "2025-08-15",
+      "tempId": "1753617789820"
     }
   ],
   "forgot-password": [

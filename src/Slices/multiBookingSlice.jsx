@@ -11,7 +11,10 @@ export const createMultipleBookings = createAsyncThunk(
 
             for (const booking of bookingsData) {
                 try {
-                    const response = await axios.post(getApiUrl('/bookings', booking));
+                    // CORRECTED: Pass the booking object as the second argument to axios.post
+                    // getApiUrl('/bookings') should return the full endpoint URL (e.g., 'http://localhost:3001/bookings')
+                    // and 'booking' is the data payload to be sent in the request body.
+                    const response = await axios.post(getApiUrl('/bookings'), booking);
                     results.push({ success: true, data: response.data, booking });
                 } catch (error) {
                     results.push({
@@ -23,6 +26,7 @@ export const createMultipleBookings = createAsyncThunk(
             }
             return results;
         } catch (error) {
+            // This catch block handles errors that occur before individual requests are sent (e.g., network issues)
             return rejectWithValue(error.response?.data || error.message);
         }
     }
