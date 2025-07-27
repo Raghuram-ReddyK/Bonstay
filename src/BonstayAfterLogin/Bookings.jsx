@@ -295,9 +295,14 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                         {/* Enhanced booking display */}
                         {isEnhancedBooking ? (
                             <>
-                                <p className="text-muted mb-2">
-                                    <small>Booking Reference: {booking.bookingReference}</small>
-                                </p>
+                                <div className="mb-2">
+                                    <p className="text-muted mb-1">
+                                        <small><b>Booking ID:</b> {booking.id}</small>
+                                    </p>
+                                    <p className="text-muted mb-2">
+                                        <small><b>Reference:</b> {booking.bookingReference}</small>
+                                    </p>
+                                </div>
                                 <div className="row">
                                     <div className="col-6">
                                         <p><b>Check-in:</b><br />{new Date(booking.checkIn).toLocaleDateString()}</p>
@@ -329,7 +334,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                                     {booking.paymentStatus && (
                                         <div className="text-center mt-2">
                                             <span className={`badge ${booking.paymentStatus === 'paid' ? 'bg-success' :
-                                                    booking.paymentStatus === 'partial' ? 'bg-warning' : 'bg-danger'
+                                                booking.paymentStatus === 'partial' ? 'bg-warning' : 'bg-danger'
                                                 }`}>
                                                 Payment: {booking.paymentStatus}
                                             </span>

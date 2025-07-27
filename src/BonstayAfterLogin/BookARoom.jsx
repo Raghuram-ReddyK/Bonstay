@@ -88,51 +88,89 @@ const BookARoom = () => {
 
     if (validateForm()) {
       const userId = sessionStorage.getItem('id');
-      const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      // Fix nights calculation to ensure minimum 1 night
+      const checkInDate = new Date(startDate);
+      const checkOutDate = new Date(endDate);
+      const timeDiffMs = checkOutDate.getTime() - checkInDate.getTime();
+      const nights = Math.max(1, Math.ceil(timeDiffMs / (1000 * 60 * 60 * 24)));
       const roomCost = selectedRoomType ? selectedRoomType.pricePerNight * nights * noOfRooms : 0;
       const taxes = Math.round(roomCost * 0.18); // 18% tax
       const totalAmount = roomCost + taxes;
 
+      // Generate booking ID with BK + 8 random digits
+      const generateBookingId = () => {
+        const randomDigits = Math.random().toString().slice(2, 10); // 8 random digits
+        return `BK${randomDigits}`;
+      };
+
+      // Generate booking reference
+      const generateBookingReference = () => {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const time = String(date.getHours()).padStart(2, '0') + String(date.getMinutes()).padStart(2, '0');
+        const random = Math.random().toString().slice(2, 4);
+        return `BNS${year}${month}${day}${time}${random}`;
+      };
+
       // Create enhanced booking object
       const bookingData = {
+        // New format booking ID
+        id: generateBookingId(),
+        bookingReference: generateBookingReference(),
+
+        // User information
+        userId: userId,
+        userName: sessionStorage.getItem('name') || 'Guest',
+        userEmail: sessionStorage.getItem('email') || '',
+        userPhone: sessionStorage.getItem('phoneNo') || '',
+
+        // Hotel information
+        hotelId: id,
+        hotelName: hotel?.hotelName || hotelName,
+        roomTypeId: selectedRoomType?.id,
+        roomTypeName: selectedRoomType?.name || typeOfRoom,
+
+        // Booking dates
+        checkIn: startDate.toISOString().split('T')[0],
+        checkOut: endDate.toISOString().split('T')[0],
+        nights: nights,
+
+        // Guest information
+        guests: noOfPersons,
+        adults: noOfPersons,
+        children: 0,
+        rooms: noOfRooms,
+
+        // Financial details
+        pricePerNight: selectedRoomType?.pricePerNight || 0,
+        totalRoomCost: roomCost,
+        taxes: taxes,
+        totalAmount: totalAmount,
+
+        // Booking status
+        paymentStatus: 'pending',
+        bookingStatus: 'confirmed',
+        bookingDate: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+
+        // Additional details
+        specialRequests: '',
+        cancellationPolicy: hotel?.policies?.cancellation || 'Free cancellation up to 24 hours before check-in',
+        createdBy: 'user',
+        paymentMethod: '',
+        confirmationSent: false,
+        reminderSent: false,
+
         // Legacy fields for compatibility
         startDate,
         endDate,
         noOfPersons,
         noOfRooms,
         typeOfRoom,
-        hotelId: id,
-        userId: userId,
-
-        // Enhanced fields
-        bookingReference: `BNS${Date.now()}`,
-        userName: sessionStorage.getItem('name') || 'Guest',
-        userEmail: sessionStorage.getItem('email') || '',
-        userPhone: sessionStorage.getItem('phoneNo') || '',
-        hotelName: hotel?.hotelName || hotelName,
-        roomTypeId: selectedRoomType?.id,
-        roomTypeName: selectedRoomType?.name || typeOfRoom,
-        checkIn: startDate.toISOString().split('T')[0],
-        checkOut: endDate.toISOString().split('T')[0],
-        nights: nights,
-        guests: noOfPersons,
-        adults: noOfPersons,
-        children: 0,
-        rooms: noOfRooms,
-        pricePerNight: selectedRoomType?.pricePerNight || 0,
-        totalRoomCost: roomCost,
-        taxes: taxes,
-        totalAmount: totalAmount,
-        paymentStatus: 'pending',
-        bookingStatus: 'confirmed',
-        bookingDate: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-        specialRequests: '',
-        cancellationPolicy: hotel?.policies?.cancellation || 'Standard cancellation policy',
-        createdBy: 'user',
-        paymentMethod: '',
-        confirmationSent: false,
-        reminderSent: false
+        status: 'confirmed',
+        createdAt: new Date().toISOString()
       };
 
       axios
@@ -185,7 +223,7 @@ const BookARoom = () => {
     );
   }
 
-  const nights = startDate && endDate ? Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) : 0;
+  const nights = startDate && endDate ? Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))) : 0;
   const roomCost = selectedRoomType && nights ? selectedRoomType.pricePerNight * nights * noOfRooms : 0;
   const taxes = Math.round(roomCost * 0.18);
   const totalAmount = roomCost + taxes;

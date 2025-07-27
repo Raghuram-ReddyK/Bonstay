@@ -4,7 +4,7 @@ import {
     Box,
     Alert
 } from '@mui/material';
-import { clearMessage } from '../../Slices/multiBookingSlice';
+import { clearMessages } from '../../Slices/multiBookingSlice';
 
 const StatusDisplay = () => {
     const dispatch = useDispatch();
@@ -22,7 +22,7 @@ const StatusDisplay = () => {
                 <Alert
                     severity="error"
                     sx={{ mb: 2 }}
-                    onClose={() => dispatch(clearMessage())}
+                    onClose={() => dispatch(clearMessages())}
                 >
                     {error}
                 </Alert>
@@ -33,7 +33,7 @@ const StatusDisplay = () => {
                 <Alert
                     severity="success"
                     sx={{ mb: 2 }}
-                    onClose={() => dispatch(clearMessage())}
+                    onClose={() => dispatch(clearMessages())}
                 >
                     <Typography variant="subtitle1" gutterBottom>
                         Booking Creation Results:

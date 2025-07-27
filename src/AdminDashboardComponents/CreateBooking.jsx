@@ -8,7 +8,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     clearFormErrors,
-    clearMessage,
+    clearMessages,
     fetchHotels,
     fetchUsers,
 } from '../Slices/multiBookingSlice';
@@ -29,7 +29,7 @@ const CreateBooking = () => {
         dispatch(fetchHotels());
 
         return () => {
-            dispatch(clearMessage());
+            dispatch(clearMessages());
         };
     }, [dispatch]);
 
