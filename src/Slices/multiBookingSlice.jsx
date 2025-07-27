@@ -204,6 +204,44 @@ const multiBookingSlice = createSlice({
             state.selectedFinalizationBookings = [];
         },
 
+        updateBookingDate: (state, action) => {
+            const { bookingId, dateType, newDate } = action.payload;
+
+            // Update in available bookings
+            const availableBookingIndex = state.availableBookings.findIndex(
+                booking => booking.tempId === bookingId
+            );
+            if (availableBookingIndex !== -1) {
+                state.availableBookings[availableBookingIndex][dateType] = newDate;
+
+                // Recalculate duration if both dates are present
+                const booking = state.availableBookings[availableBookingIndex];
+                if (booking.checkIn && booking.checkOut) {
+                    const checkInDate = new Date(booking.checkIn);
+                    const checkOutDate = new Date(booking.checkOut);
+                    const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
+                    booking.duration = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                }
+            }
+
+            // Update in finalization bookings if exists
+            const finalizationBookingIndex = state.selectedForFinalization.findIndex(
+                booking => booking.tempId === bookingId
+            );
+            if (finalizationBookingIndex !== -1) {
+                state.selectedForFinalization[finalizationBookingIndex][dateType] = newDate;
+
+                // Recalculate duration if both dates are present
+                const booking = state.selectedForFinalization[finalizationBookingIndex];
+                if (booking.checkIn && booking.checkOut) {
+                    const checkInDate = new Date(booking.checkIn);
+                    const checkOutDate = new Date(booking.checkOut);
+                    const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
+                    booking.duration = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                }
+            }
+        },
+
         // Reset states
         resetMultiBookingsState: (state) => {
             return initialState;
@@ -287,6 +325,7 @@ export const {
     clearSelection,
     moveToFinalization,
     moveBackToAvailable,
+    updateBookingDate,
     resetMultiBookingsState,
     clearMessage
 } = multiBookingSlice.actions;
