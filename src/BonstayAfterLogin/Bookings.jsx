@@ -34,64 +34,92 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
     // Separate bookings into active, past, and cancelled based on status and dates
     const { activeBookings, pastBookings, cancelledBookings } = React.useMemo(() => {
         if (!bookings) return { activeBookings: [], pastBookings: [], cancelledBookings: [] };
-        
+
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Set to start of today
-        
+
         const active = [];
         const past = [];
         const cancelled = [];
-        
+
         bookings.forEach(booking => {
             const bookingStatus = booking.bookingStatus || booking.status || 'confirmed';
-            
+
             // Check if booking is cancelled
             if (bookingStatus === 'cancelled' || bookingStatus === 'canceled') {
                 cancelled.push(booking);
                 return;
             }
-            
+
             // For non-cancelled bookings, check dates
             const checkOutDate = new Date(booking.checkOut || booking.endDate);
             checkOutDate.setHours(0, 0, 0, 0); // Set to start of day for comparison
-            
+
             if (checkOutDate >= today) {
                 active.push(booking);
             } else {
                 past.push(booking);
             }
         });
-        
+
         // Sort active bookings by check-in date (nearest first)
         active.sort((a, b) => new Date(a.checkIn || a.startDate) - new Date(b.checkIn || b.startDate));
-        
+
         // Sort past bookings by check-out date (most recent first)
         past.sort((a, b) => new Date(b.checkOut || b.endDate) - new Date(a.checkOut || a.endDate));
-        
+
         // Sort cancelled bookings by last modified date (most recent first)
         cancelled.sort((a, b) => new Date(b.lastModified || b.bookingDate || b.createdAt) - new Date(a.lastModified || a.bookingDate || a.createdAt));
-        
+
         return { activeBookings: active, pastBookings: past, cancelledBookings: cancelled };
     }, [bookings]);
 
     // Check for loading states
     if (bookingsLoading || hotelsLoading) {
         return (
-            <Container sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                <CircularProgress />
-                <Typography variant="h6" sx={{ ml: 2 }}>Loading bookings...</Typography>
-            </Container>
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2080&q=80")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundAttachment: 'fixed',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}
+            >
+                <Box sx={{ textAlign: 'center', color: 'white' }}>
+                    <CircularProgress sx={{ color: 'white', mb: 2 }} size={60} />
+                    <Typography variant="h5">Loading your bookings...</Typography>
+                </Box>
+            </Box>
+
         );
     }
 
     // Check for errors
     if (bookingsError || hotelsError) {
         return (
-            <Container sx={{ mt: 4 }}>
-                <Alert severity="error">
-                    Error loading data: {bookingsError?.message || hotelsError?.message}
-                </Alert>
-            </Container>
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2080&q=80")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundAttachment: 'fixed',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}
+            >
+                <Container sx={{ mt: 4 }}>
+                    <Alert severity="error" sx={{ backgroundColor: 'rgba(255,255,255,0.9)' }}>
+                        Error loading data: {bookingsError?.message || hotelsError?.message}
+                    </Alert>
+                </Container>
+            </Box>
+
         );
     }
 
@@ -117,7 +145,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
             };
 
             await axios.put(getApiUrl(`/bookings/${bookingId}`), updatedBooking);
-            
+
             // Refresh bookings data after cancellation
             mutateBookings();
             setCancelSuccess(`Booking cancelled successfully! Booking ID: ${bookingId}`);
@@ -144,7 +172,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
     // Export to Excel (with filtering by current tab)
     const handleExportExcel = () => {
         let currentBookings, fileName, sheetName;
-        
+
         if (tabValue === 0) {
             currentBookings = activeBookings;
             fileName = 'active-bookings.xlsx';
@@ -158,7 +186,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
             fileName = 'cancelled-bookings.xlsx';
             sheetName = 'Cancelled Bookings';
         }
-        
+
         const data = currentBookings.map((booking) => ({
             'Booking ID': booking.id,
             'Booking Reference': booking.bookingReference || 'N/A',
@@ -199,7 +227,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
         } else {
             title = 'Cancelled Bookings';
         }
-        
+
         const printWindow = window.open('', '', 'height=600,width=800');
         printWindow.document.write(`
             <html>
@@ -230,7 +258,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
         const today = new Date();
         const checkIn = new Date(booking.checkIn || booking.startDate);
         const checkOut = new Date(booking.checkOut || booking.endDate);
-        
+
         if (today < checkIn) {
             return { status: 'upcoming', color: 'info', label: 'Upcoming' };
         } else if (today >= checkIn && today < checkOut) {
@@ -245,7 +273,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
         const hotelName = booking.hotelName || hotelMap[String(booking.hotelId)] || 'Unknown Hotel';
         const isEnhancedBooking = booking.bookingReference;
         const currentStatus = getBookingCurrentStatus(booking);
-        
+
         return (
             <div key={booking.id} className="col">
                 <div className={`card h-100 shadow-sm ${isCancelledBooking ? 'border-danger' : ''}`}>
@@ -258,14 +286,14 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                                         {booking.bookingStatus || 'confirmed'}
                                     </span>
                                 )}
-                                <Chip 
-                                    label={isCancelledBooking ? 'Cancelled' : currentStatus.label} 
-                                    color={isCancelledBooking ? 'error' : currentStatus.color} 
+                                <Chip
+                                    label={isCancelledBooking ? 'Cancelled' : currentStatus.label}
+                                    color={isCancelledBooking ? 'error' : currentStatus.color}
                                     size="small"
                                 />
                             </div>
                         </div>
-                        
+
                         {/* Enhanced booking display */}
                         {isEnhancedBooking ? (
                             <>
@@ -274,17 +302,17 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                                 </p>
                                 <div className="row">
                                     <div className="col-6">
-                                        <p><b>Check-in:</b><br/>{new Date(booking.checkIn).toLocaleDateString()}</p>
-                                        <p><b>Check-out:</b><br/>{new Date(booking.checkOut).toLocaleDateString()}</p>
+                                        <p><b>Check-in:</b><br />{new Date(booking.checkIn).toLocaleDateString()}</p>
+                                        <p><b>Check-out:</b><br />{new Date(booking.checkOut).toLocaleDateString()}</p>
                                         <p><b>Guests:</b> {booking.guests}</p>
                                     </div>
                                     <div className="col-6">
                                         <p><b>Nights:</b> {booking.nights}</p>
                                         <p><b>Rooms:</b> {booking.rooms}</p>
-                                        <p><b>Room Type:</b><br/>{booking.roomTypeName}</p>
+                                        <p><b>Room Type:</b><br />{booking.roomTypeName}</p>
                                     </div>
                                 </div>
-                                
+
                                 {/* Pricing Information */}
                                 <div className="mt-3 p-2 bg-light rounded">
                                     <div className="d-flex justify-content-between">
@@ -295,23 +323,22 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                                         <span>Taxes:</span>
                                         <span>₹{booking.taxes?.toLocaleString()}</span>
                                     </div>
-                                    <hr className="my-1"/>
+                                    <hr className="my-1" />
                                     <div className="d-flex justify-content-between fw-bold">
                                         <span>Total Amount:</span>
                                         <span className="text-success">₹{booking.totalAmount?.toLocaleString()}</span>
                                     </div>
                                     {booking.paymentStatus && (
                                         <div className="text-center mt-2">
-                                            <span className={`badge ${
-                                                booking.paymentStatus === 'paid' ? 'bg-success' : 
+                                            <span className={`badge ${booking.paymentStatus === 'paid' ? 'bg-success' :
                                                 booking.paymentStatus === 'partial' ? 'bg-warning' : 'bg-danger'
-                                            }`}>
+                                                }`}>
                                                 Payment: {booking.paymentStatus}
                                             </span>
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {/* Special Requests */}
                                 {booking.specialRequests && (
                                     <div className="mt-2">
@@ -320,7 +347,7 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
                                         </small>
                                     </div>
                                 )}
-                                
+
                                 {/* Cancellation Info for enhanced bookings */}
                                 {isCancelledBooking && (
                                     <div className="mt-2 p-2 bg-light border-start border-danger border-3">
@@ -416,208 +443,253 @@ const Bookings = ({ userId }) => { // Destructure userId prop here
     };
 
     return (
-        <Container className="text-center">
-            <Typography variant="h3" color="primary" gutterBottom>
-                My Bookings
-            </Typography>
-            
-            {cancelSuccess && <Alert severity="success" sx={{ mb: 2 }}>{cancelSuccess}</Alert>}
-            {cancelError && <Alert severity="error" sx={{ mb: 2 }}>{cancelError}</Alert>}
-
-            {/* Tabs for Active, Past, and Cancelled Bookings */}
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                <Tabs 
-                    value={tabValue} 
-                    onChange={(event, newValue) => setTabValue(newValue)}
-                    centered
-                >
-                    <Tab 
-                        label={
-                            <Box display="flex" alignItems="center" gap={1}>
-                                Active Bookings 
-                                {activeBookings.length > 0 && (
-                                    <Chip label={activeBookings.length} size="small" color="primary" />
-                                )}
-                            </Box>
-                        } 
-                    />
-                    <Tab 
-                        label={
-                            <Box display="flex" alignItems="center" gap={1}>
-                                Booking History 
-                                {pastBookings.length > 0 && (
-                                    <Chip label={pastBookings.length} size="small" color="default" />
-                                )}
-                            </Box>
-                        } 
-                    />
-                    <Tab 
-                        label={
-                            <Box display="flex" alignItems="center" gap={1}>
-                                Cancelled Bookings 
-                                {cancelledBookings.length > 0 && (
-                                    <Chip label={cancelledBookings.length} size="small" color="error" />
-                                )}
-                            </Box>
-                        } 
-                    />
-                </Tabs>
-            </Box>
-
-            {/* Export and Print buttons */}
-            <Box sx={{ mb: 3 }}>
-                <Button 
-                    variant="outlined" 
-                    color="primary" 
-                    onClick={handleExportExcel} 
-                    sx={{ m: 1 }}
-                    disabled={
-                        (tabValue === 0 ? activeBookings.length : 
-                         tabValue === 1 ? pastBookings.length : 
-                         cancelledBookings.length) === 0
-                    }
-                >
-                    Export to Excel ({tabValue === 0 ? 'Active' : tabValue === 1 ? 'History' : 'Cancelled'})
-                </Button>
-                <Button 
-                    variant="outlined" 
-                    color="secondary" 
-                    onClick={handlePrint} 
-                    sx={{ m: 1 }}
-                    disabled={
-                        (tabValue === 0 ? activeBookings.length : 
-                         tabValue === 1 ? pastBookings.length : 
-                         cancelledBookings.length) === 0
-                    }
-                >
-                    Print {tabValue === 0 ? 'Active Bookings' : tabValue === 1 ? 'History' : 'Cancelled'}
-                </Button>
-            </Box>
-
-            {/* Tab Content */}
-            {tabValue === 0 && (
-                /* Active Bookings Tab */
-                <Box>
-                    {activeBookings.length > 0 ? (
-                        <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                            {activeBookings.map((booking) => renderBookingCard(booking, false))}
-                        </div>
-                    ) : (
-                        <Box sx={{ textAlign: 'center', py: 6 }}>
-                            <Typography variant="h5" color="text.secondary" gutterBottom>
-                                No Active Bookings
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                                You don't have any upcoming or current bookings.
-                            </Typography>
-                            <Button 
-                                variant="contained" 
-                                color="primary"
-                                onClick={() => navigate('/hotels')}
-                            >
-                                Book a Hotel
-                            </Button>
-                        </Box>
-                    )}
-                </Box>
-            )}
-
-            {tabValue === 1 && (
-                /* Past Bookings Tab */
-                <Box>
-                    {pastBookings.length > 0 ? (
-                        <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                            {pastBookings.map((booking) => renderBookingCard(booking, true))}
-                        </div>
-                    ) : (
-                        <Box sx={{ textAlign: 'center', py: 6 }}>
-                            <Typography variant="h5" color="text.secondary" gutterBottom>
-                                No Booking History
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                                You haven't completed any stays yet.
-                            </Typography>
-                            <Button 
-                                variant="contained" 
-                                color="primary"
-                                onClick={() => navigate('/hotels')}
-                            >
-                                Make Your First Booking
-                            </Button>
-                        </Box>
-                    )}
-                </Box>
-            )}
-
-            {tabValue === 2 && (
-                /* Cancelled Bookings Tab */
-                <Box>
-                    {cancelledBookings.length > 0 ? (
-                        <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                            {cancelledBookings.map((booking) => renderBookingCard(booking, false, true))}
-                        </div>
-                    ) : (
-                        <Box sx={{ textAlign: 'center', py: 6 }}>
-                            <Typography variant="h5" color="text.secondary" gutterBottom>
-                                No Cancelled Bookings
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                                You don't have any cancelled bookings.
-                            </Typography>
-                            <Button 
-                                variant="contained" 
-                                color="primary"
-                                onClick={() => navigate('/hotels')}
-                            >
-                                Book a Hotel
-                            </Button>
-                        </Box>
-                    )}
-                </Box>
-            )}
-
-            {/* Confirmation Dialog */}
-            <Dialog open={dialogOpen} onClose={closeConfirmationDialog} maxWidth="sm" fullWidth>
-                <DialogTitle>
-                    <Typography variant="h6" color="error">
-                        Confirm Booking Cancellation
+        <Box
+            sx={{
+                minHeight: '100vh',
+                backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2080&q=80")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+                py: 4
+            }}
+        >
+            <Container className="text-center">
+                <Box sx={{ textAlign: 'center', mb: 4, color: 'white' }}>
+                    <Typography variant="h3" gutterBottom sx={{
+                        fontWeight: 'bold',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+                        mb: 2
+                    }}>
+                        📚 My Bookings
                     </Typography>
-                </DialogTitle>
-                <DialogContent>
-                    <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
-                        Are you sure you want to cancel this booking?
+                    <Typography variant="h6" sx={{
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
+                        maxWidth: 600,
+                        mx: 'auto'
+                    }}>
+                        Manage your hotel reservations and booking history
                     </Typography>
-                    <Alert severity="warning" sx={{ mb: 2 }}>
-                        <Typography variant="body2">
-                            <strong>Note:</strong> Once cancelled, this booking will be moved to your cancelled bookings list. 
-                            Please check the cancellation policy for any applicable fees.
-                        </Typography>
-                    </Alert>
-                    <TextField
-                        fullWidth
-                        label="Reason for Cancellation (Optional)"
-                        placeholder="E.g., Change of plans, Emergency, etc."
-                        value={cancellationReason}
-                        onChange={(e) => setCancellationReason(e.target.value)}
-                        multiline
-                        rows={3}
-                        sx={{ mt: 2 }}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={closeConfirmationDialog} color="primary">
-                        Keep Booking
+                </Box>
+
+                {cancelSuccess && <Alert severity="success" sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)' }}>{cancelSuccess}</Alert>}
+                {cancelError && <Alert severity="error" sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)' }}>{cancelError}</Alert>}
+
+                {/* Tabs for Active, Past, and Cancelled Bookings */}
+                <Box sx={{
+                    borderBottom: 1,
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    mb: 3,
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    borderRadius: 2,
+                    backdropFilter: 'blur(10px)'
+                }}>
+                    <Tabs
+                        value={tabValue}
+                        onChange={(event, newValue) => setTabValue(newValue)}
+                        centered
+                        sx={{
+                            '& .MuiTab-root': {
+                                color: 'rgba(255,255,255,0.8)',
+                                fontWeight: 600,
+                                textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                            },
+                            '& .MuiTab-root.Mui-selected': {
+                                color: 'white',
+                                fontWeight: 700
+                            },
+                            '& .MuiTabs-indicator': {
+                                backgroundColor: 'white'
+                            }
+                        }}
+                    >
+                        <Tab
+                            label={
+                                <Box display="flex" alignItems="center" gap={1}>
+                                    Active Bookings
+                                    {activeBookings.length > 0 && (
+                                        <Chip label={activeBookings.length} size="small" color="primary" />
+                                    )}
+                                </Box>
+                            }
+                        />
+                        <Tab
+                            label={
+                                <Box display="flex" alignItems="center" gap={1}>
+                                    Booking History
+                                    {pastBookings.length > 0 && (
+                                        <Chip label={pastBookings.length} size="small" color="default" />
+                                    )}
+                                </Box>
+                            }
+                        />
+                        <Tab
+                            label={
+                                <Box display="flex" alignItems="center" gap={1}>
+                                    Cancelled Bookings
+                                    {cancelledBookings.length > 0 && (
+                                        <Chip label={cancelledBookings.length} size="small" color="error" />
+                                    )}
+                                </Box>
+                            }
+                        />
+                    </Tabs>
+                </Box>
+
+                {/* Export and Print buttons */}
+                <Box sx={{ mb: 3 }}>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={handleExportExcel}
+                        sx={{ m: 1 }}
+                        disabled={
+                            (tabValue === 0 ? activeBookings.length :
+                                tabValue === 1 ? pastBookings.length :
+                                    cancelledBookings.length) === 0
+                        }
+                    >
+                        Export to Excel ({tabValue === 0 ? 'Active' : tabValue === 1 ? 'History' : 'Cancelled'})
                     </Button>
                     <Button
-                        onClick={() => handleCancelBooking(selectedBookingId)}
-                        color="error"
-                        variant="contained"
+                        variant="outlined"
+                        color="secondary"
+                        onClick={handlePrint}
+                        sx={{ m: 1 }}
+                        disabled={
+                            (tabValue === 0 ? activeBookings.length :
+                                tabValue === 1 ? pastBookings.length :
+                                    cancelledBookings.length) === 0
+                        }
                     >
-                        Cancel Booking
+                        Print {tabValue === 0 ? 'Active Bookings' : tabValue === 1 ? 'History' : 'Cancelled'}
                     </Button>
-                </DialogActions>
-            </Dialog>
-        </Container>
+                </Box>
+
+                {/* Tab Content */}
+                {tabValue === 0 && (
+                    /* Active Bookings Tab */
+                    <Box>
+                        {activeBookings.length > 0 ? (
+                            <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                {activeBookings.map((booking) => renderBookingCard(booking, false))}
+                            </div>
+                        ) : (
+                            <Box sx={{ textAlign: 'center', py: 6 }}>
+                                <Typography variant="h5" color="text.secondary" gutterBottom>
+                                    No Active Bookings
+                                </Typography>
+                                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                                    You don't have any upcoming or current bookings.
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => navigate('/hotels')}
+                                >
+                                    Book a Hotel
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
+                )}
+
+                {tabValue === 1 && (
+                    /* Past Bookings Tab */
+                    <Box>
+                        {pastBookings.length > 0 ? (
+                            <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                {pastBookings.map((booking) => renderBookingCard(booking, true))}
+                            </div>
+                        ) : (
+                            <Box sx={{ textAlign: 'center', py: 6 }}>
+                                <Typography variant="h5" color="text.secondary" gutterBottom>
+                                    No Booking History
+                                </Typography>
+                                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                                    You haven't completed any stays yet.
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => navigate('/hotels')}
+                                >
+                                    Make Your First Booking
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
+                )}
+
+                {tabValue === 2 && (
+                    /* Cancelled Bookings Tab */
+                    <Box>
+                        {cancelledBookings.length > 0 ? (
+                            <div id="printable-bookings" className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                {cancelledBookings.map((booking) => renderBookingCard(booking, false, true))}
+                            </div>
+                        ) : (
+                            <Box sx={{ textAlign: 'center', py: 6 }}>
+                                <Typography variant="h5" color="text.secondary" gutterBottom>
+                                    No Cancelled Bookings
+                                </Typography>
+                                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                                    You don't have any cancelled bookings.
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => navigate('/hotels')}
+                                >
+                                    Book a Hotel
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
+                )}
+
+                {/* Confirmation Dialog */}
+                <Dialog open={dialogOpen} onClose={closeConfirmationDialog} maxWidth="sm" fullWidth>
+                    <DialogTitle>
+                        <Typography variant="h6" color="error">
+                            Confirm Booking Cancellation
+                        </Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
+                            Are you sure you want to cancel this booking?
+                        </Typography>
+                        <Alert severity="warning" sx={{ mb: 2 }}>
+                            <Typography variant="body2">
+                                <strong>Note:</strong> Once cancelled, this booking will be moved to your cancelled bookings list.
+                                Please check the cancellation policy for any applicable fees.
+                            </Typography>
+                        </Alert>
+                        <TextField
+                            fullWidth
+                            label="Reason for Cancellation (Optional)"
+                            placeholder="E.g., Change of plans, Emergency, etc."
+                            value={cancellationReason}
+                            onChange={(e) => setCancellationReason(e.target.value)}
+                            multiline
+                            rows={3}
+                            sx={{ mt: 2 }}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={closeConfirmationDialog} color="primary">
+                            Keep Booking
+                        </Button>
+                        <Button
+                            onClick={() => handleCancelBooking(selectedBookingId)}
+                            color="error"
+                            variant="contained"
+                        >
+                            Cancel Booking
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Container>
+        </Box>
     );
 };
 

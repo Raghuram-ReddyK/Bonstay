@@ -37,6 +37,14 @@ const Navigation = ({
                                 color="inherit"
                                 component={NavLink}
                                 to={userType === 'admin' ? `/admin-dashboard/${userId}` : `/dashboard/${userId}`}
+                                sx={{
+                                    '&.active': {
+                                        borderBottom: '2px solid white',
+                                        borderRadius: 0,
+                                        paddingBottom: '6px'
+                                    }
+                                }}
+
                             >
                                 Dashboard
                             </Button>
@@ -46,6 +54,14 @@ const Navigation = ({
                                         color="inherit"
                                         component={NavLink}
                                         to={`/hotels/${userId}`}
+                                        sx={{
+                                            '&.active': {
+                                                borderBottom: '2px solid white',
+                                                borderRadius: 0,
+                                                paddingBottom: '6px'
+                                            }
+                                        }}
+
                                     >
                                         Hotels
                                     </Button>
@@ -53,6 +69,14 @@ const Navigation = ({
                                         color="inherit"
                                         component={NavLink}
                                         to={`/bookings/${userId}`}
+                                        sx={{
+                                            '&.active': {
+                                                borderBottom: '2px solid white',
+                                                borderRadius: 0,
+                                                paddingBottom: '6px'
+                                            }
+                                        }}
+
                                     >
                                         Bookings
                                     </Button>
@@ -60,6 +84,14 @@ const Navigation = ({
                                         color="inherit"
                                         component={NavLink}
                                         to={`/view/${userId}`}
+                                        sx={{
+                                            '&.active': {
+                                                borderBottom: '2px solid white',
+                                                borderRadius: 0,
+                                                paddingBottom: '6px'
+                                            }
+                                        }}
+
                                     >
                                         View
                                     </Button>
