@@ -126,8 +126,8 @@ const UserManagement = ({
                         freeSolo
                         fullWidth
                         value={searchQuery}
-                        options={allUsers.map(user => `${user.name} (${user.email})`)}
-                        onInputChange={handleUserSearch}
+                        options={[]}
+                        onInputChange={(_event, value) => handleUserSearch(null, value)}
                         renderInput={(params) => (
                             <TextField
                                 {...params}

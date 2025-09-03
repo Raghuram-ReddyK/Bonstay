@@ -380,7 +380,7 @@ const AdminAnalytics = ({ chartType = 'line', dateFormat = 'MM/DD/YYYY', languag
                                         <TableCell>{booking.hotelName || `Hotel ${booking.hotelId}`}</TableCell>
                                         <TableCell>{booking.userId}</TableCell>
                                         <TableCell>
-                                            {formatDate(booking.createdAt).toLocaleDateString()} {/* Format date */}
+                                            {formatDate(booking.createdAt)} {/* Format date */}
                                         </TableCell>
                                         <TableCell>
                                             <Chip

@@ -248,15 +248,16 @@ const AdminDashboard = () => {
             return allUsers; // Show all users when no search query
         }
 
-        const query = searchQuery.toLocaleLowerCase();
+        const query = searchQuery.trim().toLowerCase().split(/\s+/);
         return allUsers.filter(user =>
-            user.name.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query) ||
-            user.id.toLowerCase().includes(query)
-                (user.phoneNo && user.phoneNo.includes(query))
+            query.every(q =>
+                (user.name && user.name.toLowerCase().includes(q)) ||
+                (user.email && user.email.toLowerCase().includes(q)) ||
+                (user.phoneNo && String(user.phoneNo).toLowerCase().includes(q)) ||
+                (user.id && String(user.id).toLowerCase().includes(q))
+            )
         );
-
-    }, [allUsers, searchQuery])
+    }, [allUsers, searchQuery]);
 
     const clearSearch = () => {
         setSearchQuery('');
@@ -299,7 +300,14 @@ const AdminDashboard = () => {
 
     const TabPanel = ({ children, value, index }) => (
         <div hidden={value !== index}>
-            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+            {value === index && (
+                <Box sx={{ 
+                    p: { xs: 1, sm: 2, md: 3 },
+                    overflow: 'auto'
+                }}>
+                    {children}
+                </Box>
+            )}
         </div>
     );
 
@@ -312,7 +320,15 @@ const AdminDashboard = () => {
     }
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+        <Container 
+            maxWidth={false} 
+            sx={{ 
+                mt: { xs: 2, sm: 3, md: 4 }, 
+                mb: { xs: 2, sm: 3, md: 4 },
+                px: { xs: 1, sm: 2, md: 3 },
+                overflow: 'hidden'
+            }}
+        >
             {/* <AdminHeader
                 admin={admin}
                 allUsers={allUsers}
@@ -320,8 +336,19 @@ const AdminDashboard = () => {
                 allHotels={allHotels}
             /> */}
 
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={tabValue} onChange={handleTabChange}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%', overflow: 'auto' }}>
+                <Tabs 
+                    value={tabValue} 
+                    onChange={handleTabChange}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    allowScrollButtonsMobile
+                    sx={{
+                        '.MuiTabs-scrollButtons.Mui-disabled': {
+                            opacity: 0.3
+                        }
+                    }}
+                >
                     <Tab label="Overview" />
                     <Tab label="Analytics" />
                     <Tab label="User Management" />
