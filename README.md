@@ -24,7 +24,7 @@ Before running this application, make sure you have the following installed:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Raghuram-ReddyK/Bonstay.git
+   git clone https://github.com/Raghuram-ReddyK/Bonstay/tree/Admin-Changes-Data-Fetching <-or-> https://github.com/Raghuram-ReddyK/Bonstay.git
    cd Bonstay
    ```
 
