@@ -1,6 +1,67 @@
-# Getting Started with Create React App
+# Bonstay - Hotel Booking Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Bonstay is a full-featured hotel booking application built with React and Material-UI, featuring both user and admin interfaces. The application includes features like hotel booking management, user management, admin dashboard, and more.
+
+## Features
+
+- 🏨 Hotel browsing and booking
+- 👤 User authentication and profile management
+- 📊 Admin dashboard with analytics
+- 📅 Booking management system
+- 🔔 Real-time notifications
+- 🌙 Dark/Light theme support
+- 📱 Responsive design for all devices
+- 🔒 Role-based access control
+- 📈 System monitoring and activity logs
+
+## Prerequisites
+
+Before running this application, make sure you have the following installed:
+- Node.js (v14.0.0 or higher)
+- npm (v6.0.0 or higher)
+
+## Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Raghuram-ReddyK/Bonstay.git
+   cd Bonstay
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the JSON Server (Mock Backend)**
+   ```bash
+   npm run server
+   ```
+   This will start the mock backend server on port 3002
+
+4. **In a new terminal, start the React Application**
+   ```bash
+   npm start
+   ```
+   This will start the React application on port 3000
+
+5. **Alternatively, run both frontend and backend concurrently**
+   ```bash
+   npm run dev
+   ```
+
+## Application Structure
+
+- `/src` - Contains all React components and application logic
+  - `/AdminDashboardComponents` - Admin dashboard related components
+  - `/BonstayAfterLogin` - Components for authenticated users
+  - `/CommonComponents` - Shared/reusable components
+  - `/Navigation` - Navigation related components
+  - `/hooks` - Custom React hooks
+  - `/services` - API and other services
+  - `/Slices` - Redux slices for state management
+  - `/config` - Configuration files
+  - `/Routes` - Application routing logic
 
 ## Available Scripts
 
@@ -68,3 +129,56 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Tech Stack
+
+- **Frontend Framework:** React.js
+- **UI Library:** Material-UI (MUI)
+- **State Management:** Redux Toolkit
+- **Data Fetching:** SWR, Axios
+- **Backend:** JSON Server
+- **Routing:** React Router
+- **Charts:** React Chart.js 2
+- **Styling:** Emotion, Styled Components
+- **Form Handling:** Material-UI Forms
+- **Date Handling:** date-fns
+- **Grid System:** AG Grid
+
+## Authentication
+
+- The application uses session-based authentication
+- Admin and regular user roles are supported
+- Protected routes ensure authorized access
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Troubleshooting Common Issues
+
+1. **Port 3000 already in use**
+   ```bash
+   # Kill the process using port 3000
+   npx kill-port 3000
+   ```
+
+2. **Port 3002 already in use**
+   ```bash
+   # Kill the process using port 3002
+   npx kill-port 3002
+   ```
+
+3. **Module not found errors**
+   ```bash
+   # Clear npm cache and reinstall dependencies
+   npm cache clean --force
+   rm -rf node_modules
+   npm install
+   ```
+
+## Support
+
+For support or questions, please open an issue in the GitHub repository.
