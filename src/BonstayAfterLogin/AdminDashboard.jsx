@@ -300,14 +300,7 @@ const AdminDashboard = () => {
 
     const TabPanel = ({ children, value, index }) => (
         <div hidden={value !== index}>
-            {value === index && (
-                <Box sx={{ 
-                    p: { xs: 1, sm: 2, md: 3 },
-                    overflow: 'auto'
-                }}>
-                    {children}
-                </Box>
-            )}
+            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
         </div>
     );
 
@@ -320,15 +313,7 @@ const AdminDashboard = () => {
     }
 
     return (
-        <Container 
-            maxWidth={false} 
-            sx={{ 
-                mt: { xs: 2, sm: 3, md: 4 }, 
-                mb: { xs: 2, sm: 3, md: 4 },
-                px: { xs: 1, sm: 2, md: 3 },
-                overflow: 'hidden'
-            }}
-        >
+        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
             {/* <AdminHeader
                 admin={admin}
                 allUsers={allUsers}
@@ -336,19 +321,8 @@ const AdminDashboard = () => {
                 allHotels={allHotels}
             /> */}
 
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%', overflow: 'auto' }}>
-                <Tabs 
-                    value={tabValue} 
-                    onChange={handleTabChange}
-                    variant="scrollable"
-                    scrollButtons="auto"
-                    allowScrollButtonsMobile
-                    sx={{
-                        '.MuiTabs-scrollButtons.Mui-disabled': {
-                            opacity: 0.3
-                        }
-                    }}
-                >
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={tabValue} onChange={handleTabChange}>
                     <Tab label="Overview" />
                     <Tab label="Analytics" />
                     <Tab label="User Management" />
