@@ -144,8 +144,8 @@ const RegistrationFormSections = ({
             label="Email Address"
             value={state.email}
             onChange={handleChange}
-            error={!!formErrors.email || (error && error.includes('Email is already registered'))}
-            helperText={formErrors.email || (error && error.includes('Email is already registered') ? error : '')}
+            error={!!formErrors.email || (error && (error.includes('Email is already registered') || error.includes('User with this email already exists') || error.toLowerCase().includes('email')))}
+            helperText={formErrors.email || (error && (error.includes('Email is already registered') || error.includes('User with this email already exists') || error.toLowerCase().includes('email')) ? error : '')}
             fullWidth
             variant="outlined"
             type="email"

@@ -31,7 +31,7 @@ const RegistrationPage = () => {
 
     // ==================== HOOKS ====================
     const dispatch = useDispatch();
-    const { loading, success, error } = useSelector((state) => state.user);
+    const { loading, success, error, message } = useSelector((state) => state.user);
     const {
         formErrors,
         setFormErrors,
@@ -163,6 +163,7 @@ const RegistrationPage = () => {
                 <RegistrationStatus
                     error={error}
                     success={success}
+                    message={message}
                     registeredId={registeredId}
                 />
 

@@ -1,26 +1,21 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { getApiUrl } from "../config/apiConfig";
+import { getBackendApiUrl } from "../config/apiConfig";
 
 
 export const registerUser = createAsyncThunk(
     'user/register',
     async (userData, { rejectWithValue }) => {
         try {
-            // check if the email already exists in the fake JSON server
-            const response = await axios.get(getApiUrl(`/users`));
-            const existingUser = response.data.find(user => user.email === userData.email);
-
-            if (existingUser) {
-                // Reject the registration if email already exists
-                return rejectWithValue('Email is already registered');
-            }
-            // If email is unique, proceed with registration (POST request)
-            const registerResponse = await axios.post(getApiUrl(`users`, userData));
-            return registerResponse.data; // registered user's data
+            const response = await axios.post(getBackendApiUrl('/users/register'), userData);
+            return response.data;
         }
         catch (error) {
-            return rejectWithValue(' Error during registration')
+            // Handle different error formats from the backend
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data.message || 'Registration failed');
+            }
+            return rejectWithValue('Network error during registration');
         }
     }
 );
@@ -30,6 +25,7 @@ const initialState = {
     loading: false,
     success: false,
     error: null,
+    message: null,
 };
 
 const registerSlice = createSlice({
@@ -45,13 +41,14 @@ const registerSlice = createSlice({
         })
             .addCase(registerUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.success = true;
-                state.user = action.payload; // Store the registered user data
+                state.success = action.payload.success;
+                state.user = action.payload.data; // Store the user data from the data field
+                state.message = action.payload.message; // Store success message
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.loading = false;
                 state.success = false;
-                state.error = action.payload // Store the error msg (e.g email is already registered)
+                state.error = action.payload // Store the error message
             });
     },
 });

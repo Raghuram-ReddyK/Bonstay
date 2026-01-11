@@ -1,7 +1,7 @@
 import { Typography, Box, Paper, Fade, LinearProgress } from '@mui/material';
 import { CheckCircle, Error, Info } from '@mui/icons-material';
 
-const RegistrationStatus = ({ error, success, registeredId }) => {
+const RegistrationStatus = ({ error, success, message, registeredId }) => {
     if (!error && !success) return null;
 
     const getIcon = (type) => {
@@ -138,7 +138,7 @@ const RegistrationStatus = ({ error, success, registeredId }) => {
                                         textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
                                     }}
                                 >
-                                    Registration Successful! 🎉
+                                    {message || 'Registration Successful! 🎉'}
                                 </Typography>
 
                                 <Typography
