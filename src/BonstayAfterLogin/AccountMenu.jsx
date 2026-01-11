@@ -16,7 +16,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { getApiUrl } from '../config/apiConfig';
+import { getBackendApiUrl } from '../config/apiConfig';
 import SettingsDialog from './Settings/SettingsDialog';
 import UserInfoDialog from './Settings/UserInfoDialog';
 
@@ -96,7 +96,7 @@ const AccountMenu = ({ handleLogout }) => {
             const userId = sessionStorage.getItem('id');
             const storedUserType = sessionStorage.getItem('userType');
             setUserType(storedUserType);
-            const response = await axios.get(getApiUrl(`/users/${userId}`));
+            const response = await axios.get(getBackendApiUrl(`/users/${userId}`));
             setUserInfo(response.data);
             setEmail(response.data.email);
             setAddress(response.data.address);
@@ -164,7 +164,7 @@ const AccountMenu = ({ handleLogout }) => {
                 email
             };
 
-            await axios.put(getApiUrl(`/users/${userId}`), updatedUserData)
+            await axios.put(getBackendApiUrl(`/users/${userId}`), updatedUserData)
 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);

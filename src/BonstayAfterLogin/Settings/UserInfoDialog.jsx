@@ -42,9 +42,9 @@ const UserInfoDialog = ({
             const printWindow = window.open('', '', 'height=600,width=800');
             printWindow.document.write('<html><head><title>User Account Info</title></head><body>');
             printWindow.document.write(`<h1>User Account Information</h1>`);
-            printWindow.document.write(`<strong>User ID:</strong> ${userInfo.id.toUpperCase()}<br />`);
-            printWindow.document.write(`<strong>User Name:</strong> ${userInfo.name.toUpperCase()}<br />`);
-            printWindow.document.write(`<strong>Email:</strong> ${userInfo.email.toUpperCase()}<br />`);
+            printWindow.document.write(`<strong>User ID:</strong> ${userInfo.id?.toUpperCase() || 'N/A'}<br />`);
+            printWindow.document.write(`<strong>User Name:</strong> ${userInfo.name?.toUpperCase() || 'N/A'}<br />`);
+            printWindow.document.write(`<strong>Email:</strong> ${userInfo.email?.toUpperCase() || 'N/A'}<br />`);
             printWindow.document.write('</body></html>');
             printWindow.document.close();
             printWindow.print();
@@ -81,9 +81,9 @@ const UserInfoDialog = ({
             <DialogContent>
                 {userInfo ? (
                     <Box>
-                        <Typography><strong>User ID:</strong> {userInfo.id.toUpperCase()}</Typography>
-                        <Typography><strong>User Name:</strong> {userInfo.name.toUpperCase()}</Typography>
-                        <Typography><strong>Email:</strong> {userInfo.email.toUpperCase()}</Typography>
+                        <Typography><strong>User ID:</strong> {userInfo.id?.toUpperCase() || 'N/A'}</Typography>
+                        <Typography><strong>User Name:</strong> {userInfo.name?.toUpperCase() || 'N/A'}</Typography>
+                        <Typography><strong>Email:</strong> {userInfo.email?.toUpperCase() || 'N/A'}</Typography>
                         <Typography><strong>User Type:</strong> {userInfo.userType === 'admin' ? 'Administrator' : 'Normal User'}</Typography>
 
                         {userInfo.userType === 'admin' && userInfo.department && (

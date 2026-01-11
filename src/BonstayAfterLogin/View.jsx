@@ -40,7 +40,7 @@ import {
     Visibility,
     VisibilityOff
 } from '@mui/icons-material';
-import { getApiUrl } from '../config/apiConfig';
+import { getApiUrl, getBackendApiUrl } from '../config/apiConfig';
 
 const View = ({ handleLogout, userId: loggedInUserId }) => {
     const [userDetails, setUserDetails] = useState(null);
@@ -64,7 +64,7 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
             setError('');
 
             // Fetch user details
-            const userResponse = await axios.get(getApiUrl(`/users/${loggedInUserId}`));
+            const userResponse = await axios.get(getBackendApiUrl(`/users/${loggedInUserId}`));
             setUserDetails(userResponse.data);
 
             // Fetch user bookings
@@ -108,7 +108,7 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
     const handleDeleteAccount = async () => {
         try {
             setDeleting(true);
-            await axios.delete(getApiUrl(`/users/${loggedInUserId}`));
+            await axios.delete(getBackendApiUrl(`/users/${loggedInUserId}`));
 
             // Also delete user's bookings
             bookings.forEach(async (booking) => {

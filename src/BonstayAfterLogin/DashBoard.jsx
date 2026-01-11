@@ -28,12 +28,13 @@ import {
     Support as SupportIcon,
     Security as SecurityIcon
 } from '@mui/icons-material';
-import { getApiUrl } from '../config/apiConfig';
+import { getBackendApiUrl } from '../config/apiConfig';
 import { useNavigate } from 'react-router-dom';
 import useDashboardProtection from '../hooks/useDashboardProtection';
 
 const DashBoard = () => {
     const [user, setUser] = useState(null);
+    console.log('user: ', user);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -55,9 +56,9 @@ const DashBoard = () => {
             try {
                 const userId = sessionStorage.getItem('id');
                 if (userId) {
-                    const response = await axios.get(getApiUrl(`/users/${userId}`));
+                    const response = await axios.get(getBackendApiUrl(`/users/${userId}`));
                     await new Promise((resolve) => setTimeout(resolve, 1000));
-                    setUser(response.data);
+                    setUser(response.data.data);
                 } else {
                     console.log("user not found in session storage");
                 }

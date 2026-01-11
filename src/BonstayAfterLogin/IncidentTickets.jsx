@@ -316,14 +316,14 @@ const IncidentTickets = () => {
                                     <TableCell>
                                         <Chip
                                             icon={<LockIcon />} // Lock icon for ticket type
-                                            label={ticket.type.replace('_', ' ').toUpperCase()} // Format type (e.g., 'ACCOUNT_LOCKOUT' to 'ACCOUNT LOCKOUT')
+                                            label={ticket.type?.replace('_', ' ')?.toUpperCase() || 'UNKNOWN'} // Format type (e.g., 'ACCOUNT_LOCKOUT' to 'ACCOUNT LOCKOUT')
                                             size="small"
                                             color="default"
                                         />
                                     </TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={ticket.status.toUpperCase()} // Display status in uppercase
+                                            label={ticket.status?.toUpperCase() || 'UNKNOWN'} // Display status in uppercase
                                             size="small"
                                             color={getStatusColor(ticket.status)} // Dynamic color based on status
                                         />
@@ -413,7 +413,7 @@ const IncidentTickets = () => {
                                 <Grid item xs={12} md={6}>
                                     <Typography variant="subtitle2" color="textSecondary">Status</Typography>
                                     <Chip
-                                        label={selectedTicket.status.toUpperCase()}
+                                        label={selectedTicket.status?.toUpperCase() || 'UNKNOWN'}
                                         color={getStatusColor(selectedTicket.status)}
                                         sx={{ mb: 2 }}
                                     />

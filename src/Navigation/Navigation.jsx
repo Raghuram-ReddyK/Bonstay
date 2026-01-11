@@ -36,7 +36,7 @@ const Navigation = ({
                             <Button
                                 color="inherit"
                                 component={NavLink}
-                                to={userType === 'admin' ? `/admin-dashboard/${userId}` : `/dashboard/${userId}`}
+                                to={userId ? (userType === 'admin' ? `/admin-dashboard/${userId}` : `/dashboard/${userId}`) : '#'}
                                 sx={{
                                     '&.active': {
                                         borderBottom: '2px solid white',
@@ -53,7 +53,7 @@ const Navigation = ({
                                     <Button
                                         color="inherit"
                                         component={NavLink}
-                                        to={`/hotels/${userId}`}
+                                        to={userId ? `/hotels/${userId}` : '#'}
                                         sx={{
                                             '&.active': {
                                                 borderBottom: '2px solid white',
@@ -68,7 +68,7 @@ const Navigation = ({
                                     <Button
                                         color="inherit"
                                         component={NavLink}
-                                        to={`/bookings/${userId}`}
+                                        to={userId ? `/bookings/${userId}` : '#'}
                                         sx={{
                                             '&.active': {
                                                 borderBottom: '2px solid white',
@@ -83,7 +83,7 @@ const Navigation = ({
                                     <Button
                                         color="inherit"
                                         component={NavLink}
-                                        to={`/view/${userId}`}
+                                        to={userId ? `/view/${userId}` : '#'}
                                         sx={{
                                             '&.active': {
                                                 borderBottom: '2px solid white',
@@ -110,7 +110,7 @@ const Navigation = ({
                         </Box>
 
                         {/* Display User ID next to the Account Menu */}
-                        {isLoggedIn && (
+                        {isLoggedIn && userId && typeof userId === 'string' && (
                             <Typography variant="body2" sx={{ marginRight: 2 }}>
                                 {`${userId.toUpperCase()}`}
                             </Typography>

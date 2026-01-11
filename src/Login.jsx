@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Grid } from '@mui/material';
-import { useUser, useUserByEmail } from './hooks/useSWRData';
+import { loginUser } from './Slices/registerSlice';
 import { useAccountLockout } from './hooks/useAccountLockout';
+import { getApiUrl } from './config/apiConfig';
+import axios from 'axios';
 import BrandingPanel from './BonstayAfterLogin/Login/BrandingPanel';
 import LoginForm from './BonstayAfterLogin/Login/LoginForm';
 import ForgotPasswordDialog from './BonstayAfterLogin/Login/ForgotPasswordDialog';
@@ -12,6 +15,10 @@ import IncidentTicketDialog from './BonstayAfterLogin/Login/IncidentTicketDialog
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { loading, success, error, user } = useSelector((state) => state.user);
+    const { createIncidentTicket, checkExistingTickets } = useAccountLockout();
+    
     // Prevent logged-in users from accessing login page
     useEffect(() => {
         const storedUserId = sessionStorage.getItem('id');
@@ -27,8 +34,6 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
         }
     }, [navigate]);
 
-    const { updateUserFailedAttempts, createIncidentTicket, checkExistingTickets } = useAccountLockout();
-
     // Form states
     const [userIdOrEmail, setUserIdOrEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -37,184 +42,75 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const [acceptPrivacy, setAcceptPrivacy] = useState(false);
 
     // UI states
-    const [success, setSuccess] = useState('');
-    const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+
+    // Account lockout states
+    const [lockedUser, setLockedUser] = useState(null);
+    const [existingTicketStatus, setExistingTicketStatus] = useState(null);
 
     // Dialog states
     const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
     const [privacyPolicyDialogOpen, setPrivacyPolicyDialogOpen] = useState(false);
     const [incidentDialogOpen, setIncidentDialogOpen] = useState(false);
 
-    // Account lockout states
-    const [lockedUser, setLockedUser] = useState(null);
-    const [existingTicketStatus, setExistingTicketStatus] = useState(null);
+    // Handle successful login
+    useEffect(() => {
+        if (success && user) {
+            console.log('Login successful, user data:', user);
+            
+            const userId = user.userId || user.id || user._id;
+            const userType = user.userType || user.type;
+            
+            if (userId) {
+                sessionStorage.setItem('id', userId);
+                sessionStorage.setItem('userType', userType);
+                setIsLoggedIn(true);
+                setUserId(userId);
+                setSuccessMessage('Login successful!');
 
-    // SWR hooks for user data fetching
-    const isEmail = userIdOrEmail.includes('@');
-    const { data: emailUser, error: emailError, isLoading: emailLoading } = useUserByEmail(
-        userIdOrEmail,
-        isEmail && userIdOrEmail.length > 0
-    );
-    const { data: idUser, error: idError, isLoading: idLoading } = useUser(
-        userIdOrEmail,
-        !isEmail && userIdOrEmail.length > 0
-    );
+                // Clear any existing history and prepare for dashboard lock
+                window.history.replaceState(null, null, window.location.pathname);
+
+                // Navigate based on user type with replace to prevent back navigation
+                if (userType === 'admin') {
+                    navigate(`/admin-dashboard/${userId}`, { replace: true });
+                } else {
+                    navigate(`/dashboard/${userId}`, { replace: true });
+                }
+            } else {
+                console.error('Login response missing user ID:', user);
+                setErrorMessage('Login failed: Invalid response from server');
+            }
+        }
+    }, [success, user, navigate, setIsLoggedIn, setUserId]);
+
+    // Handle login errors
+    useEffect(() => {
+        if (error) {
+            setErrorMessage(error);
+        }
+    }, [error]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         if (!acceptPrivacy) {
-            setError('Please read and accept the privacy policy before logging in.');
+            setErrorMessage('Please read and accept the privacy policy before logging in.');
             return;
         }
 
-        setIsLoading(true);
-        setError('');
-        setSuccess('');
+        setErrorMessage('');
+        setSuccessMessage('');
 
         try {
-            let userData = null;
-
-            // Get user data from SWR
-            if (isEmail) {
-                if (emailLoading) {
-                    setError('Loading user data...');
-                    return;
-                }
-                if (emailError) {
-                    setError('Error loading user data. Please try again.');
-                    return;
-                }
-                userData = emailUser;
-            } else {
-                if (idLoading) {
-                    setError('Loading user data...');
-                    return;
-                }
-                if (idError) {
-                    setError('User not found. Please check your UserID.');
-                    return;
-                }
-                userData = idUser;
-            }
-
-            if (!userData) {
-                setError('User not found. Please check your credentials.');
-                return;
-            }
-
-            // Check if account is locked
-            if (userData.isLocked) {
-                const latestTicket = await checkExistingTickets(userData.id);
-                setExistingTicketStatus(latestTicket);
-                setError('Your account has been locked due to multiple failed login attempts. Please create an incident ticket to unlock your account.');
-                setLockedUser(userData);
-                setIncidentDialogOpen(true);
-                return;
-            }
-
-            // Check user type
-            if (userData.userType !== userType) {
-                setError(`Invalid login type. This account is registered as ${userData.userType === 'admin' ? 'Administrator' : 'Normal User'}`);
-                return;
-            }
-
-            // Handle failed login attempts for non-admin users
-            if (userData.userType !== 'admin' && userData.failedLoginAttempts >= 3) {
-                const latestTicket = await checkExistingTickets(userData.id);
-
-                if (!latestTicket || latestTicket.status !== 'approved') {
-                    if (!userData.isLocked) {
-                        await updateUserFailedAttempts(userData.id, userData.failedLoginAttempts, true, userData.lockoutTime || new Date().toISOString());
-                    }
-
-                    let errorMessage = 'Your account has been locked due to multiple failed login attempts.';
-                    if (latestTicket) {
-                        if (latestTicket.status === 'pending') {
-                            errorMessage = `Your account is locked. Your incident ticket ${latestTicket.id} is pending admin approval.`;
-                        } else if (latestTicket.status === 'rejected') {
-                            errorMessage = `Your account is locked. Your incident ticket ${latestTicket.id} was rejected. Please create a new incident ticket.`;
-                        }
-                    } else {
-                        errorMessage += ' Please create an incident ticket to unlock your account.';
-                    }
-
-                    setError(errorMessage);
-                    setExistingTicketStatus(latestTicket);
-                    setLockedUser({ ...userData, isLocked: true });
-                    setIncidentDialogOpen(true);
-                    return;
-                }
-
-                if (latestTicket.status === 'approved' && userData.isLocked) {
-                    await updateUserFailedAttempts(userData.id, 0, false, null);
-                    userData = { ...userData, isLocked: false, failedLoginAttempts: 0 };
-                }
-            }
-
-            // Check password
-            if (userData.password !== password) {
-                const currentAttempts = (userData.failedLoginAttempts || 0) + 1;
-
-                if (currentAttempts >= 3) {
-                    await updateUserFailedAttempts(userData.id, currentAttempts, true, new Date().toISOString());
-                    setError('Account locked due to multiple failed login attempts.');
-                    setExistingTicketStatus(null);
-                    setLockedUser({ ...userData, failedLoginAttempts: currentAttempts });
-                    setIncidentDialogOpen(true);
-                } else {
-                    await updateUserFailedAttempts(userData.id, currentAttempts);
-                    setError(`Invalid password. ${3 - currentAttempts} attempts remaining before account lockout.`);
-                }
-                return;
-            }
-
-            // Successful login
-            if (userData.failedLoginAttempts > 0) {
-                await updateUserFailedAttempts(userData.id, 0, false, null);
-            }
-
-            sessionStorage.setItem('id', userData.id);
-            sessionStorage.setItem('userType', userData.userType);
-            setIsLoggedIn(true);
-            setUserId(userData.id);
-            setSuccess('Login successful!');
-
-            // Clear any existing history and prepare for dashboard lock
-            window.history.replaceState(null, null, window.location.pathname);
-
-            // Navigate based on user type with replace to prevent back navigation
-            if (userData.userType === 'admin') {
-                navigate(`/admin-dashboard/${userData.id}`, { replace: true });
-            } else {
-                navigate(`/dashboard/${userData.id}`, { replace: true });
-            }
-
-            // Initialize dashboard lock after navigation
-            setTimeout(() => {
-                const dashboardPath = userData.userType === 'admin'
-                    ? `/admin-dashboard/${userData.id}`
-                    : `/dashboard/${userData.id}`;
-
-                // Replace history with dashboard and add barrier
-                window.history.replaceState(
-                    { locked: true, dashboard: true },
-                    'Dashboard',
-                    dashboardPath
-                );
-                window.history.pushState(
-                    { locked: true, dashboard: true },
-                    'Dashboard',
-                    dashboardPath
-                );
-            }, 500);
-
+            await dispatch(loginUser({
+                identifier: userIdOrEmail,
+                password: password
+            }));
         } catch (error) {
-            console.error(error);
-            setError('Error while logging in.');
-        } finally {
-            setIsLoading(false);
+            console.error('Login error:', error);
+            setErrorMessage('Error while logging in.');
         }
     };
 
@@ -226,12 +122,12 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
 
             if (latestTicket) {
                 if (latestTicket.status === 'pending') {
-                    setSuccess(`You already have a pending incident ticket (${latestTicket.id}). Please wait for admin approval.`);
+                    setSuccessMessage(`You already have a pending incident ticket (${latestTicket.id}). Please wait for admin approval.`);
                     setIncidentDialogOpen(false);
                     setLockedUser(null);
                     return;
                 } else if (latestTicket.status === 'approved') {
-                    setSuccess(`Your previous incident ticket (${latestTicket.id}) was approved. Please try logging in again.`);
+                    setSuccessMessage(`Your previous incident ticket (${latestTicket.id}) was approved. Please try logging in again.`);
                     setIncidentDialogOpen(false);
                     setLockedUser(null);
                     return;
@@ -240,13 +136,13 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
 
             const incidentId = await createIncidentTicket(lockedUser);
             if (incidentId) {
-                setSuccess(`Incident ticket ${incidentId} created successfully. An admin will review your request.`);
+                setSuccessMessage(`Incident ticket ${incidentId} created successfully. An admin will review your request.`);
             } else {
-                setError('Failed to create incident ticket. Please try again or contact support.');
+                setErrorMessage('Failed to create incident ticket. Please try again or contact support.');
             }
         } catch (error) {
             console.error('Error checking existing tickets:', error);
-            setError('Failed to create incident ticket. Please try again or contact support.');
+            setErrorMessage('Failed to create incident ticket. Please try again or contact support.');
         }
 
         setIncidentDialogOpen(false);
@@ -256,8 +152,8 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const handleTryLoginAgain = () => {
         setIncidentDialogOpen(false);
         setExistingTicketStatus(null);
-        setError('');
-        setSuccess('Your account has been unlocked. Please try logging in again.');
+        setErrorMessage('');
+        setSuccessMessage('Your account has been unlocked. Please try logging in again.');
     };
 
     const handlePrivacyPolicyAccept = () => {
@@ -283,11 +179,11 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
                 setAcceptPrivacy={setAcceptPrivacy}
                 onOpenPrivacyPolicy={() => setPrivacyPolicyDialogOpen(true)}
                 onOpenForgotPassword={() => setForgotPasswordOpen(true)}
-                isLoading={isLoading}
-                emailLoading={emailLoading}
-                idLoading={idLoading}
-                error={error}
-                success={success}
+                isLoading={loading}
+                emailLoading={false}
+                idLoading={false}
+                error={errorMessage}
+                success={successMessage}
             />
 
             <ForgotPasswordDialog
