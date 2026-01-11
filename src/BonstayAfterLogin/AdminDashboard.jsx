@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import axios from 'axios';
 
 import {
@@ -22,90 +22,74 @@ import AdminSystemMonitoring from '../AdminDashboardComponents/AdminSystemMonito
 import AdminActivityLogs from '../AdminDashboardComponents/AdminActivityLogs';
 import AdminNotificationCenter from '../AdminDashboardComponents/AdminNotificationCenter';
 import { getApiUrl } from '../config/apiConfig';
+import { useAdminCodeRequests, useBookings, useHotels, useUser, useUsers } from '../hooks/useSWRData';
+import IncidentTickets from './IncidentTickets';
+import { useSelector } from 'react-redux';
+import useDashboardProtection from '../hooks/useDashboardProtection';
 
 const AdminDashboard = () => {
-    const [admin, setAdmin] = useState(null);
-    const [allUsers, setAllUsers] = useState([]);
-    const [allBookings, setAllBookings] = useState([]);
-    const [allHotels, setAllHotels] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [tabValue, setTabValue] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [userDialogOpen, setUserDialogOpen] = useState(false);
-    const [adminCodeRequests, setAdminCodeRequests] = useState([]);
     const [requestDialogOpen, setRequestDialogOpen] = useState('');
     const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [selectedRequest, setSelectedRequest] = useState('');
+    // Get admin Id from session storage
+    const adminId = sessionStorage.getItem('id');
+    const userType = sessionStorage.getItem('userType');
+    const isLoggedIn = Boolean(adminId);
 
+    // Initialize dashboard protection for admin
+    const { initializeDashboardLock } = useDashboardProtection(
+        isLoggedIn,
+        adminId,
+        userType
+    );
+
+    // Initialize dashboard protection after component mounts
     useEffect(() => {
-        fetchAdminData();
-        fetchAllUsers();
-        fetchAllBookings();
-        fetchAllHotels();
-        fetchAdminCodeRequests();
+        if (isLoggedIn && adminId) {
+            // small delay to ensure navigation is complete
+            setTimeout(() => {
+                initializeDashboardLock();
+            }, 1000)
+        }
+    }, [isLoggedIn, adminId, initializeDashboardLock])
+
+    // Get admin preferences  from Redux
+    const { adminPreferences } = useSelector(state => state.admin)
+
+    // use SWR hooks for data fetching
+    const { data: admin, error: adminError, isLoading: adminLoading } = useUser(adminId);
+    const { data: allUsersData, error: usersError, isLoading: usersLoading, mutate: mutateUsers } = useUsers();
+    const { data: allBookings, error: bookingError, isLoading: bookingsLoading, mutate: mutateBookings } = useBookings();
+    const { data: allHotels, error: hotelError, isLoading: hotelsLoading } = useHotels();
+    const { data: adminCodeRequests, error: requestsError, isLoading: requestsLoading, mutate: mutateRequests } = useAdminCodeRequests();
+
+    // filter out admin users for user management section
+    const allUsers = allUsersData?.filter(user => user.userType !== 'admin') || [];
+
+    // check for loading states
+    const isLoading = adminLoading || usersLoading || bookingsLoading || hotelsLoading || requestsLoading
+
+
+    const fetchAdminCodeRequests = useCallback(() => {
+        mutateRequests();
+    }, [mutateRequests]);
+
+    const fetchAllUsers = useCallback(() => {
+        mutateUsers();
+    }, [mutateUsers]);
+
+    const fetchAllBookings = useCallback(() => {
+        mutateBookings();
+    }, [mutateBookings]);
+
+    const fetchAllHotels = useCallback(() => {
+        console.log('Hotels automatically fetched with SWR');
     }, []);
-
-    const fetchAdminData = async () => {
-        try {
-            const adminId = sessionStorage.getItem('id');
-            if (adminId) {
-                const response = await axios.get(getApiUrl(`/users/${adminId}`));
-                setAdmin(response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching admin data:', error);
-        }
-    };
-
-    const fetchAllUsers = async () => {
-        try {
-            const response = await axios.get(getApiUrl(`/users`));
-            const regularUsers = response.data.filter(user => user.userType !== 'admin');
-            setAllUsers(regularUsers);
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const fetchAllBookings = async () => {
-        try {
-            const response = await axios.get(getApiUrl(`/bookings`));
-            setAllBookings(response.data);
-        } catch (error) {
-            console.error('Error fetching bookings:', error);
-        }
-    };
-
-    const fetchAllHotels = async () => {
-        try {
-            const response = await axios.get(getApiUrl(`/hotels`));
-            setAllHotels(response.data);
-        } catch (error) {
-            console.error("Error fetching hotels", error);
-        }
-    }
-
-    const fetchAdminCodeRequests = async (forceRefresh = false) => {
-        try {
-            const timeStamp = Date.now();
-            const url = forceRefresh ? getApiUrl(`/admin-code-requests?_t=${timeStamp}&_nocache=true`) :
-                getApiUrl(`admin-code-requests?_t=${timeStamp}`)
-            const response = await axios.get(url, {
-                headers: {
-                    'Cache-control': 'no-cache',
-                    'Pragma': 'no-cache'
-                }
-            });
-            setAdminCodeRequests(response.data || [])
-        } catch (error) {
-            console.error("Error fetching admin code request:", error);
-            setAdminCodeRequests([]);
-        }
-    };
 
     const generateAdminCode = () => {
         return AdminCodeUtils.generateAdminCode();
@@ -249,7 +233,7 @@ const AdminDashboard = () => {
 
     const handleTabChange = (_event, newValue) => {
         setTabValue(newValue);
-        if (newValue === 5) {
+        if (newValue === 6) {
             fetchAdminCodeRequests(true)
         }
     };
@@ -264,15 +248,16 @@ const AdminDashboard = () => {
             return allUsers; // Show all users when no search query
         }
 
-        const query = searchQuery.toLocaleLowerCase();
+        const query = searchQuery.trim().toLowerCase().split(/\s+/);
         return allUsers.filter(user =>
-            user.name.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query) ||
-            user.id.toLowerCase().includes(query)
-                (user.phoneNo && user.phoneNo.includes(query))
+            query.every(q =>
+                (user.name && user.name.toLowerCase().includes(q)) ||
+                (user.email && user.email.toLowerCase().includes(q)) ||
+                (user.phoneNo && String(user.phoneNo).toLowerCase().includes(q)) ||
+                (user.id && String(user.id).toLowerCase().includes(q))
+            )
         );
-
-    }, [allUsers, searchQuery])
+    }, [allUsers, searchQuery]);
 
     const clearSearch = () => {
         setSearchQuery('');
@@ -344,6 +329,7 @@ const AdminDashboard = () => {
                     <Tab label="Booking Management" />
                     <Tab label="Create Booking" />
                     <Tab label="Admin Code Requests" />
+                    <Tab label="Incident Tickets" />
                     <Tab label="System Monitoring " />
                     <Tab label="Activity Logs" />
                     <Tab label="Notifications" />
@@ -358,6 +344,7 @@ const AdminDashboard = () => {
                     allUsers={allUsers}
                     allBookings={allBookings}
                     allHotels={allHotels}
+                    dashboardLayout={adminPreferences?.dashboardLayout || 'grid'}
                 />
             </TabPanel>
 
@@ -366,6 +353,10 @@ const AdminDashboard = () => {
                     allUsers={allUsers}
                     allBookings={allBookings}
                     allHotels={allHotels}
+                    chartType={adminPreferences?.chartType || 'line'}
+                    dateFormat={adminPreferences?.dateFormat || 'MM/DD/YYYY'}
+                    language={adminPreferences?.language || 'en'}
+                    timezone={adminPreferences?.timezone || 'UTC'}
                     onRefresh={() => {
                         fetchAllUsers();
                         fetchAllBookings();
@@ -393,6 +384,7 @@ const AdminDashboard = () => {
                     isLoading={isLoading}
                     getHotelName={getHotelName}
                     getRoomsCount={getRoomsCount}
+                    onBookingCancelled={mutateBookings}
                 />
             </TabPanel>
 
@@ -410,14 +402,18 @@ const AdminDashboard = () => {
             </TabPanel>
 
             <TabPanel value={tabValue} index={6}>
-                <AdminSystemMonitoring />
+                <IncidentTickets />
             </TabPanel>
 
             <TabPanel value={tabValue} index={7}>
-                <AdminActivityLogs />
+                <AdminSystemMonitoring />
             </TabPanel>
 
             <TabPanel value={tabValue} index={8}>
+                <AdminActivityLogs />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={9}>
                 <AdminNotificationCenter />
             </TabPanel>
 

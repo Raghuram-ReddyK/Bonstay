@@ -5,6 +5,7 @@ import {
     CardContent,
     Typography,
     Grid,
+    Button,
     Paper,
     List,
     ListItem,
@@ -14,8 +15,9 @@ import {
     Chip,
     IconButton,
     Tooltip
-} from '@mui/material'; // Importing Material-UI components for UI elements
+} from '@mui/material';
 import {
+    Dashboard,
     People,
     BookOnline,
     Assessment,
@@ -29,77 +31,65 @@ import {
     TrendingUp,
     Hotel,
     AttachMoney
-} from '@mui/icons-material'; // Importing Material-UI icons
-
-import { useNavigate } from 'react-router-dom'; // Hook for programmatic navigation
-import axios from 'axios'; // HTTP client for making API requests
+} from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { getApiUrl } from '../config/apiConfig';
+import axios from 'axios';
 
-/**
- * AdminQuickActions Component
- * This component displays a quick overview for the admin dashboard, including:
- * - A welcome message for the admin.
- * - Quick statistics (total users, bookings, hotels, revenue).
- * - A list of quick action buttons to navigate to different admin sections.
- * - A section for system notifications and quick stats.
- *
- * It fetches some dynamic data (like pending requests) and uses props for other data.
- * @param {Object} props - Component props
- * @param {function} props.onTabChange - Callback function to change the active tab in the parent AdminLayout.
- * @param {Object} props.admin - Admin user object (e.g., { name: 'Admin', ... }).
- * @param {Array} props.allUsers - Array of all user data.
- * @param {Array} props.allBookings - Array of all booking data.
- * @param {Array} props.allHotels - Array of all hotel data.
- */
-const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotels }) => {
-    // useState hooks for managing component-specific state
-    const [notifications, setNotifications] = useState([]); // State to hold system notifications
-    const [quickStats, setQuickStats] = useState({ // State to hold quick statistics
+const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotels, dashboardLayout }) => {
+    const [notifications, setNotifications] = useState([]);
+    const [quickStats, setQuickStats] = useState({
         pendingRequests: 0,
         todayBookings: 0,
-        systemAlerts: 0, // Mocked
-        recentActivity: 0 // Mocked
+        systemAlerts: 0,
+        recentActivity: 0
     });
-    const navigate = useNavigate(); // Hook to programmatically navigate between routes
+    const navigate = useNavigate();
 
-    // useEffect hook to fetch quick stats and generate notifications on component mount or data change
-    useEffect(() => {
-        fetchQuickStats(); // Fetch dynamic quick stats
-        generateNotifications(); // Generate static/mock notifications
-    }, [allUsers, allBookings]); // Dependencies: allUsers and allBookings to re-run when these props change
-
-    /**
-     * Fetches quick statistics from the backend and updates the component's state.
-     * This includes pending admin requests and today's bookings.
-     */
-    const fetchQuickStats = async () => {
-        try {
-            // Fetch admin code requests to count pending ones
-            const adminRequestsRes = await axios.get(getApiUrl('/admin-code-requests'));
-            const pendingRequests = adminRequestsRes.data.filter(req => req.status === 'pending').length;
-
-            // Calculate today's bookings from the 'allBookings' prop
-            const today = new Date().toDateString(); // Get today's date string for comparison
-            const todayBookings = allBookings.filter(booking => {
-                if (!booking.createdAt) return false; // Ensure createdAt exists
-                return new Date(booking.createdAt).toDateString() === today; // Compare date strings
-            }).length;
-
-            // Update the quickStats state
-            setQuickStats({
-                pendingRequests,
-                todayBookings,
-                systemAlerts: Math.floor(Math.random() * 5) + 1, // Mock system alerts
-                recentActivity: Math.floor(Math.random() * 20) + 10 // Mock recent activity
-            });
-        } catch (error) {
-            console.error('Error fetching quick stats:', error); // Log any errors during API call
+    // Get grid configuration based on dashboard layout preference
+    const getGridItemSize = () => {
+        switch (dashboardLayout) {
+            case 'list':
+                return { xs: 12, sm: 12, md: 12 }; // Full width for list view
+            case 'compact':
+                return { xs: 6, sm: 4, md: 2 }; // More compact layout
+            case 'grid':
+            default:
+                return { xs: 12, sm: 6, md: 3 }; // Default grid layout
         }
     };
 
-    /**
-     * Generates a set of mock system notifications based on current quick stats.
-     */
+    const gridItemSize = getGridItemSize();
+
+    useEffect(() => {
+        fetchQuickStats();
+        generateNotifications();
+    }, [allUsers, allBookings]);
+
+    const fetchQuickStats = async () => {
+        try {
+            // Get admin code requests
+            const adminRequestsRes = await axios.get(getApiUrl('/admin-code-requests'));
+            const pendingRequests = adminRequestsRes.data.filter(req => req.status === 'pending').length;
+
+            // Get today's bookings
+            const today = new Date().toDateString();
+            const todayBookings = (allBookings || []).filter(booking => {
+                if (!booking.createdAt) return false;
+                return new Date(booking.createdAt).toDateString() === today;
+            }).length;
+
+            setQuickStats({
+                pendingRequests,
+                todayBookings,
+                systemAlerts: Math.floor(Math.random() * 5) + 1, // Mock alerts
+                recentActivity: Math.floor(Math.random() * 20) + 10 // Mock activity
+            });
+        } catch (error) {
+            console.error('Error fetching quick stats:', error);
+        }
+    };
+
     const generateNotifications = () => {
         const notifications = [
             {
@@ -107,7 +97,7 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                 type: 'warning',
                 title: 'Pending Admin Requests',
                 message: `${quickStats.pendingRequests} admin code requests awaiting approval`,
-                urgent: quickStats.pendingRequests > 5 // Mark as urgent if many pending requests
+                urgent: quickStats.pendingRequests > 5
             },
             {
                 id: 2,
@@ -124,65 +114,60 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                 urgent: false
             }
         ];
-        setNotifications(notifications); // Update the notifications state
+        setNotifications(notifications);
     };
 
-    // Array defining the quick action buttons and their properties
     const quickActions = [
         {
             title: 'View Analytics',
             description: 'Real-time dashboard with key metrics',
             icon: <Assessment />,
             color: 'primary',
-            action: () => onTabChange(null, 0) // Navigates to the Analytics tab (index 0)
+            action: () => onTabChange(null, 0)
         },
         {
             title: 'Manage Users',
             description: 'Add, edit, or remove user accounts',
             icon: <People />,
             color: 'secondary',
-            action: () => onTabChange(null, 2) // Navigates to the Users tab (index 1)
+            action: () => onTabChange(null, 2)
         },
         {
             title: 'Review Bookings',
             description: 'Monitor and manage all hotel bookings',
             icon: <BookOnline />,
             color: 'success',
-            action: () => onTabChange(null, 3) // Navigates to the Bookings tab (index 2)
+            action: () => onTabChange(null, 3)
         },
         {
             title: 'Admin Requests',
             description: 'Process admin access requests',
             icon: <Security />,
             color: 'warning',
-            badge: quickStats.pendingRequests, // Displays a badge with the number of pending requests
-            action: () => onTabChange(null, 5) // Navigates to the Admin Requests tab (index 4)
+            badge: quickStats.pendingRequests,
+            action: () => onTabChange(null, 5)
         },
         {
             title: 'System Monitoring',
             description: 'Check system health and performance',
             icon: <Timeline />,
             color: 'info',
-            action: () => onTabChange(null, 6) // Navigates to the System Monitoring tab (index 5)
+            action: () => onTabChange(null, 6)
         },
         {
             title: 'Activity Logs',
             description: 'View system and user activity logs',
-            icon: <Timeline />, // Reusing Timeline icon, could be different if needed
+            icon: <Timeline />,
             color: 'default',
-            action: () => onTabChange(null, 7) // Navigates to the Activity Logs tab (index 6)
+            action: () => onTabChange(null, 7)
         }
     ];
 
-    /**
-     * Handles the logout action by clearing session storage and navigating to the login page.
-     */
     const handleLogout = () => {
-        sessionStorage.clear(); // Clears all items from session storage (e.g., auth tokens)
-        navigate('/login'); // Redirects the user to the login page
+        sessionStorage.clear();
+        navigate('/login');
     };
 
-    // Main component render
     return (
         <Box>
             {/* Welcome Section */}
@@ -191,15 +176,14 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                     <Box display="flex" justifyContent="space-between" alignItems="center">
                         <Box>
                             <Typography variant="h4" gutterBottom>
-                                Welcome back, {admin?.name || 'Admin'}! {/* Display admin's name or 'Admin' */}
+                                Welcome back, {admin?.name || 'Admin'}!
                             </Typography>
                             <Typography variant="body1" sx={{ opacity: 0.9 }}>
                                 Here's your admin control center. Monitor, manage, and optimize your hotel booking platform.
                             </Typography>
                         </Box>
-                        <Box display="flex" gap={1}>
-                            {/* Top right icons for notifications, settings, and logout */}
-                            {/* <Tooltip title="Notifications">
+                        {/* <Box display="flex" gap={1}>
+                            <Tooltip title="Notifications">
                                 <IconButton color="inherit">
                                     <Notifications />
                                 </IconButton>
@@ -213,74 +197,126 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                 <IconButton color="inherit" onClick={handleLogout}>
                                     <ExitToApp />
                                 </IconButton>
-                            </Tooltip> */}
-                        </Box>
+                            </Tooltip>
+                        </Box> */}
                     </Box>
                 </CardContent>
             </Card>
 
-            {/* Quick Stats Cards */}
-            <Grid container spacing={3} mb={3}>
-                {/* Total Users Card */}
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card>
-                        <CardContent sx={{ textAlign: 'center' }}>
-                            <People sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                            <Typography variant="h4" color="primary">
-                                {allUsers.length} {/* Display total number of users */}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary">
-                                Total Users
-                            </Typography>
+            {/* Quick Stats */}
+            <Grid container spacing={dashboardLayout === 'compact' ? 2 : 3} mb={3}>
+                <Grid item {...gridItemSize}>
+                    <Card sx={{ height: dashboardLayout === 'list' ? 'auto' : '150px' }}>
+                        <CardContent sx={{
+                            textAlign: dashboardLayout === 'list' ? 'left' : 'center',
+                            display: dashboardLayout === 'list' ? 'flex' : 'block',
+                            alignItems: dashboardLayout === 'list' ? 'center' : 'initial',
+                            gap: dashboardLayout === 'list' ? 2 : 0
+                        }}>
+                            <People sx={{
+                                fontSize: dashboardLayout === 'compact' ? 30 : 40,
+                                color: 'primary.main',
+                                mb: dashboardLayout === 'list' ? 0 : 1
+                            }} />
+                            <Box>
+                                <Typography
+                                    variant={dashboardLayout === 'compact' ? 'h5' : 'h4'}
+                                    color="primary"
+                                >
+                                    {(allUsers || []).length}
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    Total Users
+                                </Typography>
+                            </Box>
                         </CardContent>
                     </Card>
                 </Grid>
-                {/* Total Bookings Card */}
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card>
-                        <CardContent sx={{ textAlign: 'center' }}>
-                            <BookOnline sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
-                            <Typography variant="h4" color="success.main">
-                                {allBookings.length} {/* Display total number of bookings */}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary">
-                                Total Bookings
-                            </Typography>
+                <Grid item {...gridItemSize}>
+                    <Card sx={{ height: dashboardLayout === 'list' ? 'auto' : '150px' }}>
+                        <CardContent sx={{
+                            textAlign: dashboardLayout === 'list' ? 'left' : 'center',
+                            display: dashboardLayout === 'list' ? 'flex' : 'block',
+                            alignItems: dashboardLayout === 'list' ? 'center' : 'initial',
+                            gap: dashboardLayout === 'list' ? 2 : 0
+                        }}>
+                            <BookOnline sx={{
+                                fontSize: dashboardLayout === 'compact' ? 30 : 40,
+                                color: 'success.main',
+                                mb: dashboardLayout === 'list' ? 0 : 1
+                            }} />
+                            <Box>
+                                <Typography
+                                    variant={dashboardLayout === 'compact' ? 'h5' : 'h4'}
+                                    color="success.main"
+                                >
+                                    {(allBookings || []).length}
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    Total Bookings
+                                </Typography>
+                            </Box>
                         </CardContent>
                     </Card>
                 </Grid>
-                {/* Active Hotels Card */}
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card>
-                        <CardContent sx={{ textAlign: 'center' }}>
-                            <Hotel sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
-                            <Typography variant="h4" color="warning.main">
-                                {allHotels.length} {/* Display total number of hotels */}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary">
-                                Active Hotels
-                            </Typography>
+                <Grid item {...gridItemSize}>
+                    <Card sx={{ height: dashboardLayout === 'list' ? 'auto' : '150px' }}>
+                        <CardContent sx={{
+                            textAlign: dashboardLayout === 'list' ? 'left' : 'center',
+                            display: dashboardLayout === 'list' ? 'flex' : 'block',
+                            alignItems: dashboardLayout === 'list' ? 'center' : 'initial',
+                            gap: dashboardLayout === 'list' ? 2 : 0
+                        }}>
+                            <Hotel sx={{
+                                fontSize: dashboardLayout === 'compact' ? 30 : 40,
+                                color: 'warning.main',
+                                mb: dashboardLayout === 'list' ? 0 : 1
+                            }} />
+                            <Box>
+                                <Typography
+                                    variant={dashboardLayout === 'compact' ? 'h5' : 'h4'}
+                                    color="warning.main"
+                                >
+                                    {(allHotels || []).length}
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    Active Hotels
+                                </Typography>
+                            </Box>
                         </CardContent>
                     </Card>
                 </Grid>
-                {/* Total Revenue Card */}
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card>
-                        <CardContent sx={{ textAlign: 'center' }}>
-                            <AttachMoney sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
-                            <Typography variant="h4" color="info.main">
-                                ₹{(allBookings.length * 1000).toLocaleString()} {/* Calculate and display total revenue */}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary">
-                                Total Revenue
-                            </Typography>
+                <Grid item {...gridItemSize}>
+                    <Card sx={{ height: dashboardLayout === 'list' ? 'auto' : '150px' }}>
+                        <CardContent sx={{
+                            textAlign: dashboardLayout === 'list' ? 'left' : 'center',
+                            display: dashboardLayout === 'list' ? 'flex' : 'block',
+                            alignItems: dashboardLayout === 'list' ? 'center' : 'initial',
+                            gap: dashboardLayout === 'list' ? 2 : 0
+                        }}>
+                            <AttachMoney sx={{
+                                fontSize: dashboardLayout === 'compact' ? 30 : 40,
+                                color: 'info.main',
+                                mb: dashboardLayout === 'list' ? 0 : 1
+                            }} />
+                            <Box>
+                                <Typography
+                                    variant={dashboardLayout === 'compact' ? 'h5' : 'h4'}
+                                    color="info.main"
+                                >
+                                    ₹{((allBookings || []).length * 1000).toLocaleString()}
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    Total Revenue
+                                </Typography>
+                            </Box>
                         </CardContent>
                     </Card>
                 </Grid>
             </Grid>
 
             <Grid container spacing={3}>
-                {/* Quick Actions Section */}
+                {/* Quick Actions */}
                 <Grid item xs={12} md={8}>
                     <Card>
                         <CardContent>
@@ -288,7 +324,6 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                 Quick Actions
                             </Typography>
                             <Grid container spacing={2}>
-                                {/* Map through the quickActions array to render each action button */}
                                 {quickActions.map((action, index) => (
                                     <Grid item xs={12} sm={6} key={index}>
                                         <Paper
@@ -297,11 +332,11 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                                 cursor: 'pointer',
                                                 transition: 'all 0.3s ease',
                                                 '&:hover': {
-                                                    transform: 'translateY(-2px)', // Slight lift on hover
-                                                    boxShadow: 4 // Increased shadow on hover
+                                                    transform: 'translateY(-2px)',
+                                                    boxShadow: 4
                                                 }
                                             }}
-                                            onClick={action.action} // Call the action function on click
+                                            onClick={action.action}
                                         >
                                             <Box display="flex" alignItems="center" mb={1}>
                                                 <Box
@@ -309,31 +344,31 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                                         mr: 2,
                                                         p: 1,
                                                         borderRadius: '50%',
-                                                        bgcolor: `${action.color}.main`, // Background color from action.color
+                                                        bgcolor: `${action.color}.main`,
                                                         color: 'white',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center'
                                                     }}
                                                 >
-                                                    {action.icon} {/* Display the action icon */}
+                                                    {action.icon}
                                                 </Box>
                                                 <Box flex={1}>
                                                     <Typography variant="subtitle1" fontWeight="bold">
-                                                        {action.title} {/* Action title */}
-                                                        {action.badge > 0 && ( // Display badge if badge value is greater than 0
-                                                            <Chip
-                                                                label={action.badge}
-                                                                size="small"
-                                                                color="error" // Error color for badges
-                                                                sx={{ ml: 1 }}
-                                                            />
-                                                        )}
+                                                        {action.title}
                                                     </Typography>
+                                                    {action.badge > 0 && (
+                                                        <Chip
+                                                            label={action.badge}
+                                                            size="small"
+                                                            color="error"
+                                                            sx={{ ml: 1 }}
+                                                        />
+                                                    )}
                                                 </Box>
                                             </Box>
                                             <Typography variant="body2" color="textSecondary">
-                                                {action.description} {/* Action description */}
+                                                {action.description}
                                             </Typography>
                                         </Paper>
                                     </Grid>
@@ -343,7 +378,7 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                     </Card>
                 </Grid>
 
-                {/* Notifications & Quick Stats Section */}
+                {/* Notifications & Alerts */}
                 <Grid item xs={12} md={4}>
                     <Card>
                         <CardContent>
@@ -351,12 +386,10 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                 System Notifications
                             </Typography>
                             <List dense>
-                                {/* Map through the notifications array to render each notification */}
                                 {notifications.map((notification) => (
                                     <React.Fragment key={notification.id}>
                                         <ListItem>
                                             <ListItemIcon>
-                                                {/* Display icon based on notification type */}
                                                 {notification.type === 'warning' && <Warning color="warning" />}
                                                 {notification.type === 'info' && <CheckCircle color="info" />}
                                                 {notification.type === 'success' && <TrendingUp color="success" />}
@@ -365,9 +398,9 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                                 primary={
                                                     <Box display="flex" alignItems="center" gap={1}>
                                                         <Typography variant="body2" fontWeight="bold">
-                                                            {notification.title} {/* Notification title */}
+                                                            {notification.title}
                                                         </Typography>
-                                                        {notification.urgent && ( // Display 'Urgent' chip if notification is urgent
+                                                        {notification.urgent && (
                                                             <Chip label="Urgent" size="small" color="error" />
                                                         )}
                                                     </Box>
@@ -375,20 +408,18 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                                 secondary={notification.message}
                                             />
                                         </ListItem>
-                                        <Divider /> {/* Divider between notifications */}
+                                        <Divider />
                                     </React.Fragment>
                                 ))}
                             </List>
                         </CardContent>
                     </Card>
 
-                    {/* Quick Stats Summary Card */}
                     <Card sx={{ mt: 2 }}>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>
                                 Quick Stats
                             </Typography>
-                            {/* Display individual quick stats */}
                             <Box display="flex" justifyContent="space-between" mb={2}>
                                 <Typography variant="body2">Today's Bookings</Typography>
                                 <Chip label={quickStats.todayBookings} size="small" color="primary" />
@@ -398,7 +429,7 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
                                 <Chip
                                     label={quickStats.pendingRequests}
                                     size="small"
-                                    color={quickStats.pendingRequests > 0 ? "warning" : "success"} // Color based on pending requests count
+                                    color={quickStats.pendingRequests > 0 ? "warning" : "success"}
                                 />
                             </Box>
                             <Box display="flex" justifyContent="space-between" mb={2}>

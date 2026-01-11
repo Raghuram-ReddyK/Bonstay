@@ -344,6 +344,38 @@ const adminSlice = createSlice({
             bookingAlerts: true
         },
 
+        adminPreferences: {
+            // Display Preferences
+            dashboardLayout: 'grid',
+            chartType: 'line',
+            refreshInterval: 5,
+            showRealTimeMetrics: true,
+            compactView: false,
+
+            // Notification Preferences
+            desktopNotifications: true,
+            soundAlerts: false,
+            criticalAlertsOnly: false,
+            emailDigest: 'daily',
+
+            // Accessibility
+            highContrast: false,
+            fontSize: 'medium',
+            reducedMotion: false,
+
+            // Admin Tools
+            advancedMode: false,
+            showSystemLogs: true,
+            autoSaveSettings: true,
+            confirmBeforeActions: true,
+
+            // Language & Region
+            language: 'en',
+            timezone: 'UTC',
+            dateFormat: 'MM/DD/YYYY',
+            timeFormat: '12h'
+        },
+
         // UI state indicators.
         loading: false, // Indicates if data is being fetched.
         error: null, // Stores any error that occurred during data fetching.
@@ -402,6 +434,12 @@ const adminSlice = createSlice({
             state.notificationSettings = { ...state.notificationSettings, ...action.payload };
         },
 
+        updateAdminPreference: (state, action) => {
+            state.adminPreferences = { ...state.adminPreferences, ...action.payload };
+            // Save to localSStorage for persistence
+            localStorage.setItem('adminPreferences', JSON.stringify(state.adminPreferences));
+        },
+
         // Reducer to refresh all derived data (analytics, monitoring, logs, notifications).
         refreshData: (state) => {
             state.analytics = generateAnalytics(state.users, state.bookings, state.hotels);
@@ -458,6 +496,7 @@ export const {
     markNotificationAsRead,
     markAllNotificationsAsRead,
     updateNotificationSettings,
+    updateAdminPreference,
     refreshData
 } = adminSlice.actions;
 

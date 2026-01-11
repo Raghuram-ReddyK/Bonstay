@@ -5,7 +5,7 @@ const themeSlice = createSlice({
     name: 'theme',
     initialState: {
         mode: 'dark', // Default theme
-        colorScheme: 'default', // Default color scheme
+        colorScheme: 'red', // Default color scheme
     },
     reducers: {
         toggleTheme: (state) => {

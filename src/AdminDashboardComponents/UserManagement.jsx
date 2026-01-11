@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import ClearIcon from '@mui/icons-material/Clear'
 import CustomDataGrid from '../CommonComponents/CustomDataGrid'
+import ExcelExport from '../CommonComponents/ExcelExport'
 
 
 const UserManagement = ({
@@ -21,6 +22,45 @@ const UserManagement = ({
     getUserBookings,
     handleViewUserDetails
 }) => {
+    const userExportHeaders = [
+        { key: 'id', label: 'User ID' },
+        { key: 'name', label: 'Name' },
+        { key: 'email', label: 'Email' },
+        { key: 'phoneNo', label: 'Phone' },
+        { key: 'address', label: 'Address' },
+        {
+            key: 'dateOfBirth',
+            label: 'Date of Birth',
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'gender',
+            label: 'Gender',
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'occupation',
+            label: 'Occupation',
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'userType',
+            label: 'User Type',
+            transform: (value) => value || 'user'
+        },
+        {
+            key: 'bookingsCount',
+            label: 'Total Bookings',
+            transform: (_value, item) => getUserBookings(item.id).length
+        },
+        {
+            key: 'registrationDate',
+            label: 'Registration Date',
+            transform: (value) => value || 'N/A'
+        }
+    ];
+
+
     const userManagementHeaders = [
         {
             field: 'id',
@@ -77,7 +117,7 @@ const UserManagement = ({
             ),
         },
     ]
-    
+
     return (
         <>
             <Box sx={{ mb: 3 }}>
@@ -86,8 +126,8 @@ const UserManagement = ({
                         freeSolo
                         fullWidth
                         value={searchQuery}
-                        options={allUsers.map(user => `${user.name} (${user.email})`)}
-                        onInputChange={handleUserSearch}
+                        options={[]}
+                        onInputChange={(_event, value) => handleUserSearch(null, value)}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -122,6 +162,15 @@ const UserManagement = ({
                 loading={isLoading}
                 title="User Management"
                 subtitle="Manage all registered users and view their booking history"
+                actions={
+                    <ExcelExport
+                        data={filteredUsers}
+                        headers={userExportHeaders}
+                        filename='Users_Export'
+                        sheetName='Users'
+                        buttonText='Export to Export'
+                    />
+                }
             />
         </>
     )

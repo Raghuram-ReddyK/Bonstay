@@ -5,14 +5,115 @@ import { getApiUrl } from "../config/apiConfig";
 // Async thunk for creating multiple bookings
 export const createMultipleBookings = createAsyncThunk(
     'multiBooking/createMultipleBookings',
-    async (bookingsData, { rejectWithValue }) => {
+    async (bookingsData, { rejectWithValue, getState }) => {
         try {
             const results = [];
+            const state = getState();
+            const { hotels, users } = state.multiBooking;
+
+            // Helper function to generate booking ID
+            const generateBookingId = () => {
+                const randomDigits = Math.random().toString().slice(2, 10); // 8 random digits
+                return `BK${randomDigits}`;
+            };
+
+            // Helper function to generate booking reference
+            const generateBookingReference = () => {
+                const date = new Date();
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const time = String(date.getHours()).padStart(2, '0') + String(date.getMinutes()).padStart(2, '0');
+                const random = Math.random().toString().slice(2, 4);
+                return `BNS${year}${month}${day}${time}${random}`;
+            };
+
+            // Helper function to calculate financial details
+            const calculateBookingFinancials = (booking, hotel, nights) => {
+                // Find the room type in hotel data
+                const roomType = hotel?.roomTypes?.find(rt =>
+                    rt.name === booking.roomType ||
+                    rt.id === booking.roomType ||
+                    rt.name.toLowerCase().includes(booking.roomType.toLowerCase())
+                ) || hotel?.roomTypes?.[0]; // fallback to first room type
+
+                const pricePerNight = roomType?.pricePerNight || 3000; // fallback price
+                const totalRoomCost = pricePerNight * nights * booking.rooms;
+                const taxRate = 0.18; // 18% tax
+                const taxes = Math.round(totalRoomCost * taxRate);
+                const totalAmount = totalRoomCost + taxes;
+
+                return {
+                    pricePerNight,
+                    totalRoomCost,
+                    taxes,
+                    totalAmount,
+                    roomTypeId: roomType?.id || 'standard',
+                    roomTypeName: roomType?.name || booking.roomType
+                };
+            };
 
             for (const booking of bookingsData) {
                 try {
-                    const response = await axios.post(getApiUrl('/bookings', booking));
-                    results.push({ success: true, data: response.data, booking });
+                    // Find hotel and user data
+                    const hotel = hotels.find(h => h.id === booking.hotelId);
+                    const user = users.find(u => u.id === booking.userId);
+
+                    // Calculate nights - ensure minimum 1 night
+                    const checkInDate = new Date(booking.checkIn);
+                    const checkOutDate = new Date(booking.checkOut);
+                    const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
+                    const nights = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+
+                    // Calculate financial details
+                    const financials = calculateBookingFinancials(booking, hotel, nights);
+
+                    // Create complete booking object
+                    const completeBooking = {
+                        id: generateBookingId(),
+                        bookingReference: generateBookingReference(),
+                        userId: booking.userId,
+                        userName: user?.name || booking.userName || booking.userId,
+                        userEmail: user?.email || '',
+                        userPhone: user?.phoneNo || '',
+                        hotelId: booking.hotelId,
+                        hotelName: booking.hotelName,
+                        roomTypeId: financials.roomTypeId,
+                        roomTypeName: financials.roomTypeName,
+                        checkIn: booking.checkIn,
+                        checkOut: booking.checkOut,
+                        nights: nights,
+                        guests: booking.guests,
+                        adults: booking.guests,
+                        children: 0,
+                        rooms: booking.rooms,
+                        pricePerNight: financials.pricePerNight,
+                        totalRoomCost: financials.totalRoomCost,
+                        taxes: financials.taxes,
+                        totalAmount: financials.totalAmount,
+                        paymentStatus: 'paid',
+                        bookingStatus: 'confirmed',
+                        bookingDate: new Date().toISOString(),
+                        lastModified: new Date().toISOString(),
+                        specialRequests: '',
+                        cancellationPolicy: 'Free cancellation up to 24 hours before check-in',
+                        createdBy: 'admin',
+                        paymentMethod: 'admin_booking',
+                        confirmationSent: true,
+                        reminderSent: false,
+                        // Legacy fields for compatibility
+                        status: 'confirmed',
+                        noOfPersons: booking.guests,
+                        noOfRooms: booking.rooms,
+                        typeOfRoom: booking.roomType,
+                        startDate: booking.checkIn,
+                        endDate: booking.checkOut,
+                        tempId: booking.tempId,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    const response = await axios.post(getApiUrl('/bookings'), completeBooking);
+                    results.push({ success: true, data: response.data, booking: completeBooking });
                 } catch (error) {
                     results.push({
                         success: false,
@@ -23,6 +124,7 @@ export const createMultipleBookings = createAsyncThunk(
             }
             return results;
         } catch (error) {
+            // This catch block handles errors that occur before individual requests are sent (e.g., network issues)
             return rejectWithValue(error.response?.data || error.message);
         }
     }
@@ -73,7 +175,7 @@ const initialState = {
     availableBookings: [],
     selectedForFinalization: [],
 
-    //selections
+    // Selections
     selectedAvailableBookings: [],
     selectedFinalizationBookings: [],
 
@@ -83,12 +185,12 @@ const initialState = {
             userId: false,
             hotelId: false,
             checkIn: false,
-            checkOut: false,
+            checkOut: false
         },
         finalization: false
     },
 
-    // Api Data
+    // API data
     users: [],
     hotels: [],
 
@@ -111,7 +213,7 @@ const multiBookingSlice = createSlice({
     name: 'multiBooking',
     initialState,
     reducers: {
-        // Forms Part 1 actions
+        // Form Part 1 actions
         setFormPart1: (state, action) => {
             state.formPart1 = { ...state.formPart1, ...action.payload };
         },
@@ -159,7 +261,7 @@ const multiBookingSlice = createSlice({
             );
         },
 
-        // selection management
+        // Selection management
         setSelectedAvailableBookings: (state, action) => {
             state.selectedAvailableBookings = action.payload;
         },
@@ -204,11 +306,50 @@ const multiBookingSlice = createSlice({
             state.selectedFinalizationBookings = [];
         },
 
+        // Update booking date
+        updateBookingDate: (state, action) => {
+            const { bookingId, dateType, newDate } = action.payload;
+
+            // Update in available bookings
+            const availableBookingIndex = state.availableBookings.findIndex(
+                booking => booking.tempId === bookingId
+            );
+            if (availableBookingIndex !== -1) {
+                state.availableBookings[availableBookingIndex][dateType] = newDate;
+
+                // Recalculate duration if both dates are present
+                const booking = state.availableBookings[availableBookingIndex];
+                if (booking.checkIn && booking.checkOut) {
+                    const checkInDate = new Date(booking.checkIn);
+                    const checkOutDate = new Date(booking.checkOut);
+                    const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
+                    booking.duration = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+                }
+            }
+
+            // Update in finalization bookings if exists
+            const finalizationBookingIndex = state.selectedForFinalization.findIndex(
+                booking => booking.tempId === bookingId
+            );
+            if (finalizationBookingIndex !== -1) {
+                state.selectedForFinalization[finalizationBookingIndex][dateType] = newDate;
+
+                // Recalculate duration if both dates are present
+                const booking = state.selectedForFinalization[finalizationBookingIndex];
+                if (booking.checkIn && booking.checkOut) {
+                    const checkInDate = new Date(booking.checkIn);
+                    const checkOutDate = new Date(booking.checkOut);
+                    const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
+                    booking.duration = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+                }
+            }
+        },
+
         // Reset states
-        resetMultiBookingsState: (state) => {
+        resetMultiBookingState: (_state) => {
             return initialState;
         },
-        clearMessage: (state) => {
+        clearMessages: (state) => {
             state.success = false;
             state.error = null;
             state.creationResults = [];
@@ -216,7 +357,7 @@ const multiBookingSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // fetcher users
+            // Fetch Users
             .addCase(fetchUsers.pending, (state) => {
                 state.loading.users = true;
             })
@@ -226,10 +367,10 @@ const multiBookingSlice = createSlice({
             })
             .addCase(fetchUsers.rejected, (state, action) => {
                 state.loading.users = false;
-                state.users = action.payload;
+                state.error = action.payload;
             })
 
-            // fetcher hotels
+            // Fetch Hotels
             .addCase(fetchHotels.pending, (state) => {
                 state.loading.hotels = true;
             })
@@ -239,10 +380,10 @@ const multiBookingSlice = createSlice({
             })
             .addCase(fetchHotels.rejected, (state, action) => {
                 state.loading.hotels = false;
-                state.hotels = action.payload;
+                state.error = action.payload;
             })
 
-            // create multiple bookings
+            // Create Multiple Bookings
             .addCase(createMultipleBookings.pending, (state) => {
                 state.loading.creating = true;
                 state.error = null;
@@ -252,7 +393,7 @@ const multiBookingSlice = createSlice({
                 state.success = true;
                 state.creationResults = action.payload;
 
-                // Remove successfully create bookings from finalization table
+                // Remove successfully created bookings from finalization table
                 const successfulBookingIds = action.payload
                     .filter(result => result.success)
                     .map(result => result.booking.tempId);
@@ -287,8 +428,9 @@ export const {
     clearSelection,
     moveToFinalization,
     moveBackToAvailable,
+    updateBookingDate,
     resetMultiBookingsState,
-    clearMessage
+    clearMessages
 } = multiBookingSlice.actions;
 
 export default multiBookingSlice.reducer;

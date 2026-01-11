@@ -16,12 +16,131 @@ import { fetchAdminData, refreshData } from '../Slices/adminSlice';
  * This component displays various analytics and recent booking data for an admin dashboard.
  * It fetches data from the Redux store and updates it periodically.
  */
-const AdminAnalytics = () => {
-    // useDispatch hook to get the dispatch function for dispatching actions
+const AdminAnalytics = ({ chartType = 'line', dateFormat = 'MM/DD/YYYY', language = 'en', timezone = 'UTC' }) => {
     const dispatch = useDispatch();
-
-    // useSelector hook to extract data from the Redux store's 'admin' slice
     const { analytics, users, bookings, hotels, loading, lastUpdated } = useSelector(state => state.admin);
+
+    // Language translations
+    const translations = {
+        en: {
+            title: 'Analytics Dashboard',
+            lastUpdated: 'Last updated',
+            totalUsers: 'Total Users',
+            totalHotels: 'Total Hotels',
+            totalBookings: 'Total Bookings',
+            revenue: 'Revenue',
+            never: 'Never',
+            recentBookings: 'Recent Bookings',
+            id: 'ID',
+            hotel: 'Hotel',
+            user: 'User',
+            date: 'Date',
+            status: 'Status'
+        },
+        hi: {
+            title: 'विश्लेषण डैशबोर्ड',
+            lastUpdated: 'अंतिम अपडेट',
+            totalUsers: 'कुल उपयोगकर्ता',
+            totalHotels: 'कुल होटल',
+            totalBookings: 'कुल बुकिंग',
+            revenue: 'राजस्व',
+            never: 'कभी नहीं',
+            recentBookings: 'हाल की बुकिंग',
+            id: 'आईडी',
+            hotel: 'होटल',
+            user: 'उपयोगकर्ता',
+            date: 'दिनांक',
+            status: 'स्थिति'
+        },
+        es: {
+            title: 'Panel de Análisis',
+            lastUpdated: 'Última actualización',
+            totalUsers: 'Total de Usuarios',
+            totalHotels: 'Total de Hoteles',
+            totalBookings: 'Total de Reservas',
+            revenue: 'Ingresos',
+            never: 'Nunca',
+            recentBookings: 'Reservas Recientes',
+            id: 'ID',
+            hotel: 'Hotel',
+            user: 'Usuario',
+            date: 'Fecha',
+            status: 'Estado'
+        },
+        fr: {
+            title: 'Tableau de Bord Analytique',
+            lastUpdated: 'Dernière mise à jour',
+            totalUsers: 'Total des Utilisateurs',
+            totalHotels: 'Total des Hôtels',
+            totalBookings: 'Total des Réservations',
+            revenue: 'Revenus',
+            never: 'Jamais',
+            recentBookings: 'Réservations Récentes',
+            id: 'ID',
+            hotel: 'Hôtel',
+            user: 'Utilisateur',
+            date: 'Date',
+            status: 'Statut'
+        },
+        de: {
+            title: 'Analytics Dashboard',
+            lastUpdated: 'Zuletzt aktualisiert',
+            totalUsers: 'Benutzer Gesamt',
+            totalHotels: 'Hotels Gesamt',
+            totalBookings: 'Buchungen Gesamt',
+            revenue: 'Umsatz',
+            never: 'Nie',
+            recentBookings: 'Aktuelle Buchungen',
+            id: 'ID',
+            hotel: 'Hotel',
+            user: 'Benutzer',
+            date: 'Datum',
+            status: 'Status'
+        },
+        ja: {
+            title: '分析ダッシュボード',
+            lastUpdated: '最終更新',
+            totalUsers: '総ユーザー数',
+            totalHotels: '総ホテル数',
+            totalBookings: '総予約数',
+            revenue: '収益',
+            never: 'なし',
+            recentBookings: '最近の予約',
+            id: 'ID',
+            hotel: 'ホテル',
+            user: 'ユーザー',
+            date: '日付',
+            status: 'ステータス'
+        }
+    };
+
+    const t = translations[language] || translations.en;
+
+    // Format date according to preference and timezone
+    const formatDate = (date) => {
+        if (!date) return t.never;
+        const d = new Date(date);
+
+        // Apply timezone indicator if not UTC
+        const timezoneLabel = timezone && timezone !== 'UTC' ? ` (${timezone})` : '';
+
+        switch (dateFormat) {
+            case 'DD/MM/YYYY':
+                return d.toLocaleDateString('en-GB') + timezoneLabel;
+            case 'YYYY-MM-DD':
+                return d.toISOString().split('T')[0] + timezoneLabel;
+            case 'DD-MMM-YYYY':
+                return d.toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }).replace(/\s/g, '-') + timezoneLabel;
+            case 'MM/DD/YYYY':
+            default:
+                return d.toLocaleDateString('en-US') + timezoneLabel;
+        }
+    };
+
 
     // useEffect hook to handle data fetching and periodic refreshing
     useEffect(() => {
@@ -84,13 +203,13 @@ const AdminAnalytics = () => {
         });
         // Convert the counts object to an array of [name, count] pairs, sort by count descending, and take the top 5
         return Object.entries(hotelCounts)
-            .sort(([,a], [,b]) => b - a) // Sort by booking count in descending order
+            .sort(([, a], [, b]) => b - a) // Sort by booking count in descending order
             .slice(0, 5) // Get only the top 5 hotels
             .map(([name, count]) => ({ name, bookings: count })); // Map to an array of objects
     }, [bookings]); // Recalculate only when 'bookings' data changes
 
     // Memoized calculation for recent bookings
-    const recentBookings = React.useMemo(() => 
+    const recentBookings = React.useMemo(() =>
         bookings
             .filter(b => b.createdAt) // Ensure booking has a createdAt timestamp
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort by creation date in descending order (most recent first)
@@ -103,10 +222,37 @@ const AdminAnalytics = () => {
         <Box>
             {/* Header section with title and refresh button */}
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h5" fontWeight="bold">Analytics Dashboard</Typography>
+                <Box display="flex" alignItems="center" gap={2}>
+                    <Typography variant="h5" fontWeight="bold">{t.title}</Typography>
+                    <Chip
+                        label={`Chart: ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                    />
+                    <Chip
+                        label={`Date Format: ${dateFormat}`}
+                        size="small"
+                        color="secondary"
+                        variant="outlined"
+                    />
+                    <Chip
+                        label={`Language: ${language.toUpperCase()}`}
+                        size="small"
+                        color="info"
+                        variant="outlined"
+                    />
+                    <Chip
+                        label={`Timezone: ${timezone}`}
+                        size="small"
+                        color="warning"
+                        variant="outlined"
+                    />
+                </Box>
+
                 <Box display="flex" alignItems="center" gap={2}>
                     <Typography variant="body2" color="textSecondary">
-                        Last updated: {lastUpdated ? new Date(lastUpdated).toLocaleTimeString() : 'Never'}
+                        {t.lastUpdated}: {lastUpdated ? `${formatDate(lastUpdated)} ${new Date(lastUpdated).toLocaleTimeString()}` : t.never}
                     </Typography>
                     <Tooltip title="Refresh Analytics">
                         <IconButton onClick={() => dispatch(refreshData())}>
@@ -120,7 +266,7 @@ const AdminAnalytics = () => {
             <Grid container spacing={3} mb={4}>
                 <Grid item xs={12} sm={6} md={3}>
                     <MetricCard
-                        title="Total Users"
+                        title={t.totalUsers}
                         value={analytics.totalUsers}
                         icon={People}
                         color="#3f51b5" // Primary color for users
@@ -130,7 +276,7 @@ const AdminAnalytics = () => {
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <MetricCard
-                        title="Total Bookings"
+                        title={t.totalBookings}
                         value={analytics.totalBookings}
                         icon={BookOnline}
                         color="#4caf50" // Success color for bookings
@@ -140,7 +286,7 @@ const AdminAnalytics = () => {
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <MetricCard
-                        title="Revenue"
+                        title={t.revenue}
                         value={`₹${analytics.totalRevenue.toLocaleString()}`} // Format revenue with Indian Rupee symbol
                         icon={AttachMoney}
                         color="#ff9800" // Warning color for revenue
@@ -149,7 +295,7 @@ const AdminAnalytics = () => {
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <MetricCard
-                        title="Occupancy Rate"
+                        title={`${t.totalHotels} Rate`}
                         value={`${analytics.occupancyRate}%`}
                         icon={Hotel}
                         color="#9c27b0" // Purple color for hotels/occupancy
@@ -215,16 +361,16 @@ const AdminAnalytics = () => {
             {/* Recent Bookings Table */}
             <Card>
                 <CardContent>
-                    <Typography variant="h6" gutterBottom>Recent Bookings</Typography>
+                    <Typography variant="h6" gutterBottom>{t.recentBookings}</Typography>
                     <TableContainer component={Paper}> {/* Use Paper for elevation and styling */}
                         <Table size="small">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>ID</TableCell>
-                                    <TableCell>Hotel</TableCell>
-                                    <TableCell>User</TableCell>
-                                    <TableCell>Date</TableCell>
-                                    <TableCell>Status</TableCell>
+                                    <TableCell>{t.id}</TableCell>
+                                    <TableCell>{t.hotel}</TableCell>
+                                    <TableCell>{t.user}</TableCell>
+                                    <TableCell>{t.date}</TableCell>
+                                    <TableCell>{t.status}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -234,7 +380,7 @@ const AdminAnalytics = () => {
                                         <TableCell>{booking.hotelName || `Hotel ${booking.hotelId}`}</TableCell>
                                         <TableCell>{booking.userId}</TableCell>
                                         <TableCell>
-                                            {new Date(booking.createdAt).toLocaleDateString()} {/* Format date */}
+                                            {formatDate(booking.createdAt)} {/* Format date */}
                                         </TableCell>
                                         <TableCell>
                                             <Chip

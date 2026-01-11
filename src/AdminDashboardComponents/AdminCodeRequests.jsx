@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CustomDataGrid from '../CommonComponents/CustomDataGrid'
+import ExcelExport from '../CommonComponents/ExcelExport';
 
 const AdminCodeRequests = ({
     adminCodeRequests,
@@ -14,6 +15,67 @@ const AdminCodeRequests = ({
     setSelectedRequest,
     setRequestDialogOpen,
 }) => {
+
+    // Excel export headers configuration for Admin Code Requests
+    // This array defines the columns and their properties for exporting admin code request data to an Excel file.
+    // Each object in the array represents a column in the Excel sheet.
+    const adminCodeRequestsExportHeaders = [
+        {
+            key: 'requestDate', // The key in the data object that holds the request date.
+            label: 'Request Date', // The header text for this column in the Excel file.
+            // A transform function to format the date value.
+            // It converts the date string to a localized date string (e.g., "M/D/YYYY").
+            transform: (value) => new Date(value).toLocaleDateString()
+        },
+        { key: 'name', label: 'Name' }, // Maps 'name' from data to 'Name' column.
+        { key: 'email', label: 'Email' }, // Maps 'email' from data to 'Email' column.
+        { key: 'phoneNo', label: 'Phone' }, // Maps 'phoneNo' from data to 'Phone' column.
+        { key: 'organization', label: 'Organization' }, // Maps 'organization' from data to 'Organization' column.
+        { key: 'status', label: 'Status' }, // Maps 'status' from data to 'Status' column.
+        {
+            key: 'reason',
+            label: 'Reason',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'adminCode',
+            label: 'Admin Code',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'approvedBy',
+            label: 'Approved By',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'approvedDate',
+            label: 'Approved Date',
+            // Transforms the value: if a date exists, it formats it to a localized date string; otherwise, 'N/A'.
+            transform: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+        },
+        {
+            key: 'rejectedBy',
+            label: 'Rejected By',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        },
+        {
+            key: 'rejectedDate',
+            label: 'Rejected Date',
+            // Transforms the value: if a date exists, it formats it to a localized date string; otherwise, 'N/A'.
+            transform: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+        },
+        {
+            key: 'rejectionReason',
+            label: 'Rejection Reason',
+            // Transforms the value: if it's null or undefined, it defaults to 'N/A'.
+            transform: (value) => value || 'N/A'
+        }
+    ];
+
 
     const adminCodeHeaders = [
         {
@@ -112,13 +174,23 @@ const AdminCodeRequests = ({
                 title="Admin Code Requests"
                 subtitle="Manage admin code requests and approval process"
                 actions={
-                    <Tooltip title="Refresh Requests">
-                        <Button variant='outlined' onClick={fetchAdminCodeRequests} sx={{ ml: 2 }}>
-                            <RefreshIcon />
-                            Refresh
-                        </Button>
-                    </Tooltip>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <ExcelExport
+                            data={adminCodeRequests}
+                            headers={adminCodeRequestsExportHeaders}
+                            filename='Admin_Code_Requests_Export'
+                            sheetName='Admin Code Requests'
+                            buttonText='Export to Excel'
+                            onExport={(info) => console.log('Exported', info)}
+                        />
 
+                        <Tooltip title="Refresh Requests">
+                            <Button variant='outlined' onClick={fetchAdminCodeRequests} sx={{ ml: 2 }}>
+                                <RefreshIcon />
+                                Refresh
+                            </Button>
+                        </Tooltip>
+                    </Box>
                 }
             />
 
