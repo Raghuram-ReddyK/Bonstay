@@ -35,6 +35,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getApiUrl } from '../config/apiConfig';
 import axios from 'axios';
+import adminCodeService from '../services/adminCodeService';
 
 const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotels, dashboardLayout }) => {
     const [notifications, setNotifications] = useState([]);
@@ -69,7 +70,7 @@ const AdminQuickActions = ({ onTabChange, admin, allUsers, allBookings, allHotel
     const fetchQuickStats = async () => {
         try {
             // Get admin code requests
-            const adminRequestsRes = await axios.get(getApiUrl('/admin-code-requests'));
+            const adminRequestsRes = await adminCodeService.getAdminCodeRequests();
             const pendingRequests = adminRequestsRes.data.filter(req => req.status === 'pending').length;
 
             // Get today's bookings

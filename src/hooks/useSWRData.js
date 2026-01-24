@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import useSWR from 'swr'; // Importing the SWR library for data fetching
 import axios from 'axios'; // Importing Axios for making HTTP requests
-import { getApiUrl } from '../config/apiConfig'; // Importing a utility to get the base API URL
+import { getApiUrl, getBackendApiUrl } from '../config/apiConfig'; // Importing a utility to get the base API URL
+import adminCodeService from '../services/adminCodeService';
 
 
 // Default fetcher function for SWR.
@@ -258,16 +259,54 @@ export const useHotelReviews = (hotelId, enabled = true, options = {}) => {
 
 /**
  * Hook for fetching admin code requests.
- * Includes a default `refreshInterval` for frequent updates.
+ * Uses adminCodeService to fetch from backend API.
  * @param {boolean} enabled - Whether to enable the request. Defaults to `true`.
- * @param {object} options - SWR configuration options.
- * @returns {object} - { data: AdminCodeRequest[], error, isLoading, mutate, isError, isValidating, refresh }.
+ * @param {object} options - Configuration options.
+ * @returns {object} - { data, error, isLoading, mutate, isError, isValidating, refresh }.
  */
 export const useAdminCodeRequests = (enabled = true, options = {}) => {
-    return useConditionalSWR('/admin-code-requests', enabled, {
-        ...options,
-        refreshInterval: 30000, // Refresh every 30 seconds for admin requests
-    });
+    const [data, setData] = useState(null);
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isValidating, setIsValidating] = useState(false);
+
+    const fetchData = async () => {
+        if (!enabled) return;
+
+        setIsLoading(true);
+        setIsValidating(true);
+        setError(null);
+
+        try {
+            const response = await adminCodeService.getAdminCodeRequests();
+            setData(response.data.data);
+        } catch (err) {
+            setError(err);
+        } finally {
+            setIsLoading(false);
+            setIsValidating(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [enabled]);
+
+    const mutate = async () => {
+        await fetchData();
+    };
+
+    const refresh = () => mutate();
+
+    return {
+        data,
+        error,
+        isLoading,
+        mutate,
+        isError: !!error,
+        isValidating,
+        refresh
+    };
 };
 
 /**

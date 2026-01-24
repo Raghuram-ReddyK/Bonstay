@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { getApiUrl } from '../config/apiConfig';
+import adminCodeService from '../services/adminCodeService';
 
 // Async thunks handle asynchronous operations like API calls.
 // They dispatch actions based on the promise lifecycle (pending, fulfilled, rejected).
@@ -43,7 +44,7 @@ export const fetchAdminData = createAsyncThunk(
                 axios.get(getApiUrl('/users')), // Fetches user data
                 axios.get(getApiUrl('/bookings')), // Fetches booking data
                 axios.get(getApiUrl('/hotels')), // Fetches hotel data
-                axios.get(getApiUrl('/admin-code-requests')) // Fetches admin request data
+                adminCodeService.getAdminCodeRequests() // Fetches admin request data
             ]);
 
             // Return an object containing all fetched data.

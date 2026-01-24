@@ -17,8 +17,7 @@ import {
     DialogContent,
     DialogActions,
 } from '@mui/material';
-import axios from 'axios';
-import { getApiUrl } from '../config/apiConfig';
+import adminCodeService from '../services/adminCodeService';
 
 const AdminCodeRequest = () => {
     const [activeStep, setActiveStep] = useState(0);
@@ -77,32 +76,26 @@ const AdminCodeRequest = () => {
         setLoading(true);
         setError('');
         try {
-            const requestPayload = {
-                ...requestData,
-                id: Date.now().toString(),
-                status: 'pending',
-                requestDate: new Date().toISOString(),
-                adminCode: null,
-                approvedBy: null,
-                approvedDate: null,
-            };
+            const response = await adminCodeService.submitAdminCodeRequest(requestData);
 
-            await axios.post(getApiUrl('/admin-code-requests', requestPayload));
+            if (response.success) {
+                setMessage('Admin code request submitted successfully! You will receive an email notification once your request is reviewed.');
+                setDialogOpen(true);
 
-            setMessage('Admin code request submitted successfully! You will receive an email notification once your request is reviewed.');
-            setDialogOpen(true);
-
-            // Reset form
-            setRequestData({
-                name: '',
-                email: '',
-                phoneNo: '',
-                department: '',
-                reason: '',
-                organization: '',
-                position: '',
-            });
-            setActiveStep(0);
+                // Reset form
+                setRequestData({
+                    name: '',
+                    email: '',
+                    phoneNo: '',
+                    department: '',
+                    reason: '',
+                    organization: '',
+                    position: '',
+                });
+                setActiveStep(0);
+            } else {
+                setError('Failed to submit request. Please try again.');
+            }
         } catch (error) {
             console.error('Error submitting request', error);
             setError('Failed to submit request. Please try again.');

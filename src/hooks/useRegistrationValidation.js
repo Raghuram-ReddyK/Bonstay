@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getApiUrl } from '../config/apiConfig';
+import adminCodeService from '../services/adminCodeService';
 
 export const useRegistrationValidation = () => {
     const [formErrors, setFormErrors] = useState({
@@ -21,22 +21,9 @@ export const useRegistrationValidation = () => {
         try {
             console.log('Validating admin code:', adminCode, 'for email:', email);
 
-            // First, check if this email is already registered
-            const usersResponse = await fetch(getApiUrl('/users'));
-            const users = await usersResponse.json();
-            const existingUser = users.find(user =>
-                user.email && email &&
-                user.email.toLowerCase().trim() === email.toLowerCase().trim()
-            );
-
-            if (existingUser) {
-                console.log('Email already registered:', email);
-                return false; // Email already exists, can't use admin code again
-            }
-
             // Fetch admin code requests to check if the code belongs to this email
-            const response = await fetch(getApiUrl('/admin-code-requests'));
-            const adminRequests = await response.json();
+            const response = await adminCodeService.getAdminCodeRequests();
+            const adminRequests = response.data.data;
 
             console.log('All admin requests:', adminRequests);
 
@@ -66,7 +53,11 @@ export const useRegistrationValidation = () => {
             });
 
             console.log('Valid request found:', validRequest);
-            return validRequest !== undefined;
+            if (validRequest) {
+                console.log('Admin code validated successfully');
+                return true;
+            }
+            return false;
         } catch (error) {
             console.error('Error validating admin code:', error);
             return false;
@@ -77,8 +68,8 @@ export const useRegistrationValidation = () => {
     const markAdminCodeAsUsed = async (adminCode, email, userId) => {
         try {
             // Update admin-code-requests to mark code as used
-            const requestsResponse = await fetch(getApiUrl('/admin-code-requests'));
-            const adminRequests = await requestsResponse.json();
+            const response = await adminCodeService.getAdminCodeRequests();
+            const adminRequests = response.data.data;
 
             const requestToUpdate = adminRequests.find(request =>
                 request.adminCode === adminCode &&
@@ -87,38 +78,15 @@ export const useRegistrationValidation = () => {
             );
 
             if (requestToUpdate) {
-                await fetch(getApiUrl(`/admin-code-requests/${requestToUpdate.id}`), {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        codeUsed: true,
-                        codeUsedDate: new Date().toISOString(),
-                        registeredUserId: userId
-                    }),
+                await adminCodeService.updateAdminCodeRequest(requestToUpdate.id, {
+                    codeUsed: true,
+                    codeUsedDate: new Date().toISOString(),
+                    registeredUserId: userId
                 });
             }
 
-            // Also update admin-codes table if it exists
-            const codesResponse = await fetch(getApiUrl('/admin-codes'));
-            const adminCodes = await codesResponse.json();
-
-            const codeToUpdate = adminCodes.find(code => code.code === adminCode);
-
-            if (codeToUpdate) {
-                await fetch(getApiUrl(`/admin-codes/${codeToUpdate.id}`), {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        isUsed: true,
-                        usedAt: new Date().toISOString(),
-                        usedBy: email
-                    }),
-                });
-            }
+            // Also update admin-codes table using the use API
+            await adminCodeService.useAdminCode(adminCode, userId);
         } catch (error) {
             console.error('Error marking admin code as used:', error);
         }
@@ -146,21 +114,6 @@ export const useRegistrationValidation = () => {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(value)) {
                 error = 'Invalid email format';
-            } else {
-                // Check for duplicate email
-                try {
-                    const response = await fetch(getApiUrl('/users'));
-                    const users = await response.json();
-                    const emailExists = users.some(user =>
-                        user.email && value &&
-                        user.email.toLowerCase().trim() === value.toLowerCase().trim()
-                    );
-                    if (emailExists) {
-                        error = 'Email address is already registered. Please use a different email.';
-                    }
-                } catch (fetchError) {
-                    console.error('Error checking email duplication:', fetchError);
-                }
             }
         }
 
@@ -212,21 +165,6 @@ export const useRegistrationValidation = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!state.email || !emailRegex.test(state.email)) {
             errors.email = 'Invalid email format';
-        } else {
-            // Check for duplicate email
-            try {
-                const response = await fetch(getApiUrl('/users'));
-                const users = await response.json();
-                const emailExists = users.some(user =>
-                    user.email && state.email &&
-                    user.email.toLowerCase().trim() === state.email.toLowerCase().trim()
-                );
-                if (emailExists) {
-                    errors.email = 'Email address is already registered. Please use a different email.';
-                }
-            } catch (error) {
-                console.error('Error checking email duplication:', error);
-            }
         }
 
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*!])[A-Za-z\d@#$%^&*!]{4,100}$/;

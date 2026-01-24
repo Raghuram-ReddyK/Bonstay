@@ -9,6 +9,7 @@ import {
     Tabs,
 } from '@mui/material';
 import { AdminCodeUtils, emailService, smsService } from '../services/communicationServices';
+import adminCodeService from '../services/adminCodeService';
 // import AdminHeader from '../AdminDashboardComponents/AdminHeader';
 import UserManagement from '../AdminDashboardComponents/UserManagement';
 import BookingManagement from '../AdminDashboardComponents/BookingManagement';
@@ -122,36 +123,19 @@ const AdminDashboard = () => {
             console.log(" Starting admin code approval process...");
             if (!admin || !admin.id) {
                 alert('Admin Information Not Found. Please Login Again')
+                return;
             }
 
-            const adminCode = generateAdminCode();
-            console.log(`Generated admin code: ${adminCode}`);
+            const approveResponse = await adminCodeService.approveAdminCodeRequest(request.id);
+            console.log("Request approved Successfully", approveResponse);
 
-            const updatedRequest = {
-                ...request,
-                status: 'approved',
-                adminCode: adminCode,
-                approvedBy: admin.id,
-                approvedDate: new Date().toISOString(),
-                codeUsed: false,
-                codeUsedDate: null,
-                registeredUserId: null
-            };
-            console.log(`updating request in dataBase...`, updatedRequest);
-            const updateResponse = await axios.put(getApiUrl(`/admin-code-requests/${request.id}`), updatedRequest);
-            console.log("Request updated Successfully", updateResponse.data);
-
-            const adminCodeEntry = {
-                code: adminCode,
-                status: 'approved',
-                isUsed: false,
-                createdAt: new Date().toISOString(),
-                approvedBy: admin.id,
-                requestId: request.id
+            if (!approveResponse.success) {
+                alert('Failed to approve request');
+                return;
             }
 
-            const codeResponse = await axios.post(getApiUrl(`/admin-codes`), adminCodeEntry)
-            console.log('codeResponse: ', codeResponse.data);
+            const approvedRequest = approveResponse.data;
+            const adminCode = approvedRequest.adminCode;
 
             console.log(" Sending sms... ");
             const smsResult = await sendSMS(request.phoneNo, adminCode, request.name);
@@ -193,14 +177,11 @@ const AdminDashboard = () => {
                 alert('Admin Information no found. Please login again.');
                 return
             }
-            const updatedRequest = {
-                ...request,
-                status: 'rejected',
+            const rejectionData = {
                 rejectedBy: admin.id,
-                rejectedDate: new Date().toISOString(),
                 rejectionReason: reason
             };
-            await axios.put(getApiUrl(`/admin-code-requests/${request.id}`), updatedRequest);
+            await adminCodeService.rejectAdminCodeRequest(request.id, rejectionData);
             const emailContent = AdminCodeUtils.formatApprovalEmails(request.name, reason);
 
             const emailResult = await sendEmail(request.email, emailContent.subject, emailContent.message);

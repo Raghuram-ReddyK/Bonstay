@@ -83,9 +83,12 @@ const RegistrationPage = () => {
 
         // Check if the form is valid before submitting
         if (await validateForm(state)) {
+            // Prepare the data to send - include all fields as the backend requires them
+            const userData = { ...state };
+
             // Dispatch the registerUser action with form data
             try {
-                const response = await dispatch(registerUser(state)).unwrap();
+                const response = await dispatch(registerUser(userData)).unwrap();
                 console.log('Registered successfully with user ID:', response.id);
                 setRegisteredId(response.id); // Set the registered user ID
 
