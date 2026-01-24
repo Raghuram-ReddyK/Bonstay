@@ -74,7 +74,6 @@ const DashBoard = () => {
     // Initialize dashboard protection after component mounts
     useEffect(() => {
         if (isLoggedIn && userId) {
-            // small delay to ensure navigation is complete
             setTimeout(() => {
                 initializeDashboardLock();
             }, 1000)

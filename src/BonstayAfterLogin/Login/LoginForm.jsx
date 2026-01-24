@@ -14,9 +14,11 @@ import {
     Grid,
     Paper,
 } from '@mui/material';
+import { Google as GoogleIcon } from '@mui/icons-material';
 
 const LoginForm = ({
     onSubmit,
+    onOAuthLogin,
     userType,
     setUserType,
     userIdOrEmail,
@@ -135,6 +137,25 @@ const LoginForm = ({
                         sx={{ py: 1.5, mb: 2 }}
                     >
                         {isLoading || emailLoading || idLoading ? 'Signing In...' : 'Sign In'}
+                    </Button>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+                        <Typography variant="body2" sx={{ mx: 2, color: 'text.secondary' }}>
+                            or
+                        </Typography>
+                        <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+                    </Box>
+
+                    <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<GoogleIcon />}
+                        onClick={onOAuthLogin}
+                        disabled={isLoading || emailLoading || idLoading}
+                        sx={{ py: 1.5, mb: 2 }}
+                    >
+                        Continue with Google
                     </Button>
 
                     <Box textAlign="center">

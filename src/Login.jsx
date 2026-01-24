@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Grid } from '@mui/material';
-import { loginUser } from './Slices/registerSlice';
+import { loginUser, oauthLogin, resetLoginState } from './Slices/registerSlice';
 import { useAccountLockout } from './hooks/useAccountLockout';
-import { getApiUrl } from './config/apiConfig';
-import axios from 'axios';
 import BrandingPanel from './BonstayAfterLogin/Login/BrandingPanel';
 import LoginForm from './BonstayAfterLogin/Login/LoginForm';
 import ForgotPasswordDialog from './BonstayAfterLogin/Login/ForgotPasswordDialog';
 import PrivacyPolicyDialog from './BonstayAfterLogin/Login/PrivacyPolicyDialog';
 import IncidentTicketDialog from './BonstayAfterLogin/Login/IncidentTicketDialog';
+import { auth, googleProvider, signInWithPopup } from './firebase';
+import { signOut } from 'firebase/auth';
 
 
 const Login = ({ setIsLoggedIn, setUserId }) => {
@@ -19,6 +19,11 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
     const { loading, success, error, user } = useSelector((state) => state.user);
     const { createIncidentTicket, checkExistingTickets } = useAccountLockout();
     
+    // Reset login state when component mounts to clear any stale state
+    useEffect(() => {
+        dispatch(resetLoginState());
+    }, [dispatch]);
+
     // Prevent logged-in users from accessing login page
     useEffect(() => {
         const storedUserId = sessionStorage.getItem('id');
@@ -63,20 +68,31 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
             const userType = user.userType || user.type;
             
             if (userId) {
-                sessionStorage.setItem('id', userId);
-                sessionStorage.setItem('userType', userType);
-                setIsLoggedIn(true);
-                setUserId(userId);
-                setSuccessMessage('Login successful!');
+                // Check if this login should be allowed (user should be logged out)
+                const storedUserId = sessionStorage.getItem('id');
+                const storedUserType = sessionStorage.getItem('userType');
+                
+                if (!storedUserId || !storedUserType) {
+                    console.log('Login success: User appears to be properly logged out, proceeding with login');
+                    
+                    sessionStorage.setItem('id', userId);
+                    sessionStorage.setItem('userType', userType);
+                    setIsLoggedIn(true);
+                    setUserId(userId);
+                    setSuccessMessage('Login successful!');
 
-                // Clear any existing history and prepare for dashboard lock
-                window.history.replaceState(null, null, window.location.pathname);
+                    // Clear any existing history and prepare for dashboard lock
+                    window.history.replaceState(null, null, window.location.pathname);
 
-                // Navigate based on user type with replace to prevent back navigation
-                if (userType === 'admin') {
-                    navigate(`/admin-dashboard/${userId}`, { replace: true });
+                    // Navigate based on user type with replace to prevent back navigation
+                    if (userType === 'admin') {
+                        navigate(`/admin-dashboard/${userId}`, { replace: true });
+                    } else {
+                        navigate(`/dashboard/${userId}`, { replace: true });
+                    }
                 } else {
-                    navigate(`/dashboard/${userId}`, { replace: true });
+                    console.log('Login success: User appears to already be logged in, ignoring auto-login');
+                    // User is already logged in, don't proceed with automatic navigation
                 }
             } else {
                 console.error('Login response missing user ID:', user);
@@ -111,6 +127,50 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
         } catch (error) {
             console.error('Login error:', error);
             setErrorMessage('Error while logging in.');
+        }
+    };
+
+    const handleOAuthLogin = async () => {
+        // Check if user should be logged out (no session data)
+        const storedUserId = sessionStorage.getItem('id');
+        const storedUserType = sessionStorage.getItem('userType');
+
+        if (!storedUserId || !storedUserType) {
+            console.log('OAuth login: User appears to be logged out, proceeding with fresh login');
+
+            try {
+                // Check if user is already signed in with Firebase and sign out if needed
+                const currentUser = auth.currentUser;
+                if (currentUser) {
+                    await signOut(auth);
+                    console.log('OAuth login: Signed out existing Firebase user');
+                }
+
+                // Sign in with Google
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+
+                // Get Firebase ID token
+                const idToken = await user.getIdToken();
+
+                // Prepare OAuth data for backend with ID token
+                const oauthData = {
+                    idToken: idToken,
+                    provider: 'google'
+                };
+
+                // Send to backend for OAuth login
+                await dispatch(oauthLogin(oauthData));
+            } catch (error) {
+                console.error('OAuth login error:', error);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    setErrorMessage('Login cancelled by user.');
+                } else {
+                    setErrorMessage('Error during OAuth login. Please try again.');
+                }
+            }
+        } else {
+            console.log('OAuth login: User appears to already be logged in, ignoring');
         }
     };
 
@@ -167,6 +227,7 @@ const Login = ({ setIsLoggedIn, setUserId }) => {
 
             <LoginForm
                 onSubmit={handleSubmit}
+                onOAuthLogin={handleOAuthLogin}
                 userType={userType}
                 setUserType={setUserType}
                 userIdOrEmail={userIdOrEmail}

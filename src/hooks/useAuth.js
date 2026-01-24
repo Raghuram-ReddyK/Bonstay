@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import { useDispatch } from "react-redux";
+import { resetLoginState } from "../Slices/registerSlice";
 
 const useAuth = () => {
+  const dispatch = useDispatch();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
   const [userType, setUserType] = useState(null);
@@ -16,19 +21,38 @@ const useAuth = () => {
     }
   }, []);
 
-  const handleLogout = (navigate, addNotification) => {
+  const handleLogout = async (navigate, addNotification) => {
+    console.log('handleLogout: Starting logout process');
+
+    try {
+      // Sign out from Firebase
+      await signOut(auth);
+      console.log('handleLogout: Firebase sign out successful');
+    } catch (error) {
+      console.error('handleLogout: Firebase sign out error:', error);
+    }
+
+    // Clear session storage
     sessionStorage.removeItem("id");
     sessionStorage.removeItem("userType");
+    console.log('handleLogout: Session storage cleared');
+
+    // Reset Redux login state
+    dispatch(resetLoginState());
+    console.log('handleLogout: Redux state reset');
+
+    console.log('handleLogout: Updating React state');
     setIsLoggedIn(false);
     setUserId(null);
     setUserType(null);
-    addNotification("Logged out successfully!");
-    // Navigate to home with replace to prevent going back to protected routes
-    navigate("/", { replace: true });
 
-    // Optional: Clear history stack to prevent back navigation to protected pages
-    // This will replace the entire history with just the home page
-    window.history.replaceState(null, null, "/");
+    // Small delay to ensure state updates propagate before navigation
+    setTimeout(() => {
+      console.log('handleLogout: About to navigate to /login');
+      addNotification("Logged out successfully!");
+      navigate("/login", { replace: true });
+      console.log('handleLogout: Navigation completed');
+    }, 100);
   };
 
   return {

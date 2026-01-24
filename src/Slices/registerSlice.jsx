@@ -40,6 +40,23 @@ export const loginUser = createAsyncThunk(
     }
 );
 
+export const oauthLogin = createAsyncThunk(
+    'user/oauth-login',
+    async (oauthData, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(getBackendApiUrl('/users/oauth-login'), oauthData);
+            return response.data;
+        }
+        catch (error) {
+            // Handle different error formats from the backend
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data.message || 'OAuth login failed');
+            }
+            return rejectWithValue('Network error during OAuth login');
+        }
+    }
+);
+
 const initialState = {
     user: null,
     loading: false,
@@ -52,6 +69,13 @@ const registerSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
+        resetLoginState: (state) => {
+            state.user = null;
+            state.loading = false;
+            state.success = false;
+            state.error = null;
+            state.message = null;
+        },
         // if need we can add the reducers, as of now not required
     },
     extraReducers: (builder) => {
@@ -99,8 +123,40 @@ const registerSlice = createSlice({
                 state.loading = false;
                 state.success = false;
                 state.error = action.payload // Store the error message
+            })
+            .addCase(oauthLogin.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(oauthLogin.fulfilled, (state, action) => {
+                state.loading = false;
+                console.log('OAuth Login response payload:', action.payload);
+                // Handle different response structures
+                if (action.payload.success && action.payload.data) {
+                    // Response has success and data fields
+                    state.success = action.payload.success;
+                    state.user = action.payload.data;
+                    state.message = action.payload.message;
+                } else if (action.payload.id) {
+                    // Response is the user object directly
+                    state.success = true;
+                    state.user = action.payload;
+                    state.message = 'OAuth login successful';
+                } else {
+                    // Fallback
+                    state.success = true;
+                    state.user = action.payload;
+                    state.message = 'OAuth login successful';
+                }
+            })
+            .addCase(oauthLogin.rejected, (state, action) => {
+                state.loading = false;
+                state.success = false;
+                state.error = action.payload // Store the error message
             });
     },
 });
+
+export const { resetLoginState } = registerSlice.actions;
 
 export default registerSlice.reducer;

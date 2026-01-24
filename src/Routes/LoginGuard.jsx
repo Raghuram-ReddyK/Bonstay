@@ -9,7 +9,7 @@ import { Navigate } from "react-router-dom";
 const LoginGuard = ({ children, isLoggedIn }) => {
   const storedUserId = sessionStorage.getItem('id');
   const storedUserType = sessionStorage.getItem('userType');
-  
+
   // If user is logged in (either through app state or session storage)
   if (isLoggedIn || (storedUserId && storedUserType)) {
     // Redirect to appropriate dashboard based on user type
@@ -19,7 +19,7 @@ const LoginGuard = ({ children, isLoggedIn }) => {
       return <Navigate to={`/dashboard/${storedUserId}`} replace />;
     }
   }
-  
+
   // If not logged in, render the children (login/register components)
   return children;
 };

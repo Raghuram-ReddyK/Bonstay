@@ -23,11 +23,7 @@ import PaymentPage from "../BonstayAfterLogin/PaymentPage";
 import LoginGuard from "./LoginGuard";
 
 const AppRoutes = ({ isLoggedIn, userId, setIsLoggedIn, setUserId }) => {
-    const handleLogout = () => {
-        sessionStorage.removeItem("id");
-        sessionStorage.removeItem("userType");
-        window.location.href = "/";
-    };
+    // Remove unused handleLogout - the real logout is handled by useAuth
 
     return (
         <Routes>
@@ -241,7 +237,7 @@ const AppRoutes = ({ isLoggedIn, userId, setIsLoggedIn, setUserId }) => {
                         path="/view"
                         element={
                             <PrivateRoute
-                                element={<View handleLogout={handleLogout} />}
+                                element={<View />}
                                 userId={userId}
                                 loggedInUserId={userId}
                             />
@@ -251,7 +247,7 @@ const AppRoutes = ({ isLoggedIn, userId, setIsLoggedIn, setUserId }) => {
                         path="/view/:id"
                         element={
                             <PrivateRoute
-                                element={<View handleLogout={handleLogout} userId={userId} />}
+                                element={<View userId={userId} />}
                                 userId={userId}
                                 loggedInUserId={userId}
                             />

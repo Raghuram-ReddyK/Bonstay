@@ -1,9 +1,8 @@
-
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  startDate: new Date(),
-  endDate: new Date(),
+  startDate: new Date().toISOString(),
+  endDate: new Date().toISOString(),
   noOfPersons: 1,
   noOfRooms: 1,
   typeOfRoom: '',
@@ -17,10 +16,10 @@ const bookingSlice = createSlice({
   initialState,
   reducers: {
     setStartDate: (state, action) => {
-      state.startDate = action.payload;
+      state.startDate = action.payload instanceof Date ? action.payload.toISOString() : action.payload;
     },
     setEndDate: (state, action) => {
-      state.endDate = action.payload;
+      state.endDate = action.payload instanceof Date ? action.payload.toISOString() : action.payload;
     },
     setNoOfPersons: (state, action) => {
       state.noOfPersons = action.payload;
@@ -57,5 +56,9 @@ export const {
   setError,
   resetBookingState,
 } = bookingSlice.actions;
+
+// Selectors to get Date objects from ISO strings
+export const selectStartDate = (state) => new Date(state.booking.startDate);
+export const selectEndDate = (state) => new Date(state.booking.endDate);
 
 export default bookingSlice.reducer;
