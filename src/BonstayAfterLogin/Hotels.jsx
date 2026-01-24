@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import {
     Container,
     Button,
@@ -12,7 +13,14 @@ import {
     Box,
     Chip,
     Rating,
-    Divider
+    Divider,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Paper,
+    IconButton
 } from '@mui/material';
 import {
     LocationOn,
@@ -21,13 +29,24 @@ import {
     Hotel as HotelIcon,
     Wifi,
     Pool,
-    Restaurant
+    Restaurant,
+    Search,
+    Clear
 } from '@mui/icons-material';
 import { useHotels } from '../hooks/useSWRData';
 
 const Hotels = () => {
     const navigate = useNavigate();
-    const { data: hotels, error, isLoading } = useHotels();
+    const [searchParams, setSearchParams] = useState({
+        city: '',
+        amenities: '',
+        guests: '',
+        rooms: '',
+        checkIn: '',
+        checkOut: ''
+    });
+
+    const { data: hotels, error, isLoading } = useHotels(true, searchParams);
 
     if (isLoading) {
         return (
@@ -102,6 +121,102 @@ const Hotels = () => {
                         Book your perfect stay from our collection of premium hotels worldwide
                     </Typography>
                 </Box>
+
+                {/* Search Form */}
+                <Paper sx={{
+                    p: 3,
+                    mb: 4,
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                        🔍 Search & Filter Hotels
+                    </Typography>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item xs={12} md={3}>
+                            <TextField
+                                fullWidth
+                                label="City"
+                                value={searchParams.city}
+                                onChange={(e) => setSearchParams(prev => ({ ...prev, city: e.target.value }))}
+                                placeholder="e.g., Mumbai, Delhi"
+                                size="small"
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={3}>
+                            <TextField
+                                fullWidth
+                                label="Amenities"
+                                value={searchParams.amenities}
+                                onChange={(e) => setSearchParams(prev => ({ ...prev, amenities: e.target.value }))}
+                                placeholder="e.g., WiFi, Pool"
+                                size="small"
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={2}>
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Guests</InputLabel>
+                                <Select
+                                    value={searchParams.guests}
+                                    onChange={(e) => setSearchParams(prev => ({ ...prev, guests: e.target.value }))}
+                                    label="Guests"
+                                >
+                                    <MenuItem value=""><em>Any</em></MenuItem>
+                                    <MenuItem value="1">1 Guest</MenuItem>
+                                    <MenuItem value="2">2 Guests</MenuItem>
+                                    <MenuItem value="3">3 Guests</MenuItem>
+                                    <MenuItem value="4">4+ Guests</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12} md={2}>
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Rooms</InputLabel>
+                                <Select
+                                    value={searchParams.rooms}
+                                    onChange={(e) => setSearchParams(prev => ({ ...prev, rooms: e.target.value }))}
+                                    label="Rooms"
+                                >
+                                    <MenuItem value=""><em>Any</em></MenuItem>
+                                    <MenuItem value="1">1 Room</MenuItem>
+                                    <MenuItem value="2">2 Rooms</MenuItem>
+                                    <MenuItem value="3">3+ Rooms</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12} md={2}>
+                            <Box display="flex" gap={1}>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<Search />}
+                                    onClick={() => {
+                                        // Trigger search by updating state (useEffect will handle the fetch)
+                                        setSearchParams(prev => ({ ...prev }));
+                                    }}
+                                    size="small"
+                                    sx={{ minWidth: 'auto' }}
+                                >
+                                    Search
+                                </Button>
+                                <IconButton
+                                    onClick={() => setSearchParams({
+                                        city: '',
+                                        amenities: '',
+                                        guests: '',
+                                        rooms: '',
+                                        checkIn: '',
+                                        checkOut: ''
+                                    })}
+                                    size="small"
+                                    color="secondary"
+                                >
+                                    <Clear />
+                                </IconButton>
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Paper>
 
                 {hotels && hotels.length > 0 ? (
                     <Grid container spacing={3}>

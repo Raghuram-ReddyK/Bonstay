@@ -306,7 +306,7 @@
   ],
   "hotels": [
     {
-      "id": "2",
+      "id": "IND-BONSTAY-0001",
       "hotelName": "Hill Palace Resort & Spa",
       "city": "Kochi",
       "state": "Kerala",
@@ -529,7 +529,7 @@
       ]
     },
     {
-      "id": "3",
+      "id": "IND-BONSTAY-0002",
       "hotelName": "Monsoon Stay Business Hotel",
       "city": "Chennai",
       "state": "Tamil Nadu",
@@ -698,7 +698,7 @@
       ]
     },
     {
-      "id": "4",
+      "id": "IND-BONSTAY-0003",
       "hotelName": "Galaxy Paradise Mumbai",
       "city": "Mumbai",
       "state": "Maharashtra",
@@ -864,7 +864,7 @@
       ]
     },
     {
-      "id": "5",
+      "id": "IND-BONSTAY-0004",
       "hotelName": "Sunset Tower Beach Resort",
       "city": "Visakhapatnam",
       "state": "Andhra Pradesh",

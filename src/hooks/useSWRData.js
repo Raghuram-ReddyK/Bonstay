@@ -226,23 +226,122 @@ export const useBooking = (bookingId, enabled = true, options = {}) => {
 
 /**
  * Hook for fetching all hotels.
+ * Uses backend API with pagination and sorting.
  * @param {boolean} enabled - Whether to enable the request. Defaults to `true`.
- * @param {object} options - SWR configuration options.
- * @returns {object} - { data: Hotel[], error, isLoading, mutate, isError, isValidating, refresh }.
+ * @param {object} options - Configuration options including page, limit, sortBy, sortOrder.
+ * @returns {object} - { data, error, isLoading, mutate, isError, isValidating, refresh }.
  */
 export const useHotels = (enabled = true, options = {}) => {
-    return useConditionalSWR('/hotels', enabled, options);
+    const [data, setData] = useState(null);
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isValidating, setIsValidating] = useState(false);
+
+    const fetchData = async () => {
+        if (!enabled) return;
+
+        setIsLoading(true);
+        setIsValidating(true);
+        setError(null);
+
+        try {
+            const params = {
+                page: 1,
+                limit: 10,
+                sortBy: 'rating',
+                sortOrder: 'desc',
+                ...options
+            };
+
+            // Check if search parameters are provided
+            const hasSearchParams = options.city || options.amenities || options.guests || options.rooms || options.checkIn || options.checkOut;
+
+            // Use search endpoint if search params are present, otherwise use regular hotels endpoint
+            const endpoint = hasSearchParams ? '/hotels/search' : '/hotels';
+            const queryString = new URLSearchParams(params).toString();
+            const url = `${getBackendApiUrl(endpoint)}?${queryString}`;
+            const response = await axios.get(url);
+            setData(response.data.data);
+        } catch (err) {
+            setError(err);
+        } finally {
+            setIsLoading(false);
+            setIsValidating(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [enabled, options.page, options.limit, options.sortBy, options.sortOrder, options.city, options.amenities, options.guests, options.rooms, options.checkIn, options.checkOut]);
+
+    const mutate = async () => {
+        await fetchData();
+    };
+
+    const refresh = () => mutate();
+
+    return {
+        data,
+        error,
+        isLoading,
+        mutate,
+        isError: !!error,
+        isValidating,
+        refresh
+    };
 };
 
 /**
  * Hook for fetching a specific hotel by ID.
+ * Uses backend API.
  * @param {string} hotelId - The ID of the hotel to fetch.
  * @param {boolean} enabled - Whether to enable the request. Defaults to `true`.
- * @param {object} options - SWR configuration options.
- * @returns {object} - { data: Hotel, error, isLoading, mutate, isError, isValidating, refresh }.
+ * @param {object} options - Configuration options.
+ * @returns {object} - { data, error, isLoading, mutate, isError, isValidating, refresh }.
  */
 export const useHotel = (hotelId, enabled = true, options = {}) => {
-    return useDependentSWR(`/hotels/${hotelId}`, [hotelId], options);
+    const [data, setData] = useState(null);
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isValidating, setIsValidating] = useState(false);
+
+    const fetchData = async () => {
+        if (!enabled || !hotelId) return;
+
+        setIsLoading(true);
+        setIsValidating(true);
+        setError(null);
+
+        try {
+            const response = await axios.get(getBackendApiUrl(`/hotels/${hotelId}`));
+            setData(response.data.data);
+        } catch (err) {
+            setError(err);
+        } finally {
+            setIsLoading(false);
+            setIsValidating(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [hotelId, enabled]);
+
+    const mutate = async () => {
+        await fetchData();
+    };
+
+    const refresh = () => mutate();
+
+    return {
+        data,
+        error,
+        isLoading,
+        mutate,
+        isError: !!error,
+        isValidating,
+        refresh
+    };
 };
 
 /**

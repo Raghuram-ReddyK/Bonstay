@@ -22,6 +22,7 @@ import AdminAnalytics from '../AdminDashboardComponents/AdminAnalytics';
 import AdminSystemMonitoring from '../AdminDashboardComponents/AdminSystemMonitoring';
 import AdminActivityLogs from '../AdminDashboardComponents/AdminActivityLogs';
 import AdminNotificationCenter from '../AdminDashboardComponents/AdminNotificationCenter';
+import HotelManagement from '../AdminDashboardComponents/HotelManagement';
 import { getApiUrl } from '../config/apiConfig';
 import { useAdminCodeRequests, useBookings, useHotels, useUser, useUsers } from '../hooks/useSWRData';
 import IncidentTickets from './IncidentTickets';
@@ -31,6 +32,7 @@ import useDashboardProtection from '../hooks/useDashboardProtection';
 const AdminDashboard = () => {
     const [tabValue, setTabValue] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
+    const [hotelSearchQuery, setHotelSearchQuery] = useState('');
     const [selectedUser, setSelectedUser] = useState(null);
     const [userDialogOpen, setUserDialogOpen] = useState(false);
     const [requestDialogOpen, setRequestDialogOpen] = useState('');
@@ -240,8 +242,31 @@ const AdminDashboard = () => {
         );
     }, [allUsers, searchQuery]);
 
+    const filteredHotels = useMemo(() => {
+        if (!hotelSearchQuery.trim()) {
+            return allHotels; // Show all hotels when no search query
+        }
+
+        const query = hotelSearchQuery.trim().toLowerCase().split(/\s+/);
+        return allHotels.filter(hotel =>
+            query.every(q =>
+                (hotel.hotelName && hotel.hotelName.toLowerCase().includes(q)) ||
+                (hotel.city && hotel.city.toLowerCase().includes(q)) ||
+                (hotel.id && String(hotel.id).toLowerCase().includes(q))
+            )
+        );
+    }, [allHotels, hotelSearchQuery]);
+
     const clearSearch = () => {
         setSearchQuery('');
+    }
+
+    const handleHotelSearch = useCallback((_event, value) => {
+        setHotelSearchQuery(value || '')
+    }, []);
+
+    const clearHotelSearch = () => {
+        setHotelSearchQuery('');
     }
 
     const resetDialogStates = () => {
@@ -279,6 +304,12 @@ const AdminDashboard = () => {
         setUserDialogOpen(true);
     };
 
+    const handleHotelUpdated = useCallback(() => {
+        // Trigger hotel data refresh
+        console.log('Hotels updated, refreshing data...');
+        // The SWR hook will automatically refetch when needed
+    }, []);
+
     const TabPanel = ({ children, value, index }) => (
         <div hidden={value !== index}>
             {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
@@ -307,6 +338,7 @@ const AdminDashboard = () => {
                     <Tab label="Overview" />
                     <Tab label="Analytics" />
                     <Tab label="User Management" />
+                    <Tab label="Hotel Management" />
                     <Tab label="Booking Management" />
                     <Tab label="Create Booking" />
                     <Tab label="Admin Code Requests" />
@@ -360,6 +392,18 @@ const AdminDashboard = () => {
             </TabPanel>
 
             <TabPanel value={tabValue} index={3}>
+                <HotelManagement
+                    allHotels={allHotels}
+                    searchQuery={hotelSearchQuery}
+                    filteredHotels={filteredHotels}
+                    isLoading={isLoading}
+                    handleHotelSearch={handleHotelSearch}
+                    clearSearch={clearHotelSearch}
+                    onHotelUpdated={handleHotelUpdated}
+                />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={4}>
                 <BookingManagement
                     allBookings={allBookings}
                     isLoading={isLoading}
@@ -370,10 +414,20 @@ const AdminDashboard = () => {
             </TabPanel>
 
             <TabPanel value={tabValue} index={4}>
-                <CreateBooking />
+                <BookingManagement
+                    allBookings={allBookings}
+                    isLoading={isLoading}
+                    getHotelName={getHotelName}
+                    getRoomsCount={getRoomsCount}
+                    onBookingCancelled={mutateBookings}
+                />
             </TabPanel>
 
             <TabPanel value={tabValue} index={5}>
+                <CreateBooking />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={6}>
                 <AdminCodeRequests
                     adminCodeRequests={adminCodeRequests}
                     fetchAdminCodeRequests={fetchAdminCodeRequests}
@@ -382,19 +436,19 @@ const AdminDashboard = () => {
                 />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={6}>
+            <TabPanel value={tabValue} index={7}>
                 <IncidentTickets />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={7}>
+            <TabPanel value={tabValue} index={8}>
                 <AdminSystemMonitoring />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={8}>
+            <TabPanel value={tabValue} index={9}>
                 <AdminActivityLogs />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={9}>
+            <TabPanel value={tabValue} index={10}>
                 <AdminNotificationCenter />
             </TabPanel>
 
