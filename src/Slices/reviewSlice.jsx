@@ -1,16 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { getApiUrl } from '../config/apiConfig';
+import { getBackendApiUrl } from '../config/apiConfig';
 
 // Async Thunks
 export const fetchHotelReviews = createAsyncThunk(
     'reviews/fetchHotelReviews',
     async (hotelId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(getApiUrl(`/hotels/${hotelId}`));
+            const response = await axios.get(getBackendApiUrl(`/hotels/${hotelId}`));
+            // API returns data in response.data.data structure
+            const hotelData = response.data.data || response.data;
             return {
-                reviews: response.data.reviews || [],
-                hotel: response.data
+                reviews: hotelData.reviews || [],
+                hotel: hotelData
             };
         } catch (error) {
             return rejectWithValue('Error fetching reviews.');
@@ -22,50 +24,23 @@ export const addHotelReview = createAsyncThunk(
     'reviews/addHotelReview',
     async ({ hotelId, reviewData }, { rejectWithValue }) => {
         try {
-            // Get the hotel data first
-            const response = await axios.get(getApiUrl(`/hotels/${hotelId}`));
-            const currentHotel = response.data;
-
-            // Create the enhanced review object
-            const newReview = {
-                id: `r${Date.now()}`,
-                userId: reviewData.userId,
-                userName: reviewData.userName,
-                userEmail: reviewData.userEmail,
-                rating: reviewData.rating,
-                comment: reviewData.comment,
-                date: new Date().toISOString().split('T')[0],
-                helpful: 0,
-                roomType: reviewData.roomType || "General",
-                verified: true,
-                createdAt: new Date().toISOString()
-            };
-
-            // Add the new review to existing reviews
-            const updatedReviews = [...(currentHotel.reviews || []), newReview];
-
-            // Calculate new average rating and total reviews
-            const totalReviews = updatedReviews.length;
-            const avgRating = updatedReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews;
-
-            // Update the hotel with new review data
-            const updatedHotel = {
-                ...currentHotel,
-                reviews: updatedReviews,
-                rating: parseFloat(avgRating.toFixed(1)),
-                totalReviews: totalReviews
-            };
-
-            await axios.put(getApiUrl(`/hotels/${hotelId}`), updatedHotel);
-
-            return {
-                reviews: updatedReviews,
-                hotel: updatedHotel,
-                newReview: newReview
-            };
+            const response = await axios.post(getBackendApiUrl(`/hotels/${hotelId}/reviews`), reviewData);
+            
+            if (response.data.success) {
+                // Refetch the hotel data to get updated reviews and ratings
+                const hotelResponse = await axios.get(getBackendApiUrl(`/hotels/${hotelId}`));
+                const hotelData = hotelResponse.data.data || hotelResponse.data;
+                return {
+                    reviews: hotelData.reviews || [],
+                    hotel: hotelData,
+                    newReview: response.data.data
+                };
+            } else {
+                return rejectWithValue('Failed to add review');
+            }
         } catch (error) {
             console.error('Error adding review:', error);
-            return rejectWithValue('Error adding review. Please try again.');
+            return rejectWithValue(error.response?.data?.message || 'Error adding review. Please try again.');
         }
     }
 );
@@ -75,16 +50,16 @@ export const markReviewHelpful = createAsyncThunk(
     'reviews/markReviewHelpful',
     async ({ hotelId, reviewId }, { rejectWithValue }) => {
         try {
-            const response = await axios.get(getApiUrl(`/hotels/${hotelId}`));
-            const currentHotel = response.data;
+            const response = await axios.get(getBackendApiUrl(`/hotels/${hotelId}`));
+            const hotelData = response.data.data || response.data;
 
-            const updatedReviews = currentHotel.reviews.map(review =>
+            const updatedReviews = hotelData.reviews.map(review =>
                 review.id === reviewId
                     ? { ...review, helpful: (review.helpful || 0) + 1 }
                     : review
             );
 
-            await axios.patch(getApiUrl(`/hotels/${hotelId}`), {
+            await axios.patch(getBackendApiUrl(`/hotels/${hotelId}`), {
                 reviews: updatedReviews
             });
 

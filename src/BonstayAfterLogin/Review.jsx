@@ -74,7 +74,6 @@ const Review = () => {
   const handleSubmitReview = async () => {
     if (!reviewText.trim()) {
       dispatch(clearMessages());
-      // We'll use a simple alert for validation since we're using Redux for async errors
       alert("Please write a review.");
       return;
     }
@@ -82,6 +81,12 @@ const Review = () => {
     if (rating === 0) {
       dispatch(clearMessages());
       alert("Please select a rating.");
+      return;
+    }
+
+    if (!userId) {
+      dispatch(clearMessages());
+      alert("You must be logged in to submit a review.");
       return;
     }
 
@@ -95,7 +100,7 @@ const Review = () => {
       userEmail: userEmail,
       rating: rating,
       comment: reviewText,
-      roomType: "General" // Could be enhanced to ask which room type they stayed in
+      roomType: "General"
     };
 
     // Dispatch the addHotelReview action

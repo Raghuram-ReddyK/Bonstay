@@ -35,6 +35,8 @@ const useAuth = () => {
     // Clear session storage
     sessionStorage.removeItem("id");
     sessionStorage.removeItem("userType");
+    sessionStorage.removeItem("name");
+    sessionStorage.removeItem("email");
     console.log('handleLogout: Session storage cleared');
 
     // Reset Redux login state
