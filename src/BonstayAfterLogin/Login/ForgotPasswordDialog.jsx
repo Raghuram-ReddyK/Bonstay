@@ -9,40 +9,41 @@ import {
     Alert
 } from '@mui/material';
 import axios from 'axios';
-import { getApiUrl } from '../../config/apiConfig';
+import { getBackendApiUrl } from '../../config/apiConfig';
 
 const ForgotPasswordDialog = ({ open, onClose }) => {
-    const [forgotPasswordUserId, setForgotPasswordUserId] = useState('');
-    const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-    const [forgotPasswordError, setForgotPasswordError] = useState('');
-    const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
+    const [identifier, setIdentifier] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     const handleSubmit = async () => {
-        if (!forgotPasswordUserId || !forgotPasswordEmail) {
-            setForgotPasswordError('Please enter both UserID and Email');
+        if (!identifier) {
+            setError('Please enter your email address');
             return;
         }
-        setForgotPasswordError('');
-        setForgotPasswordSuccess('');
+        setError('');
+        setSuccess('');
 
         try {
-            await axios.post(getApiUrl('/forgot-password'), {
-                userId: forgotPasswordUserId,
-                email: forgotPasswordEmail,
+            const response = await axios.post(getBackendApiUrl('/users/forgot-password'), {
+                identifier: identifier,
             });
 
-            setForgotPasswordSuccess('A password reset link has been sent to your email address.');
+            if (response.data.success) {
+                setSuccess(response.data.message || 'Password reset email sent successfully. Please check your email.');
+            } else {
+                setError('Failed to send password reset email.');
+            }
         } catch (error) {
-            console.error(error);
-            setForgotPasswordError('Failed to send password reset email.');
+            console.error('Forgot password error:', error);
+            setError(error.response?.data?.message || 'Failed to send password reset email. Please try again.');
         }
     };
 
     const handleClose = () => {
-        setForgotPasswordUserId('');
-        setForgotPasswordEmail('');
-        setForgotPasswordError('');
-        setForgotPasswordSuccess('');
+        setIdentifier('');
+        setError('');
+        setSuccess('');
         onClose();
     };
 
@@ -51,25 +52,16 @@ const ForgotPasswordDialog = ({ open, onClose }) => {
             <DialogTitle>Reset Password</DialogTitle>
             <DialogContent>
                 <TextField
-                    label="Enter your UserID"
-                    margin="normal"
-                    fullWidth
-                    value={forgotPasswordUserId}
-                    onChange={(e) => setForgotPasswordUserId(e.target.value)}
-                    error={Boolean(forgotPasswordError)}
-                    helperText={forgotPasswordError || ''}
-                />
-                <TextField
                     label="Enter your Email"
                     margin="normal"
                     fullWidth
-                    value={forgotPasswordEmail}
-                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                    error={Boolean(forgotPasswordError)}
-                    helperText={forgotPasswordError || ''}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    error={Boolean(error)}
+                    helperText={error || ''}
                 />
-                {forgotPasswordSuccess && <Alert severity="success">{forgotPasswordSuccess}</Alert>}
-                {forgotPasswordError && <Alert severity="error">{forgotPasswordError}</Alert>}
+                {success && <Alert severity="success">{success}</Alert>}
+                {error && <Alert severity="error">{error}</Alert>}
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} color="primary">
