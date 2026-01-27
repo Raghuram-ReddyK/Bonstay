@@ -163,6 +163,7 @@ const AccountMenu = ({ handleLogout }) => {
         ...userInfo,
         address,
         email,
+        phoneNo,
       };
 
       await axios.put(getBackendApiUrl(`/users/${userId}`), updatedUserData);

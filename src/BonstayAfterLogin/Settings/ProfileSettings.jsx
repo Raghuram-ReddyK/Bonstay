@@ -77,7 +77,7 @@ const ProfileSettings = ({
                         label="User ID"
                         variant="outlined"
                         fullWidth
-                        value={userInfo?.id || ''}
+                        value={userInfo?.userId || ''}
                         disabled
                         sx={{ mb: 2 }}
                     />

@@ -65,16 +65,20 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
 
             // Fetch user details
             const userResponse = await axios.get(getBackendApiUrl(`/users/${loggedInUserId}`));
-            setUserDetails(userResponse.data);
+            console.log('userResponse: ', userResponse);
+            const userData = userResponse.data.data || userResponse.data;
+            setUserDetails(userData);
 
             // Fetch user bookings
             const bookingsResponse = await axios.get(getApiUrl('/bookings'));
-            const userBookings = bookingsResponse.data.filter(booking => booking.userId === loggedInUserId);
+            const bookingsData = bookingsResponse.data.data || bookingsResponse.data;
+            const userBookings = bookingsData.filter(booking => booking.userId === loggedInUserId);
 
             // Fetch user reviews from all hotels
             const hotelsResponse = await axios.get(getApiUrl('/hotels'));
+            const hotelsData = hotelsResponse.data.data || hotelsResponse.data;
             const hotelsMap = {};
-            hotelsResponse.data.forEach(hotel => {
+            hotelsData.forEach(hotel => {
                 hotelsMap[hotel.id] = hotel.hotelName;
             });
 
@@ -87,7 +91,7 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
             setBookings(enhancedBookings);
 
             const userReviews = [];
-            hotelsResponse.data.forEach(hotel => {
+            hotelsData.forEach(hotel => {
                 if (hotel.reviews) {
                     const hotelUserReviews = hotel.reviews
                         .filter(review => review.userId === loggedInUserId)
@@ -131,10 +135,13 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        return new Date(dateString).toLocaleString('en-US', {
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
         });
     };
 
@@ -234,7 +241,7 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
                                 {userDetails.name}
                             </Typography>
                             <Typography variant="h6" color="white" sx={{ opacity: 0.9 }}>
-                                Member since {formatDate(userDetails.createdAt || '2024-01-01')}
+                                Member since {formatDate(userDetails.createdAt || '2024-01-01')} - Last login: {formatDate(userDetails.lastLogin || new Date().toISOString())}
                             </Typography>
                             <Box display="flex" gap={1} mt={2}>
                                 <Chip
@@ -357,7 +364,7 @@ const View = ({ handleLogout, userId: loggedInUserId }) => {
                                             <ListItemIcon><AccountCircle color="primary" /></ListItemIcon>
                                             <ListItemText
                                                 primary="User ID"
-                                                secondary={userDetails.id}
+                                                secondary={userDetails.userId}
                                             />
                                         </ListItem>
                                     </List>
